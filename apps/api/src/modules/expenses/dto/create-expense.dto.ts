@@ -1,0 +1,53 @@
+import { IsBoolean, IsDateString, IsInt, IsNumber, IsOptional, IsString, Min } from "class-validator";
+
+export class CreateExpenseDto {
+  @IsString()
+  userId: string;
+
+  @IsDateString()
+  expenseDate: string;
+
+  @IsString()
+  category: string;
+
+  @IsNumber()
+  @Min(0)
+  spentAmount: number;
+
+  @IsString()
+  spentCurrency: "KRW" | "JPY" | "USD" | "EUR";
+
+  @IsNumber()
+  @Min(0)
+  baseAmount: number;
+
+  @IsString()
+  baseCurrency: "KRW" | "JPY" | "USD" | "EUR";
+
+  @IsNumber()
+  @Min(0)
+  exchangeRate: number;
+
+  @IsString()
+  countryCode: string;
+
+  @IsString()
+  memo: string;
+
+  @IsOptional()
+  @IsString()
+  groupName?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  participants?: number;
+
+  @IsOptional()
+  @IsString()
+  receiptUrl?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  sharedToCommunity?: boolean;
+}

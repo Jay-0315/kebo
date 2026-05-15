@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum CurrencyCode {
+  KRW
+  JPY
+  USD
+  EUR
+}
+
+model User {
+  id              String          @id @default(uuid())
+  name            String
+  email           String          @unique
+  passwordHash    String          @map("password_hash")
+  role            String          @default("USER")
+  baseCountryCode String          @map("base_country_code") @db.Char(2)
+  baseCurrency    CurrencyCode    @map("base_currency")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  settings        AppSetting?
+  expenses        Expense[]
+  posts           CommunityPost[]
+
+  @@map("users")
+}
+
+model AppSetting {
+  id            String   @id @default(uuid())
+  userId        String   @unique @map("user_id")
+  notifications Boolean  @default(true)
+  darkMode      Boolean  @default(true) @map("dark_mode")
+  autoBackup    Boolean  @default(false) @map("auto_backup")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("app_settings")
+}
+
+model Expense {
+  id                String              @id @default(uuid())
+  userId            String              @map("user_id")
+  expenseDate       DateTime            @map("expense_date")
+  category          String
+  spentAmount       Decimal             @map("spent_amount") @db.Decimal(12, 2)
+  spentCurrency     CurrencyCode        @map("spent_currency")
+  baseAmount        Decimal             @map("base_amount") @db.Decimal(12, 2)
+  baseCurrency      CurrencyCode        @map("base_currency")
+  exchangeRate      Decimal             @map("exchange_rate") @db.Decimal(12, 6)
+  countryCode       String              @map("country_code") @db.Char(2)
+  memo              String
+  groupName         String?             @map("group_name")
+  participants      Int?
+  receiptUrl        String?             @map("receipt_url") @db.Text
+  sharedToCommunity Boolean             @default(false) @map("shared_to_community")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sharedPosts       CommunityPostExpense[]
+
+  @@map("expenses")
+}
+
+model CommunityPost {
+  id             String                 @id @default(uuid())
+  userId         String                 @map("user_id")
+  content        String                 @db.Text
+  likesCount     Int                    @default(0) @map("likes_count")
+  createdAt      DateTime               @default(now()) @map("created_at")
+  updatedAt      DateTime               @updatedAt @map("updated_at")
+  user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sharedExpenses CommunityPostExpense[]
+
+  @@map("community_posts")
+}
+
+model CommunityPostExpense {
+  id            BigInt        @id @default(autoincrement())
+  postId        String        @map("post_id")
+  expenseId     String        @map("expense_id")
+  category      String
+  memo          String
+  expenseDate   DateTime      @map("expense_date")
+  spentAmount   Decimal       @map("spent_amount") @db.Decimal(12, 2)
+  spentCurrency CurrencyCode  @map("spent_currency")
+  baseAmount    Decimal       @map("base_amount") @db.Decimal(12, 2)
+  baseCurrency  CurrencyCode  @map("base_currency")
+  exchangeRate  Decimal       @map("exchange_rate") @db.Decimal(12, 6)
+  countryCode   String        @map("country_code") @db.Char(2)
+  post          CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  expense       Expense       @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([expenseId])
+  @@map("community_post_expenses")
+}

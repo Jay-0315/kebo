@@ -1,0 +1,24 @@
+import { Body, Controller, Get, Param, Patch } from "@nestjs/common";
+import { UpdateUserProfileDto } from "./dto/update-user-profile.dto";
+import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
+import { UsersService } from "./users.service";
+
+@Controller("users")
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  @Get(":id/profile")
+  getProfile(@Param("id") id: string) {
+    return this.usersService.getProfile(id);
+  }
+
+  @Patch(":id/profile")
+  updateProfile(@Param("id") id: string, @Body() dto: UpdateUserProfileDto) {
+    return this.usersService.updateProfile(id, dto);
+  }
+
+  @Patch(":id/settings")
+  updateSettings(@Param("id") id: string, @Body() dto: UpdateUserSettingsDto) {
+    return this.usersService.updateSettings(id, dto);
+  }
+}
