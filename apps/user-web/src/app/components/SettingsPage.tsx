@@ -1,8 +1,20 @@
-import { Bell, Moon, Sun, Shield, Database, Trash2, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { Bell, Moon, Sun, Shield, Database, Trash2, ChevronRight, Globe, Check } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
+
+const languages = [
+  { code: "ko", name: "Korean", nativeName: "한국어" },
+  { code: "ja", name: "Japanese", nativeName: "日本語" },
+];
 
 export default function SettingsPage() {
   const { settings, countries, profile, updateProfileCurrency, updateSettings } = useAppData();
+  const [selectedLanguage, setSelectedLanguage] = useState("ko");
+
+  const handleLanguageChange = (code: string) => {
+    setSelectedLanguage(code);
+    alert(`언어가 ${languages.find(l => l.code === code)?.nativeName}(으)로 변경되었습니다.`);
+  };
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -129,6 +141,35 @@ export default function SettingsPage() {
             </div>
             <ChevronRight className="w-5 h-5" />
           </button>
+        </div>
+      </div>
+
+      {/* Language */}
+      <div className="bg-card rounded-xl p-5 border border-border">
+        <h3 className="mb-4">언어</h3>
+        <div className="space-y-2">
+          {languages.map((language) => (
+            <button
+              key={language.code}
+              onClick={() => handleLanguageChange(language.code)}
+              className={`w-full flex items-center justify-between p-4 rounded-lg transition-colors ${
+                selectedLanguage === language.code
+                  ? "bg-primary/10 border-2 border-primary"
+                  : "bg-muted hover:bg-muted/70 border-2 border-transparent"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Globe className={`w-5 h-5 ${selectedLanguage === language.code ? "text-primary" : "text-muted-foreground"}`} />
+                <div className="text-left">
+                  <p className="font-medium">{language.nativeName}</p>
+                  <p className="text-sm text-muted-foreground">{language.name}</p>
+                </div>
+              </div>
+              {selectedLanguage === language.code && (
+                <Check className="w-5 h-5 text-primary" />
+              )}
+            </button>
+          ))}
         </div>
       </div>
 

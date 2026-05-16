@@ -6,9 +6,9 @@ import SignupPage from "./components/SignupPage";
 import ExpensesPage from "./components/ExpensesPage";
 import CommunityPage from "./components/CommunityPage";
 import GroupsPage from "./components/GroupsPage";
+import GroupDetailPage from "./components/GroupDetailPage";
 import MyPage from "./components/MyPage";
 import SettingsPage from "./components/SettingsPage";
-import LanguagePage from "./components/LanguagePage";
 import { isAuthenticated } from "./lib/auth";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -33,9 +33,9 @@ export default function App() {
           <Route path="expenses" element={<ExpensesPage />} />
           <Route path="community" element={<CommunityPage />} />
           <Route path="groups" element={<GroupsPage />} />
+          <Route path="groups/:id" element={<GroupDetailPage />} />
           <Route path="mypage" element={<MyPage />} />
           <Route path="settings" element={<SettingsPage />} />
-          <Route path="language" element={<LanguagePage />} />
         </Route>
       </Routes>
     </BrowserRouter>

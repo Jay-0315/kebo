@@ -10,15 +10,14 @@ export default function Layout() {
 
   const navItems = [
     { path: "/", icon: Home, label: "지출 홈" },
-    { path: "/expenses", icon: Wallet, label: "내역 관리" },
-    { path: "/groups", icon: Users, label: "그룹" },
+    { path: "/expenses", icon: Wallet, label: "개인 지출 관리" },
+    { path: "/groups", icon: Users, label: "그룹 지출 관리" },
     { path: "/community", icon: Globe, label: "커뮤니티" },
     { path: "/mypage", icon: User, label: "마이페이지" },
   ];
 
   const settingsItems = [
     { path: "/settings", icon: Settings, label: "설정" },
-    { path: "/language", icon: Globe, label: "언어 변경" },
   ];
 
   return (

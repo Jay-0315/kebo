@@ -48,8 +48,6 @@ services:
       MYSQL_USER: ${MYSQL_USER:-kebo}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-kebo1234}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root1234}
-    command:
-      - --default-authentication-plugin=mysql_native_password
     volumes:
       - mysql-data:/var/lib/mysql
       - ./docs/mysql-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro

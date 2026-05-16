@@ -14,7 +14,7 @@ function App() {
           background: "#1a1a1a",
         }}
       >
-        <p style={{ color: "#ff69b4", marginTop: 0 }}>KEBO</p>
+        <p style={{ color: "#b7607e", marginTop: 0 }}>KEBO</p>
         <h1 style={{ marginTop: 0 }}>관리자 웹</h1>
         <p style={{ color: "#a3a3a3", lineHeight: 1.6 }}>
           사용자 신고, 환율 관리, 커뮤니티 운영, 리워드 정책 설정을 위한 관리자 전용 앱 자리입니다.

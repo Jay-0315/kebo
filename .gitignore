@@ -6,3 +6,5 @@ dist/
 .cache/
 apps/**/dist/
 apps/**/node_modules/
+.vscode/settings.json
+apps/api/package.json

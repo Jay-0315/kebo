@@ -1,4 +1,4 @@
-export type CurrencyCode = "KRW" | "JPY" | "USD" | "EUR";
+export type CurrencyCode = "KRW" | "JPY";
 
 export interface CountryOption {
   code: string;

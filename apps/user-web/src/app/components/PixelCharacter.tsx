@@ -71,17 +71,17 @@ export default function PixelCharacter({ level, size = 128 }: PixelCharacterProp
           {/* Eye */}
           <rect x="4" y="6" width="1" height="1" fill="#000" />
           {/* Mane */}
-          <rect x="5" y="4" width="1" height="2" fill="#FF69B4" />
-          <rect x="6" y="3" width="1" height="3" fill="#FF1493" />
-          <rect x="7" y="4" width="1" height="2" fill="#FF69B4" />
+          <rect x="5" y="4" width="1" height="2" fill="#b7607e" />
+          <rect x="6" y="3" width="1" height="3" fill="#b7607e" />
+          <rect x="7" y="4" width="1" height="2" fill="#b7607e" />
           {/* Legs */}
           <rect x="5" y="11" width="1" height="3" fill="#E0E0E0" />
           <rect x="7" y="11" width="1" height="3" fill="#E0E0E0" />
           <rect x="9" y="11" width="1" height="3" fill="#E0E0E0" />
           {/* Tail */}
-          <rect x="11" y="8" width="2" height="1" fill="#FF69B4" />
-          <rect x="12" y="9" width="2" height="2" fill="#FF1493" />
-          <rect x="13" y="10" width="2" height="2" fill="#FF69B4" />
+          <rect x="11" y="8" width="2" height="1" fill="#b7607e" />
+          <rect x="12" y="9" width="2" height="2" fill="#b7607e" />
+          <rect x="13" y="10" width="2" height="2" fill="#b7607e" />
         </svg>
       );
     } else {

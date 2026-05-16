@@ -107,7 +107,7 @@ export default function MyPage() {
                 borderRadius: "8px",
               }}
             />
-            <Bar dataKey="amount" fill="#FF1493" fillOpacity={0.85} radius={[8, 8, 0, 0]} />
+            <Bar dataKey="amount" fill="#b7607e" fillOpacity={0.85} radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

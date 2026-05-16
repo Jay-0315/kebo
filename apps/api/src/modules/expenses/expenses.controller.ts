@@ -1,20 +1,23 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { CurrentUser } from "../auth/current-user.decorator";
+import { JwtAuthGuard } from "../auth/jwt.guard";
 import { CreateExpenseDto } from "./dto/create-expense.dto";
 import { UpdateExpenseDto } from "./dto/update-expense.dto";
 import { ExpensesService } from "./expenses.service";
 
+@UseGuards(JwtAuthGuard)
 @Controller("expenses")
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
   @Get()
-  findAll(@Query("userId") userId?: string) {
-    return this.expensesService.findAll(userId);
+  findAll(@CurrentUser() user: any) {
+    return this.expensesService.findAll(user.sub);
   }
 
   @Post()
-  create(@Body() dto: CreateExpenseDto) {
-    return this.expensesService.create(dto);
+  create(@CurrentUser() user: any, @Body() dto: CreateExpenseDto) {
+    return this.expensesService.create({ ...dto, userId: user.sub });
   }
 
   @Patch(":id")
