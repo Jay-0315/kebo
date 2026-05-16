@@ -27,8 +27,23 @@ model User {
   settings        AppSetting?
   expenses        Expense[]
   posts           CommunityPost[]
+  reward          UserReward?
 
   @@map("users")
+}
+
+model UserReward {
+  id                  String   @id @default(uuid())
+  userId              String   @unique @map("user_id")
+  missionPoints       Int      @default(0) @map("mission_points")
+  attendanceDays      Int      @default(0) @map("attendance_days")
+  streakDays          Int      @default(0) @map("streak_days")
+  equippedCharacterId Int?     @map("equipped_character_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_rewards")
 }
 
 model AppSetting {

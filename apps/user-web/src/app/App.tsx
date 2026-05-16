@@ -8,6 +8,7 @@ import CommunityPage from "./components/CommunityPage";
 import GroupsPage from "./components/GroupsPage";
 import GroupDetailPage from "./components/GroupDetailPage";
 import MyPage from "./components/MyPage";
+import CharacterDetailPage from "./components/CharacterDetailPage";
 import SettingsPage from "./components/SettingsPage";
 import { isAuthenticated } from "./lib/auth";
 
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="groups" element={<GroupsPage />} />
           <Route path="groups/:id" element={<GroupDetailPage />} />
           <Route path="mypage" element={<MyPage />} />
+          <Route path="mypage/character" element={<CharacterDetailPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Routes>

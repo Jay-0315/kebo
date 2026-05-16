@@ -81,6 +81,7 @@ export interface RewardSummary {
   level: number;
   nextLevelTarget: number;
   streakDays: number;
+  equippedCharacterId: number | null;
 }
 
 export interface UserProfile {

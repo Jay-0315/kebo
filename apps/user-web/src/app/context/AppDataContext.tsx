@@ -44,6 +44,7 @@ interface AppDataContextValue {
   togglePostLike: (postId: string) => Promise<void>;
   updateProfileCurrency: (countryCode: string) => Promise<void>;
   updateSettings: (settings: Partial<AppSettings>) => Promise<void>;
+  equipCharacter: (characterId: number) => Promise<void>;
   getCountryName: (code: string) => string;
   refreshData: () => Promise<void>;
 }
@@ -137,6 +138,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     level: 1,
     nextLevelTarget: 120,
     streakDays: 0,
+    equippedCharacterId: null,
   });
   const [remoteExchangeRates, setRemoteExchangeRates] = useState<ExchangeRate[]>(exchangeRates);
 
@@ -151,8 +153,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     }
 
     const likedPostIds = getLikedPostIds();
-    const [profileResponse, expensesResponse, postsResponse, rewardsResponse, ratesResponse] =
-      await Promise.all([
+    const [profileResult, expensesResult, postsResult, rewardsResult, ratesResult] =
+      await Promise.allSettled([
         api.get<{
           id: string;
           name: string;
@@ -167,20 +169,29 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         api.get<ExchangeRate[]>("/exchange-rates"),
       ]);
 
-    setProfile({
-      id: profileResponse.id,
-      name: profileResponse.name,
-      email: profileResponse.email,
-      baseCountryCode: profileResponse.baseCountryCode,
-      baseCurrency: profileResponse.baseCurrency,
-    });
-    if (profileResponse.settings) {
-      setSettings(profileResponse.settings);
+    if (profileResult.status === "fulfilled") {
+      const p = profileResult.value;
+      setProfile({
+        id: p.id,
+        name: p.name,
+        email: p.email,
+        baseCountryCode: p.baseCountryCode,
+        baseCurrency: p.baseCurrency,
+      });
+      if (p.settings) setSettings(p.settings);
     }
-    setExpenses(expensesResponse.map(mapExpense));
-    setPosts(postsResponse.map((post) => mapPost(post, likedPostIds)));
-    setRewardSummary(rewardsResponse);
-    setRemoteExchangeRates(ratesResponse);
+    if (expensesResult.status === "fulfilled") {
+      setExpenses(expensesResult.value.map(mapExpense));
+    }
+    if (postsResult.status === "fulfilled") {
+      setPosts(postsResult.value.map((post) => mapPost(post, likedPostIds)));
+    }
+    if (rewardsResult.status === "fulfilled") {
+      setRewardSummary(rewardsResult.value);
+    }
+    if (ratesResult.status === "fulfilled") {
+      setRemoteExchangeRates(ratesResult.value);
+    }
   };
 
   useEffect(() => {
@@ -338,6 +349,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     await refreshData();
   };
 
+  const equipCharacter = async (characterId: number) => {
+    const currentUser = getStoredUser();
+    if (!currentUser) return;
+    await api.patch("/rewards/equip", { userId: currentUser.id, characterId });
+    setRewardSummary((prev) => ({ ...prev, equippedCharacterId: characterId }));
+  };
+
   const updateSettings = async (nextSettings: Partial<AppSettings>) => {
     const currentUser = getStoredUser();
     setSettings((current) => ({ ...current, ...nextSettings }));
@@ -370,6 +388,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     togglePostLike,
     updateProfileCurrency,
     updateSettings,
+    equipCharacter,
     getCountryName: (code: string) => getCountryByCode(code).name,
     refreshData,
   };

@@ -52,6 +52,18 @@ CREATE TABLE community_posts (
   CONSTRAINT fk_posts_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE user_rewards (
+  id VARCHAR(36) PRIMARY KEY,
+  user_id VARCHAR(36) NOT NULL UNIQUE,
+  mission_points INT NOT NULL DEFAULT 0,
+  attendance_days INT NOT NULL DEFAULT 0,
+  streak_days INT NOT NULL DEFAULT 0,
+  equipped_character_id INT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_rewards_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE TABLE community_post_expenses (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   post_id VARCHAR(36) NOT NULL,

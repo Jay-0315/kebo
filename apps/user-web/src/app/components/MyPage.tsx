@@ -5,6 +5,7 @@ import PixelCharacter from "./PixelCharacter";
 import { useAppData } from "../context/AppDataContext";
 import { formatCurrency, getCountryByCode } from "../data/currency";
 import { clearAuthSession } from "../lib/auth";
+import { CHARACTERS, getCurrentCharacter, RARITY_LABEL, RARITY_COLOR } from "../data/characters";
 
 export default function MyPage() {
   const navigate = useNavigate();
@@ -14,6 +15,10 @@ export default function MyPage() {
   const averageSpend = expenses.length ? Math.round(totalSpent / expenses.length) : 0;
   const myPosts = posts.filter((post) => post.authorId === profile.id);
   const country = getCountryByCode(profile.baseCountryCode);
+
+  const displayChar = rewardSummary.equippedCharacterId
+    ? (CHARACTERS.find((c) => c.id === rewardSummary.equippedCharacterId) ?? getCurrentCharacter(rewardSummary.level))
+    : getCurrentCharacter(rewardSummary.level);
 
   const handleLogout = () => {
     clearAuthSession();
@@ -50,11 +55,20 @@ export default function MyPage() {
           </span>
         </div>
 
-        <div className="bg-muted rounded-xl p-6 mb-4">
+        <button
+          onClick={() => navigate("/mypage/character")}
+          className="w-full bg-muted rounded-xl p-6 mb-4 hover:bg-muted/70 transition-colors group"
+        >
           <div className="flex justify-center mb-2">
-            <PixelCharacter level={rewardSummary.level} size={128} />
+            <PixelCharacter characterId={displayChar.id} size={128} />
           </div>
-        </div>
+          <p className={`text-sm font-semibold ${RARITY_COLOR[displayChar.rarity]}`}>
+            {displayChar.korName}
+          </p>
+          <p className="text-xs text-muted-foreground mt-0.5 group-hover:text-foreground transition-colors">
+            {RARITY_LABEL[displayChar.rarity]} · 상세 보기 →
+          </p>
+        </button>
 
         <div className="grid sm:grid-cols-3 gap-3">
           <div className="bg-muted rounded-lg p-3 text-center">
