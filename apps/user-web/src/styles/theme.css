@@ -8,13 +8,13 @@
   --card-foreground: #0A0A0A;
   --popover: #F7F7F7;
   --popover-foreground: #0A0A0A;
-  --primary: #b7607e;
+  --primary: #73c883;
   --primary-foreground: #FFFFFF;
   --secondary: #EFEFEF;
   --secondary-foreground: #0A0A0A;
   --muted: #EFEFEF;
   --muted-foreground: #6B6B6B;
-  --accent: #96526c;
+  --accent: #5ab56e;
   --accent-foreground: #FFFFFF;
   --destructive: #DC143C;
   --destructive-foreground: #FFFFFF;
@@ -24,21 +24,21 @@
   --switch-background: #D0D0D0;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #b7607e;
-  --chart-1: #b7607e;
-  --chart-2: #b7607e;
-  --chart-3: #96526c;
+  --ring: #73c883;
+  --chart-1: #73c883;
+  --chart-2: #73c883;
+  --chart-3: #5ab56e;
   --chart-4: #0A0A0A;
   --chart-5: #6B6B6B;
   --radius: 0.25rem;
   --sidebar: #F7F7F7;
   --sidebar-foreground: #0A0A0A;
-  --sidebar-primary: #b7607e;
+  --sidebar-primary: #73c883;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #EFEFEF;
   --sidebar-accent-foreground: #0A0A0A;
   --sidebar-border: #E0E0E0;
-  --sidebar-ring: #b7607e;
+  --sidebar-ring: #73c883;
 }
 
 .dark {

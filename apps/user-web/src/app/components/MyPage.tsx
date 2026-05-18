@@ -1,4 +1,5 @@
-import { Trophy, Calendar, TrendingUp, Heart, LogOut, Globe2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { Trophy, Calendar, TrendingUp, Heart, LogOut, Globe2, Camera, X, Pencil, Check } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router";
 import PixelCharacter from "./PixelCharacter";
@@ -9,7 +10,29 @@ import { CHARACTERS, getCurrentCharacter, RARITY_LABEL, RARITY_COLOR } from "../
 
 export default function MyPage() {
   const navigate = useNavigate();
-  const { profile, rewardSummary, monthlyTotals, expenses, posts } = useAppData();
+  const { profile, rewardSummary, monthlyTotals, expenses, posts, profilePhoto, updateProfilePhoto, updateProfileName } = useAppData();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editingName, setEditingName] = useState(false);
+  const [draftName, setDraftName] = useState(profile.name);
+
+  const handleSaveName = async () => {
+    const trimmed = draftName.trim();
+    if (!trimmed || trimmed === profile.name) { setEditingName(false); return; }
+    await updateProfileName(trimmed);
+    setEditingName(false);
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const result = ev.target?.result;
+      if (typeof result === "string") updateProfilePhoto(result);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
 
   const totalSpent = expenses.reduce((sum, expense) => sum + expense.baseAmount, 0);
   const averageSpend = expenses.length ? Math.round(totalSpent / expenses.length) : 0;
@@ -28,16 +51,83 @@ export default function MyPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-center gap-4">
+        {/* Profile photo */}
+        <div className="relative shrink-0">
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="w-16 h-16 rounded-full border-2 border-primary/40 flex items-center justify-center cursor-pointer hover:border-primary transition-colors overflow-hidden bg-primary/10"
+          >
+            {profilePhoto ? (
+              <img src={profilePhoto} alt={profile.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-2xl font-bold text-primary">{profile.name[0]}</span>
+            )}
+          </div>
+          {profilePhoto && (
+            <button
+              onClick={() => updateProfilePhoto(null)}
+              className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full text-xs flex items-center justify-center hover:bg-destructive/80 transition-colors"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center hover:bg-primary/80 transition-colors"
+          >
+            <Camera className="w-3 h-3" />
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePhotoChange}
+          />
+        </div>
+
+        <div className="flex-1 min-w-0">
           <h2>마이페이지</h2>
-          <p className="text-sm text-muted-foreground">
+          {editingName ? (
+            <div className="flex items-center gap-1.5 mt-1">
+              <input
+                value={draftName}
+                onChange={(e) => setDraftName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void handleSaveName();
+                  if (e.key === "Escape") setEditingName(false);
+                }}
+                autoFocus
+                maxLength={20}
+                className="text-sm px-2 py-0.5 rounded border border-border bg-input-background focus:outline-none focus:ring-1 focus:ring-ring w-32"
+              />
+              <button onClick={() => void handleSaveName()} className="text-primary hover:text-primary/70 transition-colors">
+                <Check className="w-4 h-4" />
+              </button>
+              <button onClick={() => setEditingName(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-sm font-medium truncate">{profile.name}</span>
+              <button
+                onClick={() => { setDraftName(profile.name); setEditingName(true); }}
+                className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              >
+                <Pencil className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+          <p className="text-xs text-muted-foreground mt-0.5">
             {country.flag} {country.name} · {profile.baseCurrency} 기준
           </p>
         </div>
+
         <button
           onClick={handleLogout}
-          className="text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1 text-sm"
+          className="text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1 text-sm shrink-0"
         >
           <LogOut className="w-4 h-4" />
           로그아웃

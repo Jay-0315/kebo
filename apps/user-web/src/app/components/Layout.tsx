@@ -6,7 +6,7 @@ import { useAppData } from "../context/AppDataContext";
 export default function Layout() {
   const location = useLocation();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const { profile, rewardSummary } = useAppData();
+  const { profile, rewardSummary, profilePhoto } = useAppData();
 
   const navItems = [
     { path: "/", icon: Home, label: "지출 홈" },
@@ -78,15 +78,22 @@ export default function Layout() {
 
         {/* User Info */}
         <div className="p-4 border-t border-sidebar-border">
-          <div className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium">
-              {profile.name[0]}
-            </div>
+          <Link
+            to="/mypage"
+            className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent hover:bg-primary/10 transition-colors"
+          >
+            {profilePhoto ? (
+              <img src={profilePhoto} alt={profile.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium shrink-0">
+                {profile.name[0]}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm truncate">{profile.name}</p>
               <p className="text-xs text-muted-foreground">Lv.{rewardSummary.level} 환율 탐험가</p>
             </div>
-          </div>
+          </Link>
         </div>
       </aside>
 
@@ -162,15 +169,23 @@ export default function Layout() {
             </nav>
 
             <div className="p-4 border-t border-sidebar-border">
-              <div className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium">
-                  {profile.name[0]}
-                </div>
+              <Link
+                to="/mypage"
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent hover:bg-primary/10 transition-colors"
+              >
+                {profilePhoto ? (
+                  <img src={profilePhoto} alt={profile.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium shrink-0">
+                    {profile.name[0]}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{profile.name}</p>
                   <p className="text-xs text-muted-foreground">Lv.{rewardSummary.level} 환율 탐험가</p>
                 </div>
-              </div>
+              </Link>
             </div>
           </aside>
         </div>

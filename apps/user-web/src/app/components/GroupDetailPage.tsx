@@ -442,7 +442,7 @@ const CATEGORY_EMOJI: Record<string, string> = {
 export default function GroupDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { expenses, createExpense } = useAppData();
+  const { expenses, createExpense, profile, profilePhoto } = useAppData();
 
   const group: Group | undefined = location.state?.group;
 
@@ -610,10 +610,14 @@ export default function GroupDetailPage() {
                 }`}
               >
                 <div className="p-[2px] rounded-full bg-card">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/70 to-accent/80 flex items-center justify-center">
-                    <span className="text-white font-bold text-xl leading-none">
-                      {member.name[0]}
-                    </span>
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/70 to-accent/80 flex items-center justify-center overflow-hidden">
+                    {profilePhoto && member.name === profile.name ? (
+                      <img src={profilePhoto} alt={member.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-white font-bold text-xl leading-none">
+                        {member.name[0]}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -827,21 +831,32 @@ export default function GroupDetailPage() {
                   <div className="drop-shadow-lg">
                     <PixelSprite type={char.type} colors={char.colors} size={48} />
                   </div>
-                  {/* 이름 뱃지 */}
-                  <span className="bg-black/50 text-white text-[9px] font-medium px-1.5 py-0.5 rounded-md backdrop-blur-sm leading-tight max-w-[52px] truncate text-center">
+                  {/* 이름 뱃지 - 픽셀 RPG 스타일 */}
+                  <div style={{
+                    background: "linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)",
+                    border: "1px solid #4a9eff",
+                    borderTop: "2px solid #73c8ff",
+                    borderBottom: "2px solid #1a5fa8",
+                    padding: "1px 5px",
+                    maxWidth: "56px",
+                    fontFamily: "monospace",
+                    fontSize: "8px",
+                    color: "#e8f4ff",
+                    textAlign: "center",
+                    letterSpacing: "0.04em",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)",
+                    imageRendering: "pixelated",
+                  }}>
                     {member.name}
-                  </span>
+                  </div>
                 </div>
               );
             })}
           </div>
 
-          {/* 배경 이름 뱃지 */}
-          <div className="absolute top-2 right-2">
-            <span className="bg-black/40 text-white text-[9px] px-1.5 py-0.5 rounded backdrop-blur-sm">
-              {PARTY_BACKGROUNDS[partyBg].name}
-            </span>
-          </div>
         </div>
       </div>
     </div>

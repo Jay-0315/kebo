@@ -25,6 +25,7 @@ import type {
 
 const SETTINGS_STORAGE_KEY = "kebo-local-settings";
 const LIKES_STORAGE_KEY = "kebo-liked-posts";
+const PROFILE_PHOTO_KEY = "kebo-profile-photo";
 
 interface AppDataContextValue {
   profile: UserProfile;
@@ -47,6 +48,9 @@ interface AppDataContextValue {
   equipCharacter: (characterId: number) => Promise<void>;
   getCountryName: (code: string) => string;
   refreshData: () => Promise<void>;
+  profilePhoto: string | null;
+  updateProfilePhoto: (photo: string | null) => void;
+  updateProfileName: (name: string) => Promise<void>;
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null);
@@ -141,6 +145,18 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     equippedCharacterId: null,
   });
   const [remoteExchangeRates, setRemoteExchangeRates] = useState<ExchangeRate[]>(exchangeRates);
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(() => {
+    return localStorage.getItem(PROFILE_PHOTO_KEY);
+  });
+
+  const updateProfilePhoto = (photo: string | null) => {
+    if (photo === null) {
+      localStorage.removeItem(PROFILE_PHOTO_KEY);
+    } else {
+      localStorage.setItem(PROFILE_PHOTO_KEY, photo);
+    }
+    setProfilePhoto(photo);
+  };
 
   useEffect(() => {
     localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
@@ -354,6 +370,18 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     await refreshData();
   };
 
+  const updateProfileName = async (name: string) => {
+    const currentUser = getStoredUser();
+    if (!currentUser) return;
+    setProfile((prev) => ({ ...prev, name }));
+    localStorage.setItem("kebo-auth-user", JSON.stringify({ ...currentUser, name }));
+    try {
+      await api.patch(`/users/${currentUser.id}/profile`, { name });
+    } catch {
+      // optimistic update already applied
+    }
+  };
+
   const equipCharacter = async (characterId: number) => {
     const currentUser = getStoredUser();
     if (!currentUser) return;
@@ -396,6 +424,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     equipCharacter,
     getCountryName: (code: string) => getCountryByCode(code).name,
     refreshData,
+    profilePhoto,
+    updateProfilePhoto,
+    updateProfileName,
   };
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;
