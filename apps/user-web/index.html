@@ -1,11 +1,22 @@
 
   <!DOCTYPE html>
-  <html lang="ko">
+  <html lang="ko" class="dark">
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>KEBO</title>
       <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
+      <script>
+        (function() {
+          try {
+            var s = localStorage.getItem('kebo-local-settings');
+            if (s) {
+              var dark = JSON.parse(s).darkMode;
+              if (dark === false) document.documentElement.classList.remove('dark');
+            }
+          } catch(e) {}
+        })();
+      </script>
     </head>
 
     <body>

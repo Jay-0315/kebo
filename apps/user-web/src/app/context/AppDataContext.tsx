@@ -144,6 +144,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+    if (settings.darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   }, [settings]);
 
   const refreshData = async () => {
