@@ -24,7 +24,7 @@ const c = (
 
 export const RARITY_LABEL: Record<CharacterRarity, string> = {
   common: "커먼", uncommon: "언커먼", rare: "레어",
-  epic: "에픽", legendary: "레전더리", mythic: "미식",
+  epic: "에픽", legendary: "레전더리", mythic: "신화",
 };
 
 export const RARITY_COLOR: Record<CharacterRarity, string> = {

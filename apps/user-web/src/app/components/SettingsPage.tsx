@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { Bell, Moon, Sun, Shield, Database, Trash2, ChevronRight, Globe, Check } from "lucide-react";
+import { Bell, Moon, Sun, Shield, Database, Trash2, ChevronRight, Globe, Check, Palette, LogOut } from "lucide-react";
+import { useNavigate } from "react-router";
 import { useAppData } from "../context/AppDataContext";
+import { THEME_PRESETS } from "../lib/theme-presets";
+import { clearAuthSession } from "../lib/auth";
 
 const languages = [
   { code: "ko", name: "Korean", nativeName: "한국어" },
@@ -9,7 +12,14 @@ const languages = [
 
 export default function SettingsPage() {
   const { settings, countries, profile, updateProfileCurrency, updateSettings } = useAppData();
+  const navigate = useNavigate();
   const [selectedLanguage, setSelectedLanguage] = useState("ko");
+
+  const handleLogout = () => {
+    clearAuthSession();
+    navigate("/login");
+    window.location.reload();
+  };
 
   const handleLanguageChange = (code: string) => {
     setSelectedLanguage(code);
@@ -23,7 +33,8 @@ export default function SettingsPage() {
       {/* Appearance */}
       <div className="bg-card rounded-xl p-5 border border-border">
         <h3 className="mb-4">표시</h3>
-        <div className="space-y-4">
+        <div className="space-y-5">
+          {/* Dark mode toggle */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {settings.darkMode ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-primary" />}
@@ -44,6 +55,48 @@ export default function SettingsPage() {
                 }`}
               />
             </button>
+          </div>
+
+          {/* Theme color picker */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Palette className="w-5 h-5 text-primary" />
+              <div>
+                <p className="font-medium">테마 색상</p>
+                <p className="text-sm text-muted-foreground">앱 전체 강조 색상 변경</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-5 gap-2">
+              {THEME_PRESETS.map((preset) => {
+                const isActive = (settings.themeColor ?? "emerald") === preset.id;
+                return (
+                  <button
+                    key={preset.id}
+                    title={preset.name}
+                    onClick={() => updateSettings({ themeColor: preset.id })}
+                    className="flex flex-col items-center gap-1.5 group"
+                  >
+                    <div
+                      className={`w-10 h-10 rounded-full border-4 transition-all ${
+                        isActive
+                          ? "border-foreground scale-110 shadow-md"
+                          : "border-transparent hover:border-muted-foreground/40 hover:scale-105"
+                      }`}
+                      style={{ backgroundColor: preset.swatch }}
+                    >
+                      {isActive && (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Check className="w-4 h-4 text-white drop-shadow" />
+                        </div>
+                      )}
+                    </div>
+                    <span className={`text-[10px] leading-tight text-center transition-colors ${isActive ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
+                      {preset.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
@@ -187,6 +240,15 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Logout */}
+      <button
+        onClick={handleLogout}
+        className="w-full flex items-center gap-3 text-destructive hover:text-destructive/80 transition-colors py-2"
+      >
+        <LogOut className="w-5 h-5 shrink-0" />
+        <span className="font-medium">로그아웃</span>
+      </button>
     </div>
   );
 }

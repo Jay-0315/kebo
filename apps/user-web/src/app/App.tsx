@@ -10,6 +10,7 @@ import GroupDetailPage from "./components/GroupDetailPage";
 import MyPage from "./components/MyPage";
 import KabemonPage from "./components/KabemonPage";
 import StoryCreatePage from "./components/StoryCreatePage";
+import GroupExpensesPage from "./components/GroupExpensesPage";
 import SettingsPage from "./components/SettingsPage";
 import { isAuthenticated } from "./lib/auth";
 
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="community" element={<CommunityPage />} />
           <Route path="groups" element={<GroupsPage />} />
           <Route path="groups/:id" element={<GroupDetailPage />} />
+          <Route path="groups/:id/expenses" element={<GroupExpensesPage />} />
           <Route path="mypage" element={<MyPage />} />
           <Route path="kabemon" element={<KabemonPage />} />
           <Route path="story/create" element={<StoryCreatePage />} />

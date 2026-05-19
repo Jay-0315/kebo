@@ -8,6 +8,7 @@ import {
 } from "react";
 import { countries, exchangeRates, getCountryByCode, getExchangeRate } from "../data/currency";
 import { initialAppData } from "../data/seed";
+import { applyThemePreset } from "../lib/theme-presets";
 import { api } from "../lib/api";
 import { getStoredUser } from "../lib/auth";
 import type {
@@ -28,6 +29,7 @@ const LIKES_STORAGE_KEY = "kebo-liked-posts";
 const PROFILE_PHOTO_KEY = "kebo-profile-photo";
 
 interface AppDataContextValue {
+  isLoading: boolean;
   profile: UserProfile;
   settings: AppSettings;
   countries: typeof countries;
@@ -132,8 +134,19 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile>(storedUser ?? initialAppData.profile);
   const [settings, setSettings] = useState<AppSettings>(() => {
     const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as AppSettings) : initialAppData.settings;
+    const merged = raw
+      ? { ...initialAppData.settings, ...(JSON.parse(raw) as Partial<AppSettings>) }
+      : initialAppData.settings;
+    // Apply synchronously before first render so login/signup pages also get the right color
+    if (merged.darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    applyThemePreset(merged.themeColor ?? initialAppData.settings.themeColor, merged.darkMode);
+    return merged;
   });
+  const [isLoading, setIsLoading] = useState(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [rewardSummary, setRewardSummary] = useState<RewardSummary>({
@@ -165,6 +178,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     } else {
       document.documentElement.classList.remove("dark");
     }
+    applyThemePreset(settings.themeColor ?? "emerald", settings.darkMode);
   }, [settings]);
 
   const refreshData = async () => {
@@ -173,6 +187,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    setIsLoading(true);
     const likedPostIds = getLikedPostIds();
     const [profileResult, expensesResult, postsResult, rewardsResult, ratesResult] =
       await Promise.allSettled([
@@ -213,6 +228,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     if (ratesResult.status === "fulfilled") {
       setRemoteExchangeRates(ratesResult.value);
     }
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -404,6 +420,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const monthlyTotals = useMemo(() => getMonthlyTotals(expenses), [expenses]);
 
   const value: AppDataContextValue = {
+    isLoading,
     profile,
     settings,
     countries,

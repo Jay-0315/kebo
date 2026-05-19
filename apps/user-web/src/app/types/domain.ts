@@ -96,6 +96,7 @@ export interface AppSettings {
   notifications: boolean;
   darkMode: boolean;
   autoBackup: boolean;
+  themeColor: string;
 }
 
 export interface AppData {

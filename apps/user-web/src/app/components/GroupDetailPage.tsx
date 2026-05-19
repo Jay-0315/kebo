@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router";
 import {
   ArrowLeft, Users, Crown, Calendar, TrendingUp,
-  Copy, Check, UserPlus, Plus, X, Swords, Pencil, Camera,
+  Copy, Check, UserPlus, Plus, X, Swords, Pencil, Camera, ChevronRight,
 } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
 import type { CurrencyCode } from "../types/domain";
@@ -345,7 +345,6 @@ const PARTY_BACKGROUNDS = [
   { name: "도시", color: "#1A1A2E", Component: BG_CITY },
 ];
 
-const CATEGORIES = ["식비", "교통", "카페", "쇼핑", "숙박", "엔터테인먼트", "기타"];
 
 const STORY_GRADIENTS = [
   "linear-gradient(145deg,#667eea,#764ba2)",
@@ -363,26 +362,15 @@ const CATEGORY_EMOJI: Record<string, string> = {
 export default function GroupDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { expenses, createExpense, profile, profilePhoto } = useAppData();
+  const { expenses, profile, profilePhoto, isLoading } = useAppData();
 
   const group: Group | undefined = location.state?.group;
 
   const [showInvite, setShowInvite] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
-  const [showExpenseForm, setShowExpenseForm] = useState(false);
-  const [localExpenses, setLocalExpenses] = useState<LocalExpense[]>([]);
-  const [submitting, setSubmitting] = useState(false);
+  const [localExpenses] = useState<LocalExpense[]>([]);
   const [partyBg, setPartyBg] = useState(0);
   const [stories] = useState<Record<number, StoryEntry>>(loadStories);
-
-  const [form, setForm] = useState({
-    date: new Date().toISOString().slice(0, 10),
-    category: "식비",
-    spentAmount: "",
-    spentCurrency: "JPY" as CurrencyCode,
-    memo: "",
-    participants: "",
-  });
 
   /* ── Story overlay ── */
   const [storyOpen, setStoryOpen] = useState(false);
@@ -468,59 +456,13 @@ export default function GroupDetailPage() {
 
   const serverExpenses = expenses.filter((e) => e.group === group.name);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.spentAmount || !form.memo.trim()) return;
-
-    const amount = Number(form.spentAmount);
-    const countryCode = form.spentCurrency === "JPY" ? "JP" : "KR";
-    const exchangeRate = form.spentCurrency === "JPY" ? 9.1 : 1;
-    const baseAmount = Math.round(amount * exchangeRate);
-
-    const newLocal: LocalExpense = {
-      id: `local-${Date.now()}`,
-      date: form.date,
-      category: form.category,
-      spentAmount: amount,
-      spentCurrency: form.spentCurrency,
-      memo: form.memo,
-      participants: form.participants ? Number(form.participants) : undefined,
-    };
-
-    setLocalExpenses((prev) => [newLocal, ...prev]);
-    setShowExpenseForm(false);
-    setForm({
-      date: new Date().toISOString().slice(0, 10),
-      category: "식비",
-      spentAmount: "",
-      spentCurrency: "JPY",
-      memo: "",
-      participants: "",
-    });
-
-    setSubmitting(true);
-    try {
-      await createExpense({
-        date: form.date,
-        category: form.category,
-        spentAmount: amount,
-        spentCurrency: form.spentCurrency,
-        countryCode,
-        memo: form.memo,
-        group: group.name,
-        participants: form.participants ? Number(form.participants) : undefined,
-      });
-    } catch {
-      // API 미연결 시 로컬에만 저장
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const allExpenses = [
     ...localExpenses.map((e) => ({ ...e, baseAmount: Math.round(e.spentAmount * (e.spentCurrency === "JPY" ? 9.1 : 1)) })),
     ...serverExpenses,
   ];
+
+  const goToExpenses = (openForm = false) =>
+    navigate(`/groups/${group.id}/expenses`, { state: { group, localExpenses, openForm } });
 
   return (
     <>
@@ -655,145 +597,96 @@ export default function GroupDetailPage() {
       </div>
 
       {/* ── 그룹 지출 ── */}
-      <div className="bg-card rounded-xl border border-border p-5">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
+        {/* Section header — 클릭 시 전체 목록 페이지 이동 */}
+        <button
+          onClick={() => goToExpenses(false)}
+          className="w-full flex items-center justify-between px-5 pt-4 pb-3 hover:bg-muted/50 transition-colors"
+        >
           <h3 className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-primary" />
             그룹 지출
+            {allExpenses.length > 0 && (
+              <span className="text-xs text-muted-foreground font-normal">· {allExpenses.length}건</span>
+            )}
           </h3>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">전체 보기</span>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </div>
+        </button>
+
+        <div className="px-5 pb-4 space-y-3">
+          {/* 지출 추가 → 전체 목록 페이지에서 폼 열기 */}
           <button
-            onClick={() => setShowExpenseForm(!showExpenseForm)}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
-              showExpenseForm
-                ? "bg-muted text-muted-foreground"
-                : "bg-primary/80 text-primary-foreground hover:shadow-md"
-            }`}
+            onClick={() => goToExpenses(true)}
+            className="w-full flex items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-medium transition-all border border-dashed border-primary/40 text-primary hover:bg-primary/5"
           >
-            {showExpenseForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            {showExpenseForm ? "취소" : "지출 추가"}
+            <Plus className="w-4 h-4" />
+            지출 추가
           </button>
+
+          {/* Recent 3 expenses — skeleton or cards */}
+          {isLoading ? (
+            <div className="space-y-2">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-muted animate-pulse">
+                  <div className="w-10 h-10 rounded-xl bg-muted-foreground/20 shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 bg-muted-foreground/20 rounded w-3/4" />
+                    <div className="h-2.5 bg-muted-foreground/20 rounded w-1/2" />
+                  </div>
+                  <div className="space-y-2 shrink-0">
+                    <div className="h-3 bg-muted-foreground/20 rounded w-20" />
+                    <div className="h-2.5 bg-muted-foreground/20 rounded w-14 ml-auto" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : allExpenses.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <TrendingUp className="w-7 h-7 mx-auto mb-2 opacity-30" />
+              <p className="text-sm">아직 지출 내역이 없습니다</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {allExpenses.slice(0, 3).map((expense) => (
+                <div key={expense.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-lg shrink-0">
+                    {CATEGORY_EMOJI[expense.category] ?? "💳"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{expense.memo}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {expense.date} · {expense.category}
+                      {"participants" in expense && expense.participants ? ` · ${expense.participants}명` : ""}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-semibold text-primary leading-tight">
+                      {expense.spentCurrency === "JPY"
+                        ? `¥${expense.spentAmount.toLocaleString()} → ₩${expense.baseAmount.toLocaleString()}`
+                        : `₩${expense.spentAmount.toLocaleString()}`}
+                    </p>
+                    {"participants" in expense && expense.participants && expense.participants > 1 && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        1인 ₩{Math.round(expense.baseAmount / expense.participants).toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {allExpenses.length > 3 && (
+                <button
+                  onClick={() => navigate(`/groups/${group.id}/expenses`, { state: { group, localExpenses } })}
+                  className="w-full text-center text-xs text-muted-foreground hover:text-primary py-2 transition-colors"
+                >
+                  +{allExpenses.length - 3}건 더 보기
+                </button>
+              )}
+            </div>
+          )}
         </div>
-
-        {/* Expense Form */}
-        {showExpenseForm && (
-          <form onSubmit={handleSubmit} className="mb-4 bg-muted rounded-xl p-4 space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">날짜</label>
-                <input
-                  type="date"
-                  value={form.date}
-                  onChange={(e) => setForm({ ...form, date: e.target.value })}
-                  className="w-full px-3 py-2 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">카테고리</label>
-                <select
-                  value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="w-full px-3 py-2 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-                >
-                  {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">금액</label>
-                <input
-                  type="number"
-                  value={form.spentAmount}
-                  onChange={(e) => setForm({ ...form, spentAmount: e.target.value })}
-                  placeholder="0"
-                  min="0"
-                  required
-                  className="w-full px-3 py-2 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">통화</label>
-                <select
-                  value={form.spentCurrency}
-                  onChange={(e) => setForm({ ...form, spentCurrency: e.target.value as CurrencyCode })}
-                  className="w-full px-3 py-2 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-                >
-                  <option value="JPY">¥ JPY (엔)</option>
-                  <option value="KRW">₩ KRW (원)</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">메모</label>
-              <input
-                type="text"
-                value={form.memo}
-                onChange={(e) => setForm({ ...form, memo: e.target.value })}
-                placeholder="어디서 쓴 돈인지 입력하세요"
-                required
-                className="w-full px-3 py-2 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs text-muted-foreground mb-1">인원 수 (선택)</label>
-              <input
-                type="number"
-                value={form.participants}
-                onChange={(e) => setForm({ ...form, participants: e.target.value })}
-                placeholder="함께한 인원"
-                min="1"
-                className="w-full px-3 py-2 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full bg-primary/80 text-primary-foreground rounded-lg py-2.5 text-sm font-medium hover:shadow-md transition-all disabled:opacity-50"
-            >
-              {submitting ? "저장 중..." : "지출 추가"}
-            </button>
-          </form>
-        )}
-
-        {/* Expense List */}
-        {allExpenses.length === 0 ? (
-          <div className="text-center py-10 text-muted-foreground">
-            <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-30" />
-            <p className="text-sm">아직 지출 내역이 없습니다</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {allExpenses.map((expense) => (
-              <div key={expense.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-lg shrink-0">
-                  {CATEGORY_EMOJI[expense.category] ?? "💳"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{expense.memo}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {expense.date} · {expense.category}
-                    {"participants" in expense && expense.participants ? ` · ${expense.participants}명` : ""}
-                  </p>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-sm font-medium text-primary">
-                    {expense.spentAmount.toLocaleString()}
-                    {expense.spentCurrency === "JPY" ? "¥" : "₩"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    ₩{expense.baseAmount.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* ── 파티 캐릭터 섹션 ── */}

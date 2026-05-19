@@ -13,6 +13,7 @@ export const initialAppData: AppData = {
     notifications: true,
     darkMode: true,
     autoBackup: false,
+    themeColor: "rose",
   },
   countries,
   exchangeRates,
