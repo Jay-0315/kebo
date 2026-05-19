@@ -30,12 +30,12 @@ export default function Layout() {
       <aside className="hidden lg:flex lg:flex-col w-56 bg-sidebar border-r border-sidebar-border fixed h-screen">
         {/* Logo */}
         <div className="p-6 border-b border-sidebar-border">
-          <div className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <Wallet className="w-6 h-6 text-primary-foreground" />
             </div>
             <h1 className="font-bold text-foreground">Kakeibo</h1>
-          </div>
+          </Link>
         </div>
 
         {/* Navigation */}
@@ -104,12 +104,12 @@ export default function Layout() {
       {/* ── Mobile Header ── */}
       <div className="lg:hidden fixed top-0 left-0 right-0 bg-sidebar border-b border-sidebar-border z-40 px-4 py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
               <Wallet className="w-5 h-5 text-primary-foreground" />
             </div>
             <h1 className="font-bold text-foreground">Kakeibo</h1>
-          </div>
+          </Link>
           <button
             onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
             className="text-foreground"
@@ -197,7 +197,7 @@ export default function Layout() {
 
       {/* ── Main Content ── */}
       <main className="flex-1 lg:ml-56 mt-14 lg:mt-0 min-h-screen">
-        <div className="p-6">
+        <div key={location.key} className="p-4 sm:p-6">
           <Outlet />
         </div>
       </main>

@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router";
 import {
   ArrowLeft, Users, Crown, Calendar, TrendingUp,
-  Copy, Check, UserPlus, Plus, X, Swords,
+  Copy, Check, UserPlus, Plus, X, Swords, Pencil, Camera,
 } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
 import type { CurrencyCode } from "../types/domain";
@@ -10,6 +10,8 @@ import { PixelSprite } from "./PixelCharacter";
 import { CHARACTERS } from "../data/characters";
 import type { CharacterDef } from "../data/characters";
 import { getPixelEmoji } from "./PixelEmojis";
+import { loadStories, formatRelativeTime } from "../lib/story-storage";
+import type { StoryEntry } from "../lib/story-storage";
 
 interface GroupMember {
   id: number;
@@ -38,14 +40,6 @@ interface LocalExpense {
 /* ── 멤버 대표 캐릭터: memberId 기반 결정론적 배정 ── */
 function getMemberCharacter(memberId: number): CharacterDef {
   return CHARACTERS[(memberId * 17 + 3) % CHARACTERS.length];
-}
-
-/* ── 스토리 로컬스토리지 ── */
-const STORY_KEY = "kebo-member-stories";
-interface StoryEntry { text: string; photo: string | null; emojis?: string[]; createdAt: string; }
-function loadStories(): Record<number, StoryEntry> {
-  try { return JSON.parse(localStorage.getItem(STORY_KEY) ?? "{}") as Record<number, StoryEntry>; }
-  catch { return {}; }
 }
 
 /* ── 파티 배경 4종 ── */
@@ -352,6 +346,16 @@ const PARTY_BACKGROUNDS = [
 ];
 
 const CATEGORIES = ["식비", "교통", "카페", "쇼핑", "숙박", "엔터테인먼트", "기타"];
+
+const STORY_GRADIENTS = [
+  "linear-gradient(145deg,#667eea,#764ba2)",
+  "linear-gradient(145deg,#f093fb,#f5576c)",
+  "linear-gradient(145deg,#4facfe,#00f2fe)",
+  "linear-gradient(145deg,#43e97b,#38f9d7)",
+  "linear-gradient(145deg,#fa709a,#fee140)",
+  "linear-gradient(145deg,#a18cd1,#fbc2eb)",
+];
+const getMemberGradient = (id: number) => STORY_GRADIENTS[id % STORY_GRADIENTS.length];
 const CATEGORY_EMOJI: Record<string, string> = {
   식비: "🍜", 교통: "🚌", 카페: "☕", 쇼핑: "🛍", 숙박: "🏨", 엔터테인먼트: "🎭", 기타: "💳",
 };
@@ -379,6 +383,65 @@ export default function GroupDetailPage() {
     memo: "",
     participants: "",
   });
+
+  /* ── Story overlay ── */
+  const [storyOpen, setStoryOpen] = useState(false);
+  const [storyViewMembers, setStoryViewMembers] = useState<GroupMember[]>([]);
+  const [storyIdx, setStoryIdx] = useState(0);
+  const [storyProgress, setStoryProgress] = useState(0);
+  const storyPausedRef = useRef(false);
+  const storyViewMembersRef = useRef<GroupMember[]>([]);
+  storyViewMembersRef.current = storyViewMembers;
+  const pointerDownTimeRef = useRef(0);
+
+  const openStory = (members: GroupMember[], startIdx: number) => {
+    setStoryViewMembers(members);
+    setStoryIdx(startIdx);
+    setStoryProgress(0);
+    storyPausedRef.current = false;
+    setStoryOpen(true);
+  };
+
+  const closeStory = () => setStoryOpen(false);
+
+  const storyGoNext = useCallback(() => {
+    setStoryIdx((prev) => {
+      const next = prev + 1;
+      if (next >= storyViewMembersRef.current.length) {
+        setStoryOpen(false);
+        return prev;
+      }
+      setStoryProgress(0);
+      return next;
+    });
+  }, []);
+
+  const storyGoPrev = () => {
+    setStoryIdx((prev) => {
+      if (prev <= 0) return 0;
+      setStoryProgress(0);
+      return prev - 1;
+    });
+  };
+
+  /* 자동 진행 타이머 */
+  useEffect(() => {
+    if (!storyOpen) return;
+    setStoryProgress(0);
+    const DURATION = 5000;
+    const TICK = 50;
+    const increment = (TICK / DURATION) * 100;
+    const id = setInterval(() => {
+      if (storyPausedRef.current) return;
+      setStoryProgress((p) => Math.min(p + increment, 100));
+    }, TICK);
+    return () => clearInterval(id);
+  }, [storyOpen, storyIdx]);
+
+  /* 100% 도달 시 다음으로 */
+  useEffect(() => {
+    if (storyProgress >= 100) storyGoNext();
+  }, [storyProgress, storyGoNext]);
 
   if (!group) {
     return (
@@ -460,6 +523,7 @@ export default function GroupDetailPage() {
   ];
 
   return (
+    <>
     <div className="space-y-6 max-w-2xl">
       {/* Header */}
       <div className="flex items-center gap-3">
@@ -517,97 +581,72 @@ export default function GroupDetailPage() {
           <span className="text-sm text-muted-foreground">{group.members.length}명</span>
         </div>
 
-        {/* Member avatar scroll — 클릭 시 스토리 이동 */}
-        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
+        {/* Member story avatars — Instagram 스타일 */}
+        <div className="flex gap-5 overflow-x-auto pb-2 scrollbar-none">
           {group.members.map((member) => {
             const isMe = isCurrentUser(member);
             const hasStory = Boolean(stories[member.id]);
+            const membersWithStories = group.members.filter((m) => stories[m.id]);
+
+            const handleAvatarClick = () => {
+              if (isMe && !hasStory) {
+                navigate("/story/create", { state: { member, group } });
+                return;
+              }
+              if (!hasStory) return;
+              const startIdx = membersWithStories.findIndex((m) => m.id === member.id);
+              openStory(membersWithStories, startIdx >= 0 ? startIdx : 0);
+            };
 
             return (
               <button
                 key={member.id}
-                onClick={() => {
-                  if (isMe) {
-                    navigate("/story/create", { state: { member, group } });
-                  } else {
-                    navigate("/story/view", { state: { member, group } });
-                  }
-                }}
-                className="flex flex-col items-center gap-1.5 shrink-0 w-[68px] group"
+                onClick={handleAvatarClick}
+                className="flex flex-col items-center gap-1.5 shrink-0 w-16 group"
               >
-                {/* Story-style ring — 스토리 있으면 컬러풀, 없으면 연한 링 */}
+                {/* Ring */}
                 <div
-                  className={`p-[2.5px] rounded-full transition-all ${
+                  className={`p-[2.5px] rounded-full transition-all group-active:scale-95 ${
                     hasStory
-                      ? "bg-gradient-to-br from-violet-500 via-primary to-accent"
+                      ? "bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400"
+                      : isMe
+                      ? "border-2 border-dashed border-muted-foreground/40"
                       : member.isHost
-                      ? "bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500"
-                      : "bg-muted-foreground/20"
+                      ? "bg-gradient-to-br from-yellow-400 to-orange-500"
+                      : "border-2 border-transparent"
                   }`}
                 >
-                  <div className="p-[2px] rounded-full bg-card">
+                  <div className={`rounded-full ${hasStory ? "p-[2px] bg-card" : ""}`}>
                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/70 to-accent/80 flex items-center justify-center overflow-hidden">
                       {profilePhoto && isMe ? (
                         <img src={profilePhoto} alt={member.name} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-white font-bold text-xl leading-none">
-                          {member.name[0]}
-                        </span>
+                        <span className="text-white font-bold text-xl leading-none">{member.name[0]}</span>
                       )}
                     </div>
                   </div>
                 </div>
 
                 {/* 이름 */}
-                <p className="text-xs font-medium text-center w-full truncate">{member.name}</p>
+                <p className="text-[11px] font-medium text-center w-full truncate leading-tight">
+                  {isMe ? "내 스토리" : member.name}
+                </p>
 
-                {/* Host / 멤버 뱃지 */}
-                {member.isHost ? (
+                {/* 상태 힌트 */}
+                {isMe && !hasStory ? (
+                  <span className="text-[10px] text-muted-foreground/60 group-hover:text-primary transition-colors flex items-center gap-0.5">
+                    <Camera className="w-2.5 h-2.5" />
+                    추가
+                  </span>
+                ) : member.isHost ? (
                   <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-500">
                     <Crown className="w-2.5 h-2.5" />
                     호스트
                   </span>
+                ) : hasStory ? (
+                  <span className="text-[10px] text-primary/70">스토리</span>
                 ) : (
-                  <span className="text-[10px] text-muted-foreground">
-                    {isMe ? "나" : "멤버"}
-                  </span>
-                )}
-
-                {/* 스토리 미리보기: 이모지 우선, 없으면 텍스트 */}
-                {hasStory && (() => {
-                  const s = stories[member.id];
-                  const firstEmoji = s.emojis?.[0] ? getPixelEmoji(s.emojis[0]) : undefined;
-                  if (firstEmoji) {
-                    const { Component } = firstEmoji;
-                    return (
-                      <div className="flex justify-center gap-0.5">
-                        <Component />
-                        {s.emojis!.length > 1 && (
-                          <span className="text-[9px] text-muted-foreground self-end">+{s.emojis!.length - 1}</span>
-                        )}
-                      </div>
-                    );
-                  }
-                  if (s.text) {
-                    return (
-                      <p
-                        title={s.text}
-                        className={`text-[9px] w-full text-center truncate px-1 py-0.5 rounded-full leading-tight ${
-                          isMe ? "text-primary bg-primary/10" : "text-muted-foreground bg-muted"
-                        }`}
-                      >
-                        {s.text}
-                      </p>
-                    );
-                  }
-                  return null;
-                })()}
-
-                {/* 스토리 없을 때 + 힌트 (나만) */}
-                {!hasStory && isMe && (
-                  <span className="text-[9px] text-muted-foreground/50 group-hover:text-primary transition-colors">
-                    + 스토리
-                  </span>
+                  <span className="text-[10px] text-muted-foreground/40">멤버</span>
                 )}
               </button>
             );
@@ -827,5 +866,159 @@ export default function GroupDetailPage() {
         </div>
       </div>
     </div>
+
+      {/* ════════════════════════════════════════
+          Instagram 스타일 스토리 뷰어 오버레이
+          ════════════════════════════════════════ */}
+      {storyOpen && (() => {
+        const member = storyViewMembers[storyIdx];
+        if (!member) return null;
+        const story = stories[member.id] ?? null;
+        const isOwn = isCurrentUser(member);
+
+        return (
+          <div className="fixed inset-0 z-50 bg-black flex flex-col select-none touch-none">
+
+            {/* ── 상단 진행 바 ── */}
+            <div className="absolute top-0 left-0 right-0 z-30 flex gap-1 px-3 pt-10 pb-2">
+              {storyViewMembers.map((m, i) => (
+                <div key={m.id} className="flex-1 h-[3px] rounded-full bg-white/25 overflow-hidden">
+                  <div
+                    className="h-full bg-white rounded-full"
+                    style={{
+                      width:
+                        i < storyIdx ? "100%"
+                        : i === storyIdx ? `${storyProgress}%`
+                        : "0%",
+                      transition: i === storyIdx ? "none" : undefined,
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* ── 헤더 (아바타 + 이름 + 시간 + X) ── */}
+            <div className="absolute top-14 left-0 right-0 z-30 flex items-center justify-between px-4 py-2">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-white/30 shrink-0 flex items-center justify-center bg-gradient-to-br from-violet-500 to-pink-500">
+                  {profilePhoto && isOwn
+                    ? <img src={profilePhoto} className="w-full h-full object-cover" alt="" />
+                    : <span className="text-white font-bold text-sm">{member.name[0]}</span>
+                  }
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-sm leading-tight">{member.name}</p>
+                  {story && (
+                    <p className="text-white/55 text-xs">{formatRelativeTime(story.createdAt)}</p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={closeStory}
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-black/30 text-white hover:bg-black/50 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* ── 배경 (사진 or 그라데이션) ── */}
+            <div className="absolute inset-0 z-0">
+              {story?.photo ? (
+                <img
+                  src={story.photo}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div
+                  className="w-full h-full"
+                  style={{ background: getMemberGradient(member.id) }}
+                />
+              )}
+              {/* 상단 그라데이션 */}
+              <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-black/70 to-transparent pointer-events-none" />
+              {/* 하단 그라데이션 */}
+              <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+            </div>
+
+            {/* ── 스토리 없는 멤버 안내 ── */}
+            {!story && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4">
+                <div className="w-20 h-20 rounded-full bg-white/10 ring-2 ring-white/20 flex items-center justify-center text-white font-bold text-3xl">
+                  {member.name[0]}
+                </div>
+                <p className="text-white/50 text-sm">아직 올린 스토리가 없어요</p>
+                {isOwn && (
+                  <button
+                    onClick={() => { closeStory(); navigate("/story/create", { state: { member, group } }); }}
+                    className="mt-2 bg-white text-black rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-white/90 transition-colors"
+                  >
+                    스토리 작성하기
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* ── 콘텐츠 (이모지 + 텍스트) ── */}
+            {story && (
+              <div className="absolute bottom-24 left-5 right-16 z-10">
+                {story.emojis && story.emojis.length > 0 && (
+                  <div className="flex gap-5 mb-5">
+                    {story.emojis.map((key, i) => {
+                      const def = getPixelEmoji(key);
+                      if (!def) return null;
+                      const { Component } = def;
+                      return (
+                        <div key={`${key}-${i}`} style={{ transform: "scale(2.8)", transformOrigin: "bottom left" }}>
+                          <Component />
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {story.text && (
+                  <p className="text-white text-xl font-semibold leading-relaxed break-words drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                    {story.text}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* ── 내 스토리 편집 버튼 ── */}
+            {isOwn && story && (
+              <button
+                onClick={() => { closeStory(); navigate("/story/create", { state: { member, group } }); }}
+                className="absolute bottom-24 right-5 z-10 w-11 h-11 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black/60 transition-colors"
+              >
+                <Pencil className="w-5 h-5" />
+              </button>
+            )}
+
+            {/* ── 탭 존 (좌: 이전 / 우: 다음 / 홀드: 일시정지) ── */}
+            {/* 왼쪽 */}
+            <div
+              className="absolute left-0 top-0 bottom-0 w-1/3 z-20 cursor-pointer"
+              onPointerDown={() => { storyPausedRef.current = true; pointerDownTimeRef.current = Date.now(); }}
+              onPointerUp={() => { storyPausedRef.current = false; if (Date.now() - pointerDownTimeRef.current < 200) storyGoPrev(); }}
+              onPointerLeave={() => { storyPausedRef.current = false; }}
+            />
+            {/* 중앙 (홀드 전용) */}
+            <div
+              className="absolute left-1/3 right-1/3 top-0 bottom-0 z-20 cursor-pointer"
+              onPointerDown={() => { storyPausedRef.current = true; }}
+              onPointerUp={() => { storyPausedRef.current = false; }}
+              onPointerLeave={() => { storyPausedRef.current = false; }}
+            />
+            {/* 오른쪽 */}
+            <div
+              className="absolute right-0 top-0 bottom-0 w-1/3 z-20 cursor-pointer"
+              onPointerDown={() => { storyPausedRef.current = true; pointerDownTimeRef.current = Date.now(); }}
+              onPointerUp={() => { storyPausedRef.current = false; if (Date.now() - pointerDownTimeRef.current < 200) storyGoNext(); }}
+              onPointerLeave={() => { storyPausedRef.current = false; }}
+            />
+          </div>
+        );
+      })()}
+    </>
   );
 }

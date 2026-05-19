@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Plus, Globe2 } from "lucide-react";
+import { Globe2 } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
 import { formatCurrency, getCountryByCode } from "../data/currency";
 
@@ -140,11 +140,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      <Link to="/expenses">
-        <button className="fixed bottom-6 right-6 lg:bottom-8 lg:right-8 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center">
-          <Plus className="w-6 h-6" />
-        </button>
-      </Link>
     </div>
   );
 }

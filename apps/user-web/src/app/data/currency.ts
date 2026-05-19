@@ -41,12 +41,3 @@ export function formatCurrency(amount: number, currency: CurrencyCode) {
     maximumFractionDigits: 0,
   }).format(amount);
 }
-
-export function convertCurrency(
-  amount: number,
-  from: CurrencyCode,
-  to: CurrencyCode,
-  rates: ExchangeRate[],
-) {
-  return Math.round(amount * getExchangeRate(from, to, rates));
-}

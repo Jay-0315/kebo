@@ -148,33 +148,34 @@ export default function GroupsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2>그룹 지출 관리</h2>
-        <div className="flex gap-2">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="shrink-0">그룹 지출 관리</h2>
+        <div className="flex gap-2 shrink-0">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative bg-accent text-accent-foreground rounded-lg px-4 py-2 flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
+            title="알림"
+            className="relative bg-accent text-accent-foreground rounded-xl w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all"
           >
             <Bell className="w-5 h-5" />
             {joinRequests.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-destructive text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-destructive text-white text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center font-bold leading-none min-w-[18px] min-h-[18px]">
                 {joinRequests.length}
               </span>
             )}
           </button>
           <button
             onClick={() => setShowJoinForm(true)}
-            className="bg-secondary text-secondary-foreground rounded-lg px-4 py-2 flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
+            title="그룹 참가"
+            className="bg-secondary text-secondary-foreground rounded-xl w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all"
           >
             <Users className="w-5 h-5" />
-            참가
           </button>
           <button
             onClick={() => setShowCreateForm(true)}
-            className="bg-primary/80 text-primary-foreground rounded-lg px-4 py-2 flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
+            title="그룹 생성"
+            className="bg-primary/80 text-primary-foreground rounded-xl w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all"
           >
             <Plus className="w-5 h-5" />
-            생성
           </button>
         </div>
       </div>

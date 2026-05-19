@@ -126,7 +126,7 @@ export default function ExpensesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <h2>지출 관리</h2>
           <p className="text-sm text-muted-foreground">
             메인 통화는 {profile.baseCurrency}이며, 내역 등록 시 환산 금액이 고정 저장됩니다.
@@ -134,10 +134,10 @@ export default function ExpensesPage() {
         </div>
         <button
           onClick={() => (showForm ? resetForm() : openCreateForm())}
-          className="bg-primary/80 text-primary-foreground rounded-lg px-4 py-2 flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
+          title={showForm ? "취소" : "지출 추가"}
+          className="bg-primary/80 text-primary-foreground rounded-xl w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all shrink-0"
         >
           {showForm ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-          {showForm ? "취소" : "지출 추가"}
         </button>
       </div>
 

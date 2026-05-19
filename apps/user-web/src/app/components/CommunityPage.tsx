@@ -75,29 +75,27 @@ export default function CommunityPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2>커뮤니티</h2>
-          <p className="text-sm text-muted-foreground">
-            글은 텍스트와 지출 내역 공유만 지원합니다.
-          </p>
-        </div>
-        <div className="flex gap-2">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="shrink-0">커뮤니티</h2>
+        <div className="flex gap-2 shrink-0">
           <Link to="/groups">
-            <button className="bg-accent text-accent-foreground rounded-lg px-4 py-2 flex items-center gap-2 shadow-md hover:shadow-lg transition-all">
+            <button
+              title="그룹으로 이동"
+              className="bg-accent text-accent-foreground rounded-xl w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all"
+            >
               <Users className="w-5 h-5" />
-              그룹
             </button>
           </Link>
           <button
             onClick={openCreateForm}
-            className="bg-primary/80 text-primary-foreground rounded-lg px-4 py-2 flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
+            title="글 작성"
+            className="bg-primary/80 text-primary-foreground rounded-xl w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all"
           >
             <Plus className="w-5 h-5" />
-            글쓰기
           </button>
         </div>
       </div>
+      <p className="text-sm text-muted-foreground -mt-2">글은 텍스트와 지출 내역 공유만 지원합니다.</p>
 
       <div className="space-y-4">
         {posts.map((post) => (

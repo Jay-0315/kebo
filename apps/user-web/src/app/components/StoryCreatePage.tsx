@@ -1,22 +1,18 @@
 import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { ArrowLeft, Camera, Trash2, X } from "lucide-react";
+import { X, Camera, Check, Trash2, Smile } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
 import { PIXEL_EMOJI_LIST, getPixelEmoji } from "./PixelEmojis";
+import { loadStories, saveStories } from "../lib/story-storage";
 
-const STORY_KEY = "kebo-member-stories";
-
-interface StoryEntry {
-  text: string;
-  photo: string | null;
-  emojis: string[];
-  createdAt: string;
-}
-
-function loadStories(): Record<number, StoryEntry> {
-  try { return JSON.parse(localStorage.getItem(STORY_KEY) ?? "{}") as Record<number, StoryEntry>; }
-  catch { return {}; }
-}
+const STORY_GRADIENTS = [
+  "linear-gradient(145deg,#1a1a2e,#16213e,#0f3460)",
+  "linear-gradient(145deg,#2d1b69,#11998e,#38ef7d)",
+  "linear-gradient(145deg,#4a0072,#c62a88,#f9a825)",
+  "linear-gradient(145deg,#0d47a1,#1565c0,#29b6f6)",
+  "linear-gradient(145deg,#1b5e20,#388e3c,#a5d6a7)",
+];
+const getGradient = (id: number) => STORY_GRADIENTS[id % STORY_GRADIENTS.length];
 
 export default function StoryCreatePage() {
   const navigate = useNavigate();
@@ -24,20 +20,22 @@ export default function StoryCreatePage() {
   const { profile, profilePhoto } = useAppData();
   const member: { id: number; name: string } | undefined = location.state?.member;
 
-  const stories = loadStories();
-  const existing = member ? stories[member.id] : undefined;
+  const existing = member ? loadStories()[member.id] : undefined;
 
   const [text, setText] = useState(existing?.text ?? "");
   const [photo, setPhoto] = useState<string | null>(existing?.photo ?? null);
   const [selectedEmojis, setSelectedEmojis] = useState<string[]>(existing?.emojis ?? []);
+  const [showPicker, setShowPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const toggleEmoji = (key: string) => {
-    setSelectedEmojis((prev) => {
-      if (prev.includes(key)) return prev.filter((k) => k !== key);
-      if (prev.length >= 5) return prev;
-      return [...prev, key];
-    });
+    setSelectedEmojis((prev) =>
+      prev.includes(key)
+        ? prev.filter((k) => k !== key)
+        : prev.length < 5
+        ? [...prev, key]
+        : prev,
+    );
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,9 +56,14 @@ export default function StoryCreatePage() {
     if (!text.trim() && !photo && selectedEmojis.length === 0) {
       delete next[member.id];
     } else {
-      next[member.id] = { text: text.trim(), photo, emojis: selectedEmojis, createdAt: new Date().toISOString() };
+      next[member.id] = {
+        text: text.trim(),
+        photo,
+        emojis: selectedEmojis,
+        createdAt: new Date().toISOString(),
+      };
     }
-    localStorage.setItem(STORY_KEY, JSON.stringify(next));
+    saveStories(next);
     navigate(-1);
   };
 
@@ -68,151 +71,183 @@ export default function StoryCreatePage() {
     if (!member) return;
     const next = loadStories();
     delete next[member.id];
-    localStorage.setItem(STORY_KEY, JSON.stringify(next));
+    saveStories(next);
     navigate(-1);
   };
 
+  const isEmpty = !text.trim() && !photo && selectedEmojis.length === 0;
+
   return (
-    <div className="max-w-lg space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
+    <div className="fixed inset-0 z-50 flex flex-col bg-black">
+      {/* ── Header ── */}
+      <div className="relative flex items-center justify-between px-4 pt-11 pb-3 shrink-0 z-30">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+          className="w-10 h-10 flex items-center justify-center text-white rounded-full bg-black/30 hover:bg-black/50 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <X className="w-5 h-5" />
         </button>
-        <div className="flex items-center gap-3 flex-1">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/70 to-accent/80 overflow-hidden shrink-0 flex items-center justify-center">
+
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 overflow-hidden shrink-0 flex items-center justify-center">
             {profilePhoto ? (
-              <img src={profilePhoto} alt={profile.name} className="w-full h-full object-cover" />
+              <img src={profilePhoto} alt="" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-white font-bold text-base leading-none">{profile.name[0]}</span>
+              <span className="text-white font-bold text-xs">{profile.name[0]}</span>
             )}
           </div>
-          <div>
-            <h2 className="text-base">내 스토리 작성</h2>
-            <p className="text-xs text-muted-foreground">{profile.name}</p>
-          </div>
+          <span className="text-white font-semibold text-sm">{profile.name}</span>
         </div>
+
+        <button
+          onClick={handleSave}
+          disabled={isEmpty}
+          className="w-10 h-10 flex items-center justify-center text-white rounded-full bg-white/20 hover:bg-white/30 transition-colors disabled:opacity-30"
+        >
+          <Check className="w-5 h-5" />
+        </button>
       </div>
 
-      {/* Photo section */}
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
+      {/* ── Canvas ── */}
+      <div className="flex-1 relative overflow-hidden">
+        {/* Background */}
         {photo ? (
-          <div className="relative">
-            <img src={photo} alt="story" className="w-full object-cover max-h-72" />
+          <img src={photo} alt="story" className="absolute inset-0 w-full h-full object-cover" />
+        ) : (
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-4 cursor-pointer"
+            style={{ background: getGradient(member?.id ?? 0) }}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <div className="w-20 h-20 rounded-full bg-white/10 border-2 border-dashed border-white/30 flex items-center justify-center">
+              <Camera className="w-8 h-8 text-white/40" />
+            </div>
+            <p className="text-white/40 text-sm tracking-wide">탭하여 사진 추가</p>
+          </div>
+        )}
+
+        {/* Gradient overlays */}
+        <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/50 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-52 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+
+        {/* Photo controls */}
+        {photo && (
+          <div className="absolute top-4 right-4 flex gap-2 z-10">
             <button
               onClick={() => setPhoto(null)}
-              className="absolute top-3 right-3 w-8 h-8 bg-black/60 text-white rounded-full flex items-center justify-center hover:bg-black/80 transition-colors"
+              className="bg-black/50 text-white rounded-full px-3 py-1.5 text-xs flex items-center gap-1 hover:bg-black/70 transition-colors"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3 h-3" />
+              제거
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/60 text-white rounded-full px-3 py-1.5 text-xs hover:bg-black/80 transition-colors"
+              className="bg-black/50 text-white rounded-full px-3 py-1.5 text-xs flex items-center gap-1 hover:bg-black/70 transition-colors"
             >
-              <Camera className="w-3.5 h-3.5" />
+              <Camera className="w-3 h-3" />
               변경
             </button>
           </div>
-        ) : (
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full h-44 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:bg-muted/50 transition-colors"
-          >
-            <Camera className="w-9 h-9 opacity-30" />
-            <span className="text-sm">사진 추가 (선택)</span>
-            <span className="text-xs text-muted-foreground/60">탭하여 파일 선택</span>
-          </button>
         )}
-        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
-      </div>
 
-      {/* Text section */}
-      <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-        <p className="text-xs font-medium text-muted-foreground">오늘의 한 마디</p>
-
-        {/* Pixel emoji picker — toggle select, max 5 */}
-        <div>
-          <div className="flex flex-wrap gap-1 mb-2">
-            {PIXEL_EMOJI_LIST.map(({ key, Component }) => {
-              const selected = selectedEmojis.includes(key);
+        {/* Emoji preview overlay */}
+        {selectedEmojis.length > 0 && (
+          <div className="absolute bottom-32 left-5 flex gap-5 z-10">
+            {selectedEmojis.map((key, i) => {
+              const def = getPixelEmoji(key);
+              if (!def) return null;
+              const { Component } = def;
               return (
-                <button
-                  key={key}
-                  onClick={() => toggleEmoji(key)}
-                  title={key}
-                  className={`p-1 rounded transition-all active:scale-95 ${
-                    selected
-                      ? "bg-primary/20 ring-2 ring-primary scale-110"
-                      : "hover:bg-muted hover:scale-110"
-                  }`}
-                >
+                <div key={`${key}-${i}`} style={{ transform: "scale(2.8)", transformOrigin: "bottom left" }}>
                   <Component />
-                </button>
+                </div>
               );
             })}
           </div>
+        )}
 
-          {/* Selected emojis display row */}
-          {selectedEmojis.length > 0 && (
-            <div className="flex items-center gap-1.5 flex-wrap mb-1">
-              <span className="text-[10px] text-muted-foreground">선택됨:</span>
-              {selectedEmojis.map((key) => {
-                const def = getPixelEmoji(key);
-                if (!def) return null;
-                const { Component } = def;
+        {/* Text preview overlay */}
+        {text && (
+          <div className="absolute bottom-8 left-5 right-5 z-10">
+            <p className="text-white text-xl font-semibold leading-relaxed break-words drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+              {text}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* ── Bottom panel ── */}
+      <div className="shrink-0 bg-black/95 px-4 pt-3 pb-8 space-y-3 z-30">
+        {/* Emoji picker toggle */}
+        <div>
+          <button
+            onClick={() => setShowPicker((v) => !v)}
+            className="flex items-center gap-2 text-white/50 text-xs mb-2 hover:text-white/70 transition-colors"
+          >
+            <Smile className="w-4 h-4" />
+            이모지 선택
+            {selectedEmojis.length > 0 && (
+              <span className="text-white/70 bg-white/10 rounded-full px-2 py-0.5">
+                {selectedEmojis.length}/5
+              </span>
+            )}
+          </button>
+
+          {showPicker && (
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+              {PIXEL_EMOJI_LIST.map(({ key, Component }) => {
+                const selected = selectedEmojis.includes(key);
                 return (
                   <button
                     key={key}
                     onClick={() => toggleEmoji(key)}
-                    className="relative group"
-                    title={`${key} 제거`}
+                    className={`shrink-0 p-2 rounded-xl transition-all active:scale-90 ${
+                      selected
+                        ? "bg-white/25 ring-2 ring-white/50 scale-110"
+                        : "bg-white/5 hover:bg-white/15"
+                    }`}
                   >
                     <Component />
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive text-destructive-foreground rounded-full text-[8px] hidden group-hover:flex items-center justify-center leading-none">×</span>
                   </button>
                 );
               })}
-              <span className="text-[10px] text-muted-foreground ml-1">{selectedEmojis.length}/5</span>
             </div>
           )}
         </div>
 
-        <div className="relative">
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value.slice(0, 100))}
-            placeholder="오늘 어떤 하루를 보내셨나요?"
-            rows={3}
-            className="w-full px-3 py-2 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm resize-none"
-          />
-          <span className="absolute bottom-3 right-3 text-[10px] text-muted-foreground pointer-events-none">
-            {text.length}/100
-          </span>
+        {/* Text input row */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 relative">
+            <input
+              value={text}
+              onChange={(e) => setText(e.target.value.slice(0, 100))}
+              placeholder="오늘의 한 마디..."
+              className="w-full bg-white/10 border border-white/15 text-white placeholder:text-white/25 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-white/40 transition-colors"
+            />
+            {text.length > 0 && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-white/25 pointer-events-none">
+                {text.length}/100
+              </span>
+            )}
+          </div>
+          {existing && (
+            <button
+              onClick={handleDelete}
+              className="w-11 h-11 flex items-center justify-center bg-red-500/15 text-red-400 rounded-xl hover:bg-red-500/25 transition-colors shrink-0"
+            >
+              <Trash2 className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Action buttons */}
-      <div className="flex gap-3">
-        <button
-          onClick={handleSave}
-          disabled={!text.trim() && !photo && selectedEmojis.length === 0}
-          className="flex-1 bg-primary/80 text-primary-foreground rounded-lg py-3 text-sm font-medium hover:shadow-md transition-all disabled:opacity-40"
-        >
-          스토리 저장
-        </button>
-        {existing && (
-          <button
-            onClick={handleDelete}
-            className="bg-destructive/10 text-destructive rounded-lg px-4 text-sm font-medium hover:bg-destructive/20 transition-colors flex items-center gap-1.5"
-          >
-            <Trash2 className="w-4 h-4" />
-            삭제
-          </button>
-        )}
-      </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handlePhotoChange}
+      />
     </div>
   );
 }

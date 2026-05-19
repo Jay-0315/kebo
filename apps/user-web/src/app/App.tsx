@@ -10,7 +10,6 @@ import GroupDetailPage from "./components/GroupDetailPage";
 import MyPage from "./components/MyPage";
 import KabemonPage from "./components/KabemonPage";
 import StoryCreatePage from "./components/StoryCreatePage";
-import StoryViewPage from "./components/StoryViewPage";
 import SettingsPage from "./components/SettingsPage";
 import { isAuthenticated } from "./lib/auth";
 
@@ -40,7 +39,6 @@ export default function App() {
           <Route path="mypage" element={<MyPage />} />
           <Route path="kabemon" element={<KabemonPage />} />
           <Route path="story/create" element={<StoryCreatePage />} />
-          <Route path="story/view" element={<StoryViewPage />} />
           <Route path="settings" element={<SettingsPage />} />
           {/* Legacy redirect */}
           <Route path="mypage/character" element={<Navigate to="/kabemon" replace />} />
