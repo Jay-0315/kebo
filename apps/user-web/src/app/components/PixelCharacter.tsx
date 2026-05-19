@@ -764,9 +764,10 @@ interface PixelCharacterProps {
   level?: number;
   characterId?: number;
   size?: number;
+  float?: boolean;
 }
 
-export default function PixelCharacter({ level, characterId, size = 128 }: PixelCharacterProps) {
+export default function PixelCharacter({ level, characterId, size = 128, float: doFloat = false }: PixelCharacterProps) {
   const [hovered, setHovered] = useState(false);
   const frame: Frame = hovered ? "react" : "idle";
 
@@ -776,9 +777,14 @@ export default function PixelCharacter({ level, characterId, size = 128 }: Pixel
   if (!def && level !== undefined) def = getCurrentCharacter(level);
   if (!def) def = CHARACTERS[0];
 
+  const animStyle = doFloat && !hovered
+    ? { animation: "pixel-float 2s ease-in-out infinite" }
+    : undefined;
+
   return (
     <div
       className="inline-block cursor-pointer select-none"
+      style={animStyle}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -787,14 +793,18 @@ export default function PixelCharacter({ level, characterId, size = 128 }: Pixel
   );
 }
 
-/** Render a sprite by type + colors directly (used in Pokédex grid) */
+/** Render a sprite by type + colors directly (used in Pokédex grid / party scene) */
 export function PixelSprite({
-  type, colors, size = 48,
-}: { type: CharacterType; colors: { p: string; s: string; a: string }; size?: number }) {
+  type, colors, size = 48, float: doFloat = false,
+}: { type: CharacterType; colors: { p: string; s: string; a: string }; size?: number; float?: boolean }) {
   const [hovered, setHovered] = useState(false);
+  const animStyle = doFloat && !hovered
+    ? { animation: "pixel-float 2s ease-in-out infinite" }
+    : undefined;
   return (
     <div
       className="inline-block cursor-pointer select-none"
+      style={animStyle}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >

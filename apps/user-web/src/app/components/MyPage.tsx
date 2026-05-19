@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Trophy, Calendar, TrendingUp, Heart, LogOut, Globe2, Camera, X, Pencil, Check } from "lucide-react";
+import { Calendar, TrendingUp, Heart, LogOut, Globe2, Camera, X, Pencil, Check, Gamepad2, ChevronRight } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router";
 import PixelCharacter from "./PixelCharacter";
@@ -51,8 +51,8 @@ export default function MyPage() {
 
   return (
     <div className="space-y-6">
+      {/* ── Profile header ── */}
       <div className="flex items-center gap-4">
-        {/* Profile photo */}
         <div className="relative shrink-0">
           <div
             onClick={() => fileInputRef.current?.click()}
@@ -78,13 +78,7 @@ export default function MyPage() {
           >
             <Camera className="w-3 h-3" />
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handlePhotoChange}
-          />
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -134,65 +128,32 @@ export default function MyPage() {
         </button>
       </div>
 
-      <div className="bg-card rounded-xl p-6 shadow-sm border-2 border-primary/80">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="flex items-center gap-2">
-            <Trophy className="w-6 h-6 text-primary/80" />
-            나의 캐릭터
-          </h3>
-          <span className="bg-primary/80 text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
-            Lv.{rewardSummary.level}
-          </span>
+      {/* ── 캐보몬 shortcut card ── */}
+      <button
+        onClick={() => navigate("/kabemon")}
+        className="w-full bg-card rounded-xl border-2 border-primary/50 hover:border-primary p-4 transition-all hover:shadow-md group flex items-center gap-4 text-left"
+      >
+        {/* Character preview */}
+        <div className="shrink-0">
+          <PixelCharacter characterId={displayChar.id} size={64} float />
         </div>
-
-        <button
-          onClick={() => navigate("/mypage/character")}
-          className="w-full bg-muted rounded-xl p-6 mb-4 hover:bg-muted/70 transition-colors group"
-        >
-          <div className="flex justify-center mb-2">
-            <PixelCharacter characterId={displayChar.id} size={128} />
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <Gamepad2 className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold">캐보몬 도감</span>
           </div>
-          <p className={`text-sm font-semibold ${RARITY_COLOR[displayChar.rarity]}`}>
+          <p className={`text-sm font-medium ${RARITY_COLOR[displayChar.rarity]}`}>
             {displayChar.korName}
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5 group-hover:text-foreground transition-colors">
-            {RARITY_LABEL[displayChar.rarity]} · 상세 보기 →
+          <p className="text-xs text-muted-foreground">
+            {RARITY_LABEL[displayChar.rarity]} · Lv.{rewardSummary.level} · {rewardSummary.missionPoints}P
           </p>
-        </button>
-
-        <div className="grid sm:grid-cols-3 gap-3">
-          <div className="bg-muted rounded-lg p-3 text-center">
-            <p className="text-sm text-muted-foreground mb-1">출석 일수</p>
-            <p className="text-2xl font-bold text-primary/80">{rewardSummary.attendanceDays}일</p>
-          </div>
-          <div className="bg-muted rounded-lg p-3 text-center">
-            <p className="text-sm text-muted-foreground mb-1">미션 포인트</p>
-            <p className="text-2xl font-bold text-primary/80">{rewardSummary.missionPoints}P</p>
-          </div>
-          <div className="bg-muted rounded-lg p-3 text-center">
-            <p className="text-sm text-muted-foreground mb-1">연속 기록</p>
-            <p className="text-2xl font-bold text-accent">{rewardSummary.streakDays}일</p>
-          </div>
         </div>
+        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+      </button>
 
-        <div className="mt-4">
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-muted-foreground">다음 레벨까지</span>
-            <span className="font-medium">
-              {Math.max(rewardSummary.nextLevelTarget - rewardSummary.missionPoints, 0)}P
-            </span>
-          </div>
-          <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary/80 rounded-full transition-all"
-              style={{
-                width: `${(rewardSummary.missionPoints / rewardSummary.nextLevelTarget) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
+      {/* ── 월별 지출 합계 ── */}
       <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
         <h3 className="mb-4 flex items-center gap-2">
           <Calendar className="w-5 h-5 text-primary/80" />
@@ -217,6 +178,7 @@ export default function MyPage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
+        {/* ── 이번 달 요약 ── */}
         <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
           <h3 className="mb-4 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-accent" />
@@ -245,6 +207,7 @@ export default function MyPage() {
           </div>
         </div>
 
+        {/* ── 내가 작성한 게시글 ── */}
         <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
           <h3 className="mb-4 flex items-center gap-2">
             <Heart className="w-5 h-5 text-primary/80" />

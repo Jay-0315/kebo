@@ -1,5 +1,14 @@
 @custom-variant dark (&:is(.dark *));
 
+@keyframes pixel-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes pixel-breathe {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.04); filter: brightness(1.08); }
+}
+
 :root {
   --font-size: 16px;
   --background: #FFFFFF;

@@ -9,6 +9,7 @@ import type { CurrencyCode } from "../types/domain";
 import { PixelSprite } from "./PixelCharacter";
 import { CHARACTERS } from "../data/characters";
 import type { CharacterDef } from "../data/characters";
+import { getPixelEmoji } from "./PixelEmojis";
 
 interface GroupMember {
   id: number;
@@ -37,6 +38,14 @@ interface LocalExpense {
 /* ── 멤버 대표 캐릭터: memberId 기반 결정론적 배정 ── */
 function getMemberCharacter(memberId: number): CharacterDef {
   return CHARACTERS[(memberId * 17 + 3) % CHARACTERS.length];
+}
+
+/* ── 스토리 로컬스토리지 ── */
+const STORY_KEY = "kebo-member-stories";
+interface StoryEntry { text: string; photo: string | null; emojis?: string[]; createdAt: string; }
+function loadStories(): Record<number, StoryEntry> {
+  try { return JSON.parse(localStorage.getItem(STORY_KEY) ?? "{}") as Record<number, StoryEntry>; }
+  catch { return {}; }
 }
 
 /* ── 파티 배경 4종 ── */
@@ -162,43 +171,35 @@ const BG_FOREST = () => (
 
 const BG_OCEAN = () => (
   <svg width="100%" height="100%" viewBox="0 0 64 32" preserveAspectRatio="xMidYMid slice" style={{ imageRendering: "pixelated" }}>
-    {/* 하늘 */}
     <rect x="0" y="0"  width="64" height="32" fill="#87CEEB"/>
     <rect x="0" y="0"  width="64" height="3"  fill="#4FC3F7"/>
     <rect x="0" y="13" width="64" height="2"  fill="#B3E5FC"/>
-    {/* 태양 */}
     <rect x="50" y="1"  width="7" height="7"  fill="#FFD54F"/>
     <rect x="49" y="2"  width="9" height="5"  fill="#FFD54F"/>
     <rect x="51" y="0"  width="5" height="1"  fill="#FFEE58"/>
     <rect x="50" y="8"  width="7" height="1"  fill="#FFB300"/>
     <rect x="48" y="4"  width="1" height="1"  fill="#FFD54F"/>
     <rect x="59" y="4"  width="1" height="1"  fill="#FFD54F"/>
-    {/* 수평선 빛반사 */}
     <rect x="40" y="14" width="24" height="1" fill="#FFF9C4"/>
     <rect x="44" y="13" width="16" height="1" fill="#FFEE58"/>
-    {/* 구름1 */}
     <rect x="2"  y="2"  width="12" height="4" fill="#FFFFFF"/>
     <rect x="3"  y="1"  width="10" height="1" fill="#FFFFFF"/>
     <rect x="4"  y="6"  width="8"  height="1" fill="#E1F5FE"/>
     <rect x="1"  y="3"  width="2"  height="2" fill="#FFFFFF"/>
     <rect x="13" y="3"  width="2"  height="2" fill="#FFFFFF"/>
-    {/* 구름2 */}
     <rect x="22" y="4"  width="10" height="3" fill="#FFFFFF"/>
     <rect x="23" y="3"  width="8"  height="1" fill="#FFFFFF"/>
     <rect x="23" y="7"  width="7"  height="1" fill="#E1F5FE"/>
     <rect x="21" y="5"  width="2"  height="1" fill="#FFFFFF"/>
-    {/* 구름3 */}
     <rect x="36" y="2"  width="8"  height="3" fill="#FFFFFF"/>
     <rect x="37" y="1"  width="6"  height="1" fill="#FFFFFF"/>
     <rect x="37" y="5"  width="5"  height="1" fill="#E1F5FE"/>
-    {/* 갈매기 */}
     <rect x="18" y="3"  width="1" height="1" fill="#455A64"/>
     <rect x="20" y="2"  width="1" height="1" fill="#455A64"/>
     <rect x="32" y="5"  width="1" height="1" fill="#455A64"/>
     <rect x="34" y="4"  width="1" height="1" fill="#455A64"/>
     <rect x="10" y="8"  width="1" height="1" fill="#455A64"/>
     <rect x="12" y="7"  width="1" height="1" fill="#455A64"/>
-    {/* 등대 */}
     <rect x="1"  y="8"  width="4" height="7"  fill="#ECEFF1"/>
     <rect x="2"  y="6"  width="2" height="3"  fill="#ECEFF1"/>
     <rect x="2"  y="5"  width="2" height="1"  fill="#F44336"/>
@@ -206,38 +207,22 @@ const BG_OCEAN = () => (
     <rect x="1"  y="14" width="4" height="1"  fill="#B0BEC5"/>
     <rect x="0"  y="14" width="6" height="1"  fill="#90A4AE"/>
     <rect x="2"  y="9"  width="2" height="2"  fill="#FFF176"/>
-    {/* 배 */}
     <rect x="30" y="13" width="10" height="2" fill="#795548"/>
     <rect x="31" y="11" width="8"  height="2" fill="#8D6E63"/>
     <rect x="34" y="8"  width="2"  height="3" fill="#F5F5F5"/>
     <rect x="32" y="9"  width="6"  height="1" fill="#E0E0E0"/>
     <rect x="29" y="14" width="12" height="1" fill="#5D4037"/>
-    {/* 바다 표면 */}
     <rect x="0"  y="15" width="64" height="17" fill="#1565C0"/>
     <rect x="0"  y="15" width="64" height="2"  fill="#42A5F5"/>
     <rect x="0"  y="14" width="64" height="1"  fill="#64B5F6"/>
-    {/* 파도 */}
     <rect x="0"  y="17" width="64" height="1"  fill="#1976D2"/>
     <rect x="2"  y="17" width="5"  height="1"  fill="#42A5F5"/>
     <rect x="12" y="18" width="7"  height="1"  fill="#42A5F5"/>
     <rect x="24" y="17" width="6"  height="1"  fill="#42A5F5"/>
     <rect x="36" y="18" width="8"  height="1"  fill="#42A5F5"/>
     <rect x="50" y="17" width="7"  height="1"  fill="#42A5F5"/>
-    <rect x="5"  y="19" width="4"  height="1"  fill="#1E88E5"/>
-    <rect x="18" y="20" width="6"  height="1"  fill="#1E88E5"/>
-    <rect x="32" y="19" width="5"  height="1"  fill="#1E88E5"/>
-    <rect x="46" y="20" width="7"  height="1"  fill="#1E88E5"/>
-    {/* 거품 */}
-    <rect x="1"  y="16" width="2" height="1"  fill="#FFFFFF"/>
-    <rect x="9"  y="16" width="3" height="1"  fill="#FFFFFF"/>
-    <rect x="20" y="15" width="2" height="1"  fill="#FFFFFF"/>
-    <rect x="33" y="16" width="3" height="1"  fill="#FFFFFF"/>
-    <rect x="44" y="15" width="2" height="1"  fill="#FFFFFF"/>
-    <rect x="57" y="16" width="3" height="1"  fill="#FFFFFF"/>
-    {/* 심해 */}
     <rect x="0"  y="22" width="64" height="10" fill="#0D47A1"/>
     <rect x="0"  y="25" width="64" height="7"  fill="#0A3880"/>
-    {/* 물고기 */}
     <rect x="10" y="24" width="4" height="2"  fill="#FF8F00"/>
     <rect x="9"  y="25" width="2" height="1"  fill="#FF8F00"/>
     <rect x="13" y="25" width="1" height="1"  fill="#000000"/>
@@ -246,33 +231,27 @@ const BG_OCEAN = () => (
     <rect x="28" y="27" width="1" height="1"  fill="#000000"/>
     <rect x="45" y="23" width="4" height="2"  fill="#AB47BC"/>
     <rect x="44" y="24" width="2" height="1"  fill="#AB47BC"/>
-    {/* 산호 */}
     <rect x="5"  y="28" width="1" height="3"  fill="#EF5350"/>
     <rect x="4"  y="27" width="3" height="1"  fill="#EF5350"/>
     <rect x="38" y="27" width="1" height="4"  fill="#EC407A"/>
     <rect x="37" y="26" width="3" height="1"  fill="#EC407A"/>
     <rect x="55" y="28" width="1" height="3"  fill="#FF7043"/>
     <rect x="54" y="27" width="3" height="1"  fill="#FF7043"/>
-    {/* 거품 */}
-    <rect x="8"  y="27" width="1" height="1"  fill="#42A5F5"/>
-    <rect x="20" y="25" width="1" height="1"  fill="#42A5F5"/>
-    <rect x="35" y="28" width="1" height="1"  fill="#42A5F5"/>
-    <rect x="50" y="26" width="1" height="1"  fill="#42A5F5"/>
-    <rect x="60" y="24" width="1" height="1"  fill="#42A5F5"/>
+    <rect x="1"  y="16" width="2" height="1"  fill="#FFFFFF"/>
+    <rect x="9"  y="16" width="3" height="1"  fill="#FFFFFF"/>
+    <rect x="20" y="15" width="2" height="1"  fill="#FFFFFF"/>
+    <rect x="33" y="16" width="3" height="1"  fill="#FFFFFF"/>
+    <rect x="44" y="15" width="2" height="1"  fill="#FFFFFF"/>
+    <rect x="57" y="16" width="3" height="1"  fill="#FFFFFF"/>
   </svg>
 );
 
 const BG_SPACE = () => (
   <svg width="100%" height="100%" viewBox="0 0 64 32" preserveAspectRatio="xMidYMid slice" style={{ imageRendering: "pixelated" }}>
     <rect x="0" y="0" width="64" height="32" fill="#04041A"/>
-    {/* 성운 패치 */}
     <rect x="0"  y="8"  width="14" height="8"  fill="#0D0828"/>
-    <rect x="0"  y="10" width="10" height="4"  fill="#120A35"/>
     <rect x="30" y="18" width="16" height="7"  fill="#0A1528"/>
-    <rect x="32" y="20" width="12" height="4"  fill="#0A1A30"/>
     <rect x="50" y="5"  width="14" height="6"  fill="#150828"/>
-    <rect x="52" y="6"  width="10" height="4"  fill="#1A0835"/>
-    {/* 별 (흰색/노란색/파란색) */}
     {[
       [2,1],[6,3],[11,1],[16,4],[21,2],[27,1],[31,3],[36,1],[41,4],[46,2],[51,1],[56,3],[61,1],[63,5],
       [1,7],[5,9],[9,6],[14,8],[19,7],[23,10],[28,6],[33,9],[38,7],[43,5],[47,9],[53,7],[58,6],[62,9],
@@ -283,87 +262,52 @@ const BG_SPACE = () => (
       <rect key={i} x={x} y={y} width="1" height="1"
         fill={i%7===0?"#FFD54F":i%5===0?"#B3E5FC":i%3===0?"#FFF9C4":"#FFFFFF"}/>
     ))}
-    {/* 밝은 별 (십자) */}
     <rect x="10" y="4"  width="1" height="3" fill="#FFFFFF"/>
     <rect x="9"  y="5"  width="3" height="1" fill="#FFFFFF"/>
     <rect x="48" y="20" width="1" height="3" fill="#FFD54F"/>
     <rect x="47" y="21" width="3" height="1" fill="#FFD54F"/>
     <rect x="25" y="10" width="1" height="3" fill="#B3E5FC"/>
     <rect x="24" y="11" width="3" height="1" fill="#B3E5FC"/>
-    {/* 행성1 (보라) */}
     <rect x="40" y="2"  width="12" height="10" fill="#6A1B9A"/>
     <rect x="39" y="3"  width="14" height="8"  fill="#7B1FA2"/>
     <rect x="42" y="3"  width="6"  height="5"  fill="#9C27B0"/>
     <rect x="43" y="3"  width="4"  height="3"  fill="#AB47BC"/>
     <rect x="44" y="3"  width="2"  height="2"  fill="#CE93D8"/>
-    {/* 그림자 */}
     <rect x="47" y="7"  width="5"  height="4"  fill="#4A148C"/>
     <rect x="49" y="5"  width="3"  height="3"  fill="#4A148C"/>
-    {/* 링 */}
     <rect x="36" y="7"  width="20" height="1"  fill="#CE93D8"/>
     <rect x="37" y="6"  width="18" height="1"  fill="#AB47BC"/>
-    <rect x="38" y="8"  width="4"  height="1"  fill="#9C27B0"/>
-    <rect x="50" y="8"  width="4"  height="1"  fill="#9C27B0"/>
-    {/* 행성2 (파란색 작은) */}
     <rect x="5"  y="20" width="7"  height="7"  fill="#1565C0"/>
     <rect x="4"  y="21" width="9"  height="5"  fill="#1976D2"/>
     <rect x="6"  y="21" width="3"  height="3"  fill="#42A5F5"/>
-    <rect x="7"  y="21" width="2"  height="2"  fill="#90CAF9"/>
-    <rect x="9"  y="24" width="3"  height="2"  fill="#0D47A1"/>
-    {/* 달 (회색) */}
     <rect x="16" y="17" width="6"  height="6"  fill="#ECEFF1"/>
     <rect x="15" y="18" width="8"  height="4"  fill="#ECEFF1"/>
-    <rect x="17" y="17" width="2"  height="1"  fill="#CFD8DC"/>
-    <rect x="19" y="19" width="2"  height="2"  fill="#B0BEC5"/>
-    <rect x="16" y="20" width="2"  height="1"  fill="#B0BEC5"/>
-    {/* 크레이터 */}
-    <rect x="17" y="18" width="1"  height="1"  fill="#CFD8DC"/>
-    <rect x="20" y="20" width="1"  height="1"  fill="#CFD8DC"/>
-    {/* 유성 */}
     <rect x="58" y="14" width="1"  height="1"  fill="#FFFFFF"/>
     <rect x="57" y="15" width="2"  height="1"  fill="#FFF9C4"/>
     <rect x="55" y="16" width="3"  height="1"  fill="#FFD54F"/>
     <rect x="53" y="17" width="3"  height="1"  fill="#FF8F00"/>
-    <rect x="51" y="18" width="3"  height="1"  fill="#FF6F00"/>
-    {/* 소행성 */}
-    <rect x="30" y="5"  width="3"  height="2"  fill="#5D4037"/>
-    <rect x="31" y="4"  width="2"  height="1"  fill="#795548"/>
-    <rect x="31" y="7"  width="1"  height="1"  fill="#4E342E"/>
-    <rect x="55" y="25" width="3"  height="2"  fill="#616161"/>
-    <rect x="56" y="24" width="2"  height="1"  fill="#757575"/>
   </svg>
 );
 
 const BG_CITY = () => (
   <svg width="100%" height="100%" viewBox="0 0 64 32" preserveAspectRatio="xMidYMid slice" style={{ imageRendering: "pixelated" }}>
-    {/* 밤하늘 */}
     <rect x="0" y="0" width="64" height="32" fill="#0D0D2B"/>
     <rect x="0" y="0" width="64" height="5"  fill="#0A0A25"/>
-    {/* 별 */}
     {[[3,1],[8,3],[14,1],[19,4],[24,2],[29,1],[35,3],[40,1],[45,4],[51,2],[57,1],[62,3],[1,6],[11,5],[22,6],[33,5],[44,6],[55,5],[63,7]].map(([x,y],i)=>(
       <rect key={i} x={x} y={y} width="1" height="1" fill={i%4===0?"#FFF9C4":"#FFFFFF"}/>
     ))}
-    {/* 달 */}
     <rect x="4"  y="1"  width="5" height="5"  fill="#FFF9C4"/>
     <rect x="3"  y="2"  width="7" height="3"  fill="#FFF9C4"/>
-    <rect x="5"  y="0"  width="3" height="1"  fill="#FFF9C4"/>
-    <rect x="6"  y="2"  width="2" height="2"  fill="#FFF176"/>
-    <rect x="5"  y="4"  width="2" height="1"  fill="#F0F4C3"/>
-    {/* 빌딩1 (왼쪽 넓은) */}
     <rect x="0"  y="9"  width="9" height="23" fill="#0D1117"/>
     <rect x="3"  y="7"  width="3" height="3"  fill="#0D1117"/>
-    <rect x="4"  y="6"  width="1" height="2"  fill="#37474F"/>
     {[[1,10],[5,10],[1,13],[5,13],[1,16],[5,16],[1,19],[5,19],[1,22],[5,22],[1,25],[5,25]].map(([x,y],i)=>(
       <rect key={i} x={x} y={y} width="2" height="2" fill={i%3===0?"#FFD54F":i%3===1?"#37474F":"#FFF176"}/>
     ))}
-    {/* 빌딩2 */}
     <rect x="10" y="13" width="8"  height="19" fill="#161B22"/>
     <rect x="12" y="11" width="4"  height="3"  fill="#161B22"/>
-    <rect x="13" y="10" width="2"  height="2"  fill="#263238"/>
     {[[11,14],[15,14],[11,17],[15,17],[11,20],[15,20],[11,23],[15,23],[11,26],[15,26]].map(([x,y],i)=>(
       <rect key={i} x={x} y={y} width="2" height="2" fill={i%2===0?"#FFF176":"#37474F"}/>
     ))}
-    {/* 빌딩3 (센터 타워, 높음) */}
     <rect x="20" y="5"  width="10" height="27" fill="#111827"/>
     <rect x="22" y="3"  width="6"  height="3"  fill="#111827"/>
     <rect x="24" y="2"  width="2"  height="2"  fill="#E040FB"/>
@@ -371,59 +315,32 @@ const BG_CITY = () => (
     {[[21,6],[27,6],[21,9],[27,9],[21,12],[27,12],[21,15],[27,15],[21,18],[27,18],[21,21],[27,21],[21,24],[27,24],[21,27],[27,27]].map(([x,y],i)=>(
       <rect key={i} x={x} y={y} width="2" height="2" fill={i%4===0?"#40C4FF":i%4===1?"#FFD54F":i%4===2?"#37474F":"#E040FB"}/>
     ))}
-    <rect x="23" y="6"  width="4"  height="26" fill="#0D1117"/>
-    {[[24,7],[24,10],[24,13],[24,16],[24,19],[24,22],[24,25],[24,28]].map(([x,y],i)=>(
-      <rect key={i} x={x} y={y} width="2" height="2" fill={i%3===0?"#40C4FF":"#FFD54F"}/>
-    ))}
-    {/* 빌딩4 */}
     <rect x="32" y="11" width="9"  height="21" fill="#0F1923"/>
     <rect x="34" y="9"  width="5"  height="3"  fill="#0F1923"/>
-    <rect x="35" y="8"  width="3"  height="2"  fill="#1C2B3A"/>
     {[[33,12],[38,12],[33,15],[38,15],[33,18],[38,18],[33,21],[38,21],[33,24],[38,24],[33,27],[38,27]].map(([x,y],i)=>(
       <rect key={i} x={x} y={y} width="2" height="2" fill={i%3===0?"#FFF176":i%3===1?"#37474F":"#FFD54F"}/>
     ))}
-    {/* 빌딩5 (우측 타워) */}
     <rect x="43" y="7"  width="8"  height="25" fill="#0D1117"/>
     <rect x="45" y="5"  width="4"  height="3"  fill="#0D1117"/>
     <rect x="46" y="4"  width="2"  height="2"  fill="#E040FB"/>
     {[[44,8],[49,8],[44,11],[49,11],[44,14],[49,14],[44,17],[49,17],[44,20],[49,20],[44,23],[49,23],[44,26],[49,26]].map(([x,y],i)=>(
       <rect key={i} x={x} y={y} width="2" height="2" fill={i%4===0?"#E040FB":i%4===1?"#FFD54F":i%4===2?"#37474F":"#40C4FF"}/>
     ))}
-    {/* 빌딩6 (오른쪽) */}
     <rect x="53" y="14" width="11" height="18" fill="#161B22"/>
     <rect x="56" y="12" width="5"  height="3"  fill="#161B22"/>
-    <rect x="57" y="11" width="3"  height="2"  fill="#263238"/>
     {[[54,15],[59,15],[54,18],[59,18],[54,21],[59,21],[54,24],[59,24],[54,27],[59,27]].map(([x,y],i)=>(
       <rect key={i} x={x} y={y} width="2" height="2" fill={i%2===0?"#FFF176":"#40C4FF"}/>
     ))}
-    {/* 도로 */}
     <rect x="0"  y="29" width="64" height="3"  fill="#212121"/>
-    <rect x="0"  y="29" width="64" height="1"  fill="#2C2C2C"/>
     {[[6,30],[18,30],[30,30],[42,30],[54,30]].map(([x,y],i)=>(
       <rect key={i} x={x} y={y} width="5" height="1" fill="#FFD54F"/>
     ))}
-    {/* 가로등 */}
-    <rect x="9"  y="24" width="1" height="5"  fill="#546E7A"/>
-    <rect x="8"  y="24" width="3" height="1"  fill="#546E7A"/>
-    <rect x="8"  y="24" width="3" height="1"  fill="#FFD54F"/>
-    <rect x="42" y="22" width="1" height="7"  fill="#546E7A"/>
-    <rect x="41" y="22" width="3" height="1"  fill="#FFD54F"/>
-    {/* 자동차 */}
     <rect x="15" y="29" width="5" height="2"  fill="#1565C0"/>
     <rect x="16" y="28" width="3" height="1"  fill="#1565C0"/>
-    <rect x="14" y="30" width="2" height="1"  fill="#212121"/>
-    <rect x="19" y="30" width="2" height="1"  fill="#212121"/>
     <rect x="19" y="29" width="1" height="1"  fill="#FFD54F"/>
     <rect x="46" y="29" width="5" height="2"  fill="#C62828"/>
     <rect x="47" y="28" width="3" height="1"  fill="#C62828"/>
-    <rect x="45" y="30" width="2" height="1"  fill="#212121"/>
-    <rect x="50" y="30" width="2" height="1"  fill="#212121"/>
     <rect x="45" y="29" width="1" height="1"  fill="#FFD54F"/>
-    {/* 네온 간판 */}
-    <rect x="20" y="16" width="4" height="1"  fill="#E040FB"/>
-    <rect x="20" y="17" width="4" height="1"  fill="#EA80FC"/>
-    <rect x="44" y="14" width="3" height="1"  fill="#40C4FF"/>
-    <rect x="44" y="15" width="3" height="1"  fill="#80D8FF"/>
   </svg>
 );
 
@@ -452,6 +369,7 @@ export default function GroupDetailPage() {
   const [localExpenses, setLocalExpenses] = useState<LocalExpense[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [partyBg, setPartyBg] = useState(0);
+  const [stories] = useState<Record<number, StoryEntry>>(loadStories);
 
   const [form, setForm] = useState({
     date: new Date().toISOString().slice(0, 10),
@@ -476,6 +394,8 @@ export default function GroupDetailPage() {
       </div>
     );
   }
+
+  const isCurrentUser = (m: { name: string }) => m.name === profile.name || m.name === "나";
 
   const copyCode = () => {
     navigator.clipboard.writeText(group.code);
@@ -555,7 +475,6 @@ export default function GroupDetailPage() {
             {group.isHost && <Crown className="w-5 h-5 text-amber-500" />}
           </div>
         </div>
-        {/* 초대 버튼 */}
         <button
           onClick={() => setShowInvite(!showInvite)}
           className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
@@ -588,7 +507,7 @@ export default function GroupDetailPage() {
         </div>
       )}
 
-      {/* Members Section */}
+      {/* ── Members Section ── */}
       <div className="bg-card rounded-xl border border-border p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="flex items-center gap-2">
@@ -598,48 +517,105 @@ export default function GroupDetailPage() {
           <span className="text-sm text-muted-foreground">{group.members.length}명</span>
         </div>
 
-        <div className="flex gap-5 overflow-x-auto pb-1 scrollbar-none">
-          {group.members.map((member) => (
-            <div key={member.id} className="flex flex-col items-center gap-2 shrink-0">
-              {/* Story-style ring avatar */}
-              <div
-                className={`p-[2.5px] rounded-full ${
-                  member.isHost
-                    ? "bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500"
-                    : "bg-gradient-to-br from-primary/80 to-accent"
-                }`}
+        {/* Member avatar scroll — 클릭 시 스토리 이동 */}
+        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none">
+          {group.members.map((member) => {
+            const isMe = isCurrentUser(member);
+            const hasStory = Boolean(stories[member.id]);
+
+            return (
+              <button
+                key={member.id}
+                onClick={() => {
+                  if (isMe) {
+                    navigate("/story/create", { state: { member, group } });
+                  } else {
+                    navigate("/story/view", { state: { member, group } });
+                  }
+                }}
+                className="flex flex-col items-center gap-1.5 shrink-0 w-[68px] group"
               >
-                <div className="p-[2px] rounded-full bg-card">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/70 to-accent/80 flex items-center justify-center overflow-hidden">
-                    {profilePhoto && member.name === profile.name ? (
-                      <img src={profilePhoto} alt={member.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-white font-bold text-xl leading-none">
-                        {member.name[0]}
-                      </span>
-                    )}
+                {/* Story-style ring — 스토리 있으면 컬러풀, 없으면 연한 링 */}
+                <div
+                  className={`p-[2.5px] rounded-full transition-all ${
+                    hasStory
+                      ? "bg-gradient-to-br from-violet-500 via-primary to-accent"
+                      : member.isHost
+                      ? "bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500"
+                      : "bg-muted-foreground/20"
+                  }`}
+                >
+                  <div className="p-[2px] rounded-full bg-card">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/70 to-accent/80 flex items-center justify-center overflow-hidden">
+                      {profilePhoto && isMe ? (
+                        <img src={profilePhoto} alt={member.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-white font-bold text-xl leading-none">
+                          {member.name[0]}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Name */}
-              <p className="text-xs font-medium text-center w-16 truncate">{member.name}</p>
+                {/* 이름 */}
+                <p className="text-xs font-medium text-center w-full truncate">{member.name}</p>
 
-              {/* Host badge */}
-              {member.isHost ? (
-                <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-500 -mt-1">
-                  <Crown className="w-2.5 h-2.5" />
-                  호스트
-                </span>
-              ) : (
-                <span className="text-[10px] text-muted-foreground -mt-1">멤버</span>
-              )}
-            </div>
-          ))}
+                {/* Host / 멤버 뱃지 */}
+                {member.isHost ? (
+                  <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-500">
+                    <Crown className="w-2.5 h-2.5" />
+                    호스트
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-muted-foreground">
+                    {isMe ? "나" : "멤버"}
+                  </span>
+                )}
+
+                {/* 스토리 미리보기: 이모지 우선, 없으면 텍스트 */}
+                {hasStory && (() => {
+                  const s = stories[member.id];
+                  const firstEmoji = s.emojis?.[0] ? getPixelEmoji(s.emojis[0]) : undefined;
+                  if (firstEmoji) {
+                    const { Component } = firstEmoji;
+                    return (
+                      <div className="flex justify-center gap-0.5">
+                        <Component />
+                        {s.emojis!.length > 1 && (
+                          <span className="text-[9px] text-muted-foreground self-end">+{s.emojis!.length - 1}</span>
+                        )}
+                      </div>
+                    );
+                  }
+                  if (s.text) {
+                    return (
+                      <p
+                        title={s.text}
+                        className={`text-[9px] w-full text-center truncate px-1 py-0.5 rounded-full leading-tight ${
+                          isMe ? "text-primary bg-primary/10" : "text-muted-foreground bg-muted"
+                        }`}
+                      >
+                        {s.text}
+                      </p>
+                    );
+                  }
+                  return null;
+                })()}
+
+                {/* 스토리 없을 때 + 힌트 (나만) */}
+                {!hasStory && isMe && (
+                  <span className="text-[9px] text-muted-foreground/50 group-hover:text-primary transition-colors">
+                    + 스토리
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Recent Activity Section */}
+      {/* ── 그룹 지출 ── */}
       <div className="bg-card rounded-xl border border-border p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="flex items-center gap-2">
@@ -783,13 +759,11 @@ export default function GroupDetailPage() {
 
       {/* ── 파티 캐릭터 섹션 ── */}
       <div className="bg-card rounded-xl border border-border overflow-hidden">
-        {/* 헤더 */}
         <div className="flex items-center justify-between px-5 pt-4 pb-3">
           <h3 className="flex items-center gap-2">
             <Swords className="w-4 h-4 text-primary" />
             파티 캐릭터
           </h3>
-          {/* 배경 선택 */}
           <div className="flex items-center gap-1.5">
             {PARTY_BACKGROUNDS.map((bg, i) => (
               <button
@@ -807,9 +781,7 @@ export default function GroupDetailPage() {
           </div>
         </div>
 
-        {/* 배경 + 캐릭터 */}
         <div className="relative mx-4 mb-4 rounded-xl overflow-hidden" style={{ height: 160 }}>
-          {/* 픽셀아트 배경 */}
           <div className="absolute inset-0">
             {(() => {
               const Bg = PARTY_BACKGROUNDS[partyBg].Component;
@@ -817,21 +789,17 @@ export default function GroupDetailPage() {
             })()}
           </div>
 
-          {/* 멤버 캐릭터 오버레이 */}
           <div className="absolute inset-0 flex items-end justify-around pb-3 px-2">
             {group.members.map((member) => {
               const char = getMemberCharacter(member.id);
               return (
                 <div key={member.id} className="flex flex-col items-center gap-1">
-                  {/* 호스트 왕관 */}
                   {member.isHost && (
                     <Crown className="w-3 h-3 text-amber-400 drop-shadow" />
                   )}
-                  {/* 캐릭터 */}
                   <div className="drop-shadow-lg">
                     <PixelSprite type={char.type} colors={char.colors} size={48} />
                   </div>
-                  {/* 이름 뱃지 - 픽셀 RPG 스타일 */}
                   <div style={{
                     background: "linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)",
                     border: "1px solid #4a9eff",
@@ -856,7 +824,6 @@ export default function GroupDetailPage() {
               );
             })}
           </div>
-
         </div>
       </div>
     </div>

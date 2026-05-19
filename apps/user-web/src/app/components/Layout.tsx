@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router";
-import { Home, Wallet, Users, User, Settings, Globe, Menu, X } from "lucide-react";
+import { Home, Wallet, Users, User, Settings, Globe, Menu, X, Gamepad2 } from "lucide-react";
 import { useState } from "react";
 import { useAppData } from "../context/AppDataContext";
 
@@ -9,20 +9,24 @@ export default function Layout() {
   const { profile, rewardSummary, profilePhoto } = useAppData();
 
   const navItems = [
-    { path: "/", icon: Home, label: "지출 홈" },
-    { path: "/expenses", icon: Wallet, label: "개인 지출 관리" },
-    { path: "/groups", icon: Users, label: "그룹 지출 관리" },
-    { path: "/community", icon: Globe, label: "커뮤니티" },
-    { path: "/mypage", icon: User, label: "마이페이지" },
+    { path: "/",          icon: Home,     label: "지출 홈" },
+    { path: "/expenses",  icon: Wallet,   label: "개인 지출 관리" },
+    { path: "/groups",    icon: Users,    label: "그룹 지출 관리" },
+    { path: "/community", icon: Globe,    label: "커뮤니티" },
+    { path: "/kabemon",   icon: Gamepad2, label: "캐보몬" },
+    { path: "/mypage",    icon: User,     label: "마이페이지" },
   ];
 
   const settingsItems = [
     { path: "/settings", icon: Settings, label: "설정" },
   ];
 
+  const isActive = (path: string) =>
+    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
+
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Desktop Sidebar */}
+      {/* ── Desktop Sidebar ── */}
       <aside className="hidden lg:flex lg:flex-col w-56 bg-sidebar border-r border-sidebar-border fixed h-screen">
         {/* Logo */}
         <div className="p-6 border-b border-sidebar-border">
@@ -35,18 +39,18 @@ export default function Layout() {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 p-4 overflow-y-auto">
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground px-3 mb-2">메뉴</p>
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.path;
+              const active = isActive(item.path);
               return (
                 <Link
                   key={item.path}
                   to={item.path}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                    isActive
+                    active
                       ? "bg-primary/10 text-primary"
                       : "text-sidebar-foreground hover:bg-sidebar-accent"
                   }`}
@@ -97,7 +101,7 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Mobile Header */}
+      {/* ── Mobile Header ── */}
       <div className="lg:hidden fixed top-0 left-0 right-0 bg-sidebar border-b border-sidebar-border z-40 px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -115,7 +119,7 @@ export default function Layout() {
         </div>
       </div>
 
-      {/* Mobile Sidebar Overlay */}
+      {/* ── Mobile Sidebar Overlay ── */}
       {isMobileSidebarOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black/50 z-40 mt-14"
@@ -130,14 +134,14 @@ export default function Layout() {
                 <p className="text-xs text-muted-foreground px-3 mb-2">메뉴</p>
                 {navItems.map((item) => {
                   const Icon = item.icon;
-                  const isActive = location.pathname === item.path;
+                  const active = isActive(item.path);
                   return (
                     <Link
                       key={item.path}
                       to={item.path}
                       onClick={() => setIsMobileSidebarOpen(false)}
                       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                        isActive
+                        active
                           ? "bg-primary/10 text-primary"
                           : "text-sidebar-foreground hover:bg-sidebar-accent"
                       }`}
@@ -191,7 +195,7 @@ export default function Layout() {
         </div>
       )}
 
-      {/* Main Content */}
+      {/* ── Main Content ── */}
       <main className="flex-1 lg:ml-56 mt-14 lg:mt-0 min-h-screen">
         <div className="p-6">
           <Outlet />
