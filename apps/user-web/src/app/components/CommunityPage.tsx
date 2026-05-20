@@ -96,7 +96,7 @@ export default function CommunityPage() {
   const tabs: (PostCategory | "전체")[] = ["전체", ...POST_CATEGORY_OPTIONS];
 
   return (
-    <div className="space-y-5 max-w-2xl">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <h2 className="shrink-0">게시판</h2>

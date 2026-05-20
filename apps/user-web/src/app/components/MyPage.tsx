@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Calendar, TrendingUp, Heart, Globe2, Camera, X, Pencil, Check, Gamepad2, ChevronRight } from "lucide-react";
+import { Calendar, TrendingUp, Heart, Camera, X, Pencil, Check, Gamepad2, ChevronRight } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router";
 import PixelCharacter from "./PixelCharacter";
@@ -185,11 +185,24 @@ return (
             </div>
           </div>
           <div className="mt-4 bg-muted rounded p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Globe2 className="w-4 h-4 text-primary" />
-              <p className="font-medium">리워드 기준</p>
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <p className="text-xs text-muted-foreground">현재 포인트</p>
+                <p className="text-2xl font-bold text-primary mt-0.5">{rewardSummary.missionPoints}P</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Lv.{rewardSummary.level}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  다음까지 {Math.max(rewardSummary.nextLevelTarget - rewardSummary.missionPoints, 0)}P
+                </p>
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground">출석 5P · 내역 기록 3P · 내역 공유 8P · 글 작성 5P</p>
+            <div className="h-1.5 bg-card rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary/80 rounded-full transition-all"
+                style={{ width: `${Math.min((rewardSummary.missionPoints / rewardSummary.nextLevelTarget) * 100, 100)}%` }}
+              />
+            </div>
           </div>
         </div>
 

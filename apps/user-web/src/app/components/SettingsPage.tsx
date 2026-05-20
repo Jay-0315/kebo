@@ -18,7 +18,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6">
       <h2>설정</h2>
 
       {/* Appearance */}

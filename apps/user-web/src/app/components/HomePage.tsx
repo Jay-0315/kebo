@@ -12,7 +12,7 @@ export default function HomePage() {
   const recentPosts = posts.slice(0, 5);
 
   return (
-    <div className="space-y-5 max-w-2xl">
+    <div className="space-y-5">
 
       {/* ── Profile banner ── */}
       <div className="bg-card rounded border border-border p-5 flex items-center gap-4">

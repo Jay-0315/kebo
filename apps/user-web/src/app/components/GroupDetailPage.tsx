@@ -42,308 +42,6 @@ function getMemberCharacter(memberId: number): CharacterDef {
   return CHARACTERS[(memberId * 17 + 3) % CHARACTERS.length];
 }
 
-/* ── 파티 배경 4종 ── */
-const BG_FOREST = () => (
-  <svg width="100%" height="100%" viewBox="0 0 64 32" preserveAspectRatio="xMidYMid slice" style={{ imageRendering: "pixelated" }}>
-    {/* 하늘 그라데이션 */}
-    <rect x="0" y="0"  width="64" height="32" fill="#87CEEB"/>
-    <rect x="0" y="0"  width="64" height="4"  fill="#64B5F6"/>
-    <rect x="0" y="18" width="64" height="4"  fill="#A5D6A7"/>
-    {/* 지평선 안개 */}
-    <rect x="0" y="17" width="64" height="2"  fill="#C8E6C9"/>
-    {/* 태양 */}
-    <rect x="54" y="1"  width="5" height="5"  fill="#FFD54F"/>
-    <rect x="53" y="2"  width="7" height="3"  fill="#FFD54F"/>
-    <rect x="55" y="0"  width="3" height="1"  fill="#FFEE58"/>
-    <rect x="55" y="6"  width="3" height="1"  fill="#FFD54F"/>
-    <rect x="52" y="3"  width="1" height="1"  fill="#FFD54F"/>
-    <rect x="60" y="3"  width="1" height="1"  fill="#FFD54F"/>
-    {/* 구름 1 */}
-    <rect x="4"  y="2"  width="10" height="3" fill="#FFFFFF"/>
-    <rect x="5"  y="1"  width="8"  height="1" fill="#FFFFFF"/>
-    <rect x="6"  y="5"  width="6"  height="1" fill="#E3F2FD"/>
-    <rect x="3"  y="3"  width="2"  height="1" fill="#FFFFFF"/>
-    <rect x="13" y="3"  width="2"  height="1" fill="#FFFFFF"/>
-    {/* 구름 2 */}
-    <rect x="28" y="3"  width="12" height="3" fill="#FFFFFF"/>
-    <rect x="30" y="2"  width="8"  height="1" fill="#FFFFFF"/>
-    <rect x="29" y="6"  width="9"  height="1" fill="#E3F2FD"/>
-    <rect x="27" y="4"  width="2"  height="1" fill="#FFFFFF"/>
-    <rect x="39" y="4"  width="2"  height="1" fill="#FFFFFF"/>
-    {/* 구름 3 (작은) */}
-    <rect x="17" y="6"  width="7"  height="2" fill="#FFFFFF"/>
-    <rect x="18" y="5"  width="5"  height="1" fill="#FFFFFF"/>
-    {/* 새 */}
-    <rect x="22" y="3"  width="1"  height="1" fill="#37474F"/>
-    <rect x="24" y="2"  width="1"  height="1" fill="#37474F"/>
-    <rect x="46" y="5"  width="1"  height="1" fill="#37474F"/>
-    <rect x="48" y="4"  width="1"  height="1" fill="#37474F"/>
-    {/* 원경 산 */}
-    <rect x="0"  y="13" width="6"  height="6"  fill="#90A4AE"/>
-    <rect x="2"  y="11" width="4"  height="3"  fill="#90A4AE"/>
-    <rect x="3"  y="9"  width="2"  height="3"  fill="#90A4AE"/>
-    <rect x="10" y="14" width="8"  height="5"  fill="#78909C"/>
-    <rect x="12" y="12" width="4"  height="3"  fill="#78909C"/>
-    <rect x="13" y="10" width="2"  height="3"  fill="#78909C"/>
-    <rect x="40" y="13" width="10" height="6"  fill="#90A4AE"/>
-    <rect x="43" y="11" width="4"  height="3"  fill="#90A4AE"/>
-    <rect x="44" y="9"  width="2"  height="3"  fill="#B0BEC5"/>
-    <rect x="53" y="14" width="11" height="5"  fill="#78909C"/>
-    <rect x="56" y="12" width="5"  height="3"  fill="#78909C"/>
-    <rect x="57" y="10" width="3"  height="3"  fill="#90A4AE"/>
-    {/* 나무1 (크) */}
-    <rect x="1"  y="12" width="10" height="10" fill="#2E7D32"/>
-    <rect x="3"  y="10" width="6"  height="3"  fill="#388E3C"/>
-    <rect x="4"  y="8"  width="4"  height="3"  fill="#388E3C"/>
-    <rect x="5"  y="6"  width="2"  height="3"  fill="#43A047"/>
-    <rect x="3"  y="13" width="2"  height="2"  fill="#1B5E20"/>
-    <rect x="8"  y="14" width="2"  height="2"  fill="#1B5E20"/>
-    <rect x="5"  y="22" width="2"  height="4"  fill="#4E342E"/>
-    <rect x="4"  y="24" width="4"  height="2"  fill="#3E2723"/>
-    {/* 나무2 */}
-    <rect x="16" y="11" width="8"  height="11" fill="#388E3C"/>
-    <rect x="17" y="9"  width="6"  height="3"  fill="#43A047"/>
-    <rect x="18" y="7"  width="4"  height="3"  fill="#43A047"/>
-    <rect x="19" y="5"  width="2"  height="3"  fill="#66BB6A"/>
-    <rect x="17" y="14" width="2"  height="2"  fill="#2E7D32"/>
-    <rect x="22" y="13" width="2"  height="2"  fill="#2E7D32"/>
-    <rect x="19" y="22" width="2"  height="4"  fill="#4E342E"/>
-    {/* 나무3 */}
-    <rect x="30" y="12" width="8"  height="10" fill="#2E7D32"/>
-    <rect x="31" y="10" width="6"  height="3"  fill="#388E3C"/>
-    <rect x="32" y="8"  width="4"  height="3"  fill="#43A047"/>
-    <rect x="33" y="6"  width="2"  height="3"  fill="#66BB6A"/>
-    <rect x="33" y="22" width="2"  height="4"  fill="#4E342E"/>
-    <rect x="31" y="15" width="2"  height="2"  fill="#1B5E20"/>
-    {/* 나무4 */}
-    <rect x="44" y="11" width="9"  height="11" fill="#388E3C"/>
-    <rect x="45" y="9"  width="7"  height="3"  fill="#43A047"/>
-    <rect x="46" y="7"  width="5"  height="3"  fill="#43A047"/>
-    <rect x="47" y="5"  width="3"  height="3"  fill="#66BB6A"/>
-    <rect x="48" y="22" width="2"  height="4"  fill="#4E342E"/>
-    <rect x="45" y="14" width="2"  height="2"  fill="#2E7D32"/>
-    <rect x="50" y="13" width="2"  height="2"  fill="#1B5E20"/>
-    {/* 나무5 (오른쪽) */}
-    <rect x="57" y="13" width="7"  height="9"  fill="#2E7D32"/>
-    <rect x="58" y="11" width="5"  height="3"  fill="#388E3C"/>
-    <rect x="59" y="9"  width="3"  height="3"  fill="#43A047"/>
-    <rect x="59" y="22" width="2"  height="4"  fill="#4E342E"/>
-    {/* 덤불 */}
-    <rect x="13" y="20" width="5"  height="3"  fill="#388E3C"/>
-    <rect x="14" y="19" width="3"  height="1"  fill="#43A047"/>
-    <rect x="27" y="21" width="4"  height="2"  fill="#2E7D32"/>
-    <rect x="42" y="20" width="4"  height="3"  fill="#388E3C"/>
-    <rect x="43" y="19" width="2"  height="1"  fill="#43A047"/>
-    {/* 땅 */}
-    <rect x="0"  y="22" width="64" height="10" fill="#558B2F"/>
-    <rect x="0"  y="22" width="64" height="1"  fill="#33691E"/>
-    <rect x="0"  y="23" width="64" height="1"  fill="#689F38"/>
-    {/* 돌 */}
-    <rect x="8"  y="23" width="3"  height="2"  fill="#9E9E9E"/>
-    <rect x="9"  y="22" width="2"  height="1"  fill="#BDBDBD"/>
-    <rect x="35" y="23" width="4"  height="2"  fill="#757575"/>
-    <rect x="36" y="22" width="3"  height="1"  fill="#9E9E9E"/>
-    <rect x="55" y="24" width="3"  height="2"  fill="#9E9E9E"/>
-    {/* 풀 */}
-    {[[2,21],[6,21],[12,21],[15,22],[20,21],[25,21],[28,22],[33,21],[37,22],[40,21],[44,21],[49,22],[53,21],[58,22],[62,21]].map(([x,y],i)=>(
-      <rect key={i} x={x} y={y} width="1" height="2" fill={i%3===0?"#8BC34A":"#7CB342"}/>
-    ))}
-    {/* 꽃 */}
-    <rect x="11" y="23" width="1" height="1" fill="#FF80AB"/>
-    <rect x="23" y="22" width="1" height="1" fill="#FFD54F"/>
-    <rect x="31" y="23" width="1" height="1" fill="#FF80AB"/>
-    <rect x="47" y="23" width="1" height="1" fill="#64B5F6"/>
-    <rect x="52" y="22" width="1" height="1" fill="#FF80AB"/>
-    <rect x="60" y="23" width="1" height="1" fill="#FFD54F"/>
-    {/* 버섯 */}
-    <rect x="26" y="23" width="2" height="2" fill="#EF5350"/>
-    <rect x="25" y="22" width="4" height="1" fill="#EF5350"/>
-    <rect x="26" y="22" width="2" height="1" fill="#FFFFFF"/>
-    <rect x="27" y="25" width="1" height="1" fill="#BCAAA4"/>
-  </svg>
-);
-
-const BG_OCEAN = () => (
-  <svg width="100%" height="100%" viewBox="0 0 64 32" preserveAspectRatio="xMidYMid slice" style={{ imageRendering: "pixelated" }}>
-    <rect x="0" y="0"  width="64" height="32" fill="#87CEEB"/>
-    <rect x="0" y="0"  width="64" height="3"  fill="#4FC3F7"/>
-    <rect x="0" y="13" width="64" height="2"  fill="#B3E5FC"/>
-    <rect x="50" y="1"  width="7" height="7"  fill="#FFD54F"/>
-    <rect x="49" y="2"  width="9" height="5"  fill="#FFD54F"/>
-    <rect x="51" y="0"  width="5" height="1"  fill="#FFEE58"/>
-    <rect x="50" y="8"  width="7" height="1"  fill="#FFB300"/>
-    <rect x="48" y="4"  width="1" height="1"  fill="#FFD54F"/>
-    <rect x="59" y="4"  width="1" height="1"  fill="#FFD54F"/>
-    <rect x="40" y="14" width="24" height="1" fill="#FFF9C4"/>
-    <rect x="44" y="13" width="16" height="1" fill="#FFEE58"/>
-    <rect x="2"  y="2"  width="12" height="4" fill="#FFFFFF"/>
-    <rect x="3"  y="1"  width="10" height="1" fill="#FFFFFF"/>
-    <rect x="4"  y="6"  width="8"  height="1" fill="#E1F5FE"/>
-    <rect x="1"  y="3"  width="2"  height="2" fill="#FFFFFF"/>
-    <rect x="13" y="3"  width="2"  height="2" fill="#FFFFFF"/>
-    <rect x="22" y="4"  width="10" height="3" fill="#FFFFFF"/>
-    <rect x="23" y="3"  width="8"  height="1" fill="#FFFFFF"/>
-    <rect x="23" y="7"  width="7"  height="1" fill="#E1F5FE"/>
-    <rect x="21" y="5"  width="2"  height="1" fill="#FFFFFF"/>
-    <rect x="36" y="2"  width="8"  height="3" fill="#FFFFFF"/>
-    <rect x="37" y="1"  width="6"  height="1" fill="#FFFFFF"/>
-    <rect x="37" y="5"  width="5"  height="1" fill="#E1F5FE"/>
-    <rect x="18" y="3"  width="1" height="1" fill="#455A64"/>
-    <rect x="20" y="2"  width="1" height="1" fill="#455A64"/>
-    <rect x="32" y="5"  width="1" height="1" fill="#455A64"/>
-    <rect x="34" y="4"  width="1" height="1" fill="#455A64"/>
-    <rect x="10" y="8"  width="1" height="1" fill="#455A64"/>
-    <rect x="12" y="7"  width="1" height="1" fill="#455A64"/>
-    <rect x="1"  y="8"  width="4" height="7"  fill="#ECEFF1"/>
-    <rect x="2"  y="6"  width="2" height="3"  fill="#ECEFF1"/>
-    <rect x="2"  y="5"  width="2" height="1"  fill="#F44336"/>
-    <rect x="1"  y="11" width="4" height="1"  fill="#EF9A9A"/>
-    <rect x="1"  y="14" width="4" height="1"  fill="#B0BEC5"/>
-    <rect x="0"  y="14" width="6" height="1"  fill="#90A4AE"/>
-    <rect x="2"  y="9"  width="2" height="2"  fill="#FFF176"/>
-    <rect x="30" y="13" width="10" height="2" fill="#795548"/>
-    <rect x="31" y="11" width="8"  height="2" fill="#8D6E63"/>
-    <rect x="34" y="8"  width="2"  height="3" fill="#F5F5F5"/>
-    <rect x="32" y="9"  width="6"  height="1" fill="#E0E0E0"/>
-    <rect x="29" y="14" width="12" height="1" fill="#5D4037"/>
-    <rect x="0"  y="15" width="64" height="17" fill="#1565C0"/>
-    <rect x="0"  y="15" width="64" height="2"  fill="#42A5F5"/>
-    <rect x="0"  y="14" width="64" height="1"  fill="#64B5F6"/>
-    <rect x="0"  y="17" width="64" height="1"  fill="#1976D2"/>
-    <rect x="2"  y="17" width="5"  height="1"  fill="#42A5F5"/>
-    <rect x="12" y="18" width="7"  height="1"  fill="#42A5F5"/>
-    <rect x="24" y="17" width="6"  height="1"  fill="#42A5F5"/>
-    <rect x="36" y="18" width="8"  height="1"  fill="#42A5F5"/>
-    <rect x="50" y="17" width="7"  height="1"  fill="#42A5F5"/>
-    <rect x="0"  y="22" width="64" height="10" fill="#0D47A1"/>
-    <rect x="0"  y="25" width="64" height="7"  fill="#0A3880"/>
-    <rect x="10" y="24" width="4" height="2"  fill="#FF8F00"/>
-    <rect x="9"  y="25" width="2" height="1"  fill="#FF8F00"/>
-    <rect x="13" y="25" width="1" height="1"  fill="#000000"/>
-    <rect x="25" y="26" width="4" height="2"  fill="#26C6DA"/>
-    <rect x="24" y="27" width="2" height="1"  fill="#26C6DA"/>
-    <rect x="28" y="27" width="1" height="1"  fill="#000000"/>
-    <rect x="45" y="23" width="4" height="2"  fill="#AB47BC"/>
-    <rect x="44" y="24" width="2" height="1"  fill="#AB47BC"/>
-    <rect x="5"  y="28" width="1" height="3"  fill="#EF5350"/>
-    <rect x="4"  y="27" width="3" height="1"  fill="#EF5350"/>
-    <rect x="38" y="27" width="1" height="4"  fill="#EC407A"/>
-    <rect x="37" y="26" width="3" height="1"  fill="#EC407A"/>
-    <rect x="55" y="28" width="1" height="3"  fill="#FF7043"/>
-    <rect x="54" y="27" width="3" height="1"  fill="#FF7043"/>
-    <rect x="1"  y="16" width="2" height="1"  fill="#FFFFFF"/>
-    <rect x="9"  y="16" width="3" height="1"  fill="#FFFFFF"/>
-    <rect x="20" y="15" width="2" height="1"  fill="#FFFFFF"/>
-    <rect x="33" y="16" width="3" height="1"  fill="#FFFFFF"/>
-    <rect x="44" y="15" width="2" height="1"  fill="#FFFFFF"/>
-    <rect x="57" y="16" width="3" height="1"  fill="#FFFFFF"/>
-  </svg>
-);
-
-const BG_SPACE = () => (
-  <svg width="100%" height="100%" viewBox="0 0 64 32" preserveAspectRatio="xMidYMid slice" style={{ imageRendering: "pixelated" }}>
-    <rect x="0" y="0" width="64" height="32" fill="#04041A"/>
-    <rect x="0"  y="8"  width="14" height="8"  fill="#0D0828"/>
-    <rect x="30" y="18" width="16" height="7"  fill="#0A1528"/>
-    <rect x="50" y="5"  width="14" height="6"  fill="#150828"/>
-    {[
-      [2,1],[6,3],[11,1],[16,4],[21,2],[27,1],[31,3],[36,1],[41,4],[46,2],[51,1],[56,3],[61,1],[63,5],
-      [1,7],[5,9],[9,6],[14,8],[19,7],[23,10],[28,6],[33,9],[38,7],[43,5],[47,9],[53,7],[58,6],[62,9],
-      [3,13],[8,15],[13,12],[17,14],[22,13],[26,15],[31,12],[35,14],[39,16],[44,13],[48,15],[54,12],[59,14],[63,16],
-      [0,19],[4,21],[10,18],[15,20],[20,22],[25,19],[29,21],[34,18],[40,20],[45,22],[50,19],[55,21],[60,18],[62,22],
-      [2,26],[7,28],[12,25],[18,27],[23,25],[28,29],[33,26],[37,28],[42,25],[47,27],[52,26],[57,29],[61,27],
-    ].map(([x,y],i)=>(
-      <rect key={i} x={x} y={y} width="1" height="1"
-        fill={i%7===0?"#FFD54F":i%5===0?"#B3E5FC":i%3===0?"#FFF9C4":"#FFFFFF"}/>
-    ))}
-    <rect x="10" y="4"  width="1" height="3" fill="#FFFFFF"/>
-    <rect x="9"  y="5"  width="3" height="1" fill="#FFFFFF"/>
-    <rect x="48" y="20" width="1" height="3" fill="#FFD54F"/>
-    <rect x="47" y="21" width="3" height="1" fill="#FFD54F"/>
-    <rect x="25" y="10" width="1" height="3" fill="#B3E5FC"/>
-    <rect x="24" y="11" width="3" height="1" fill="#B3E5FC"/>
-    <rect x="40" y="2"  width="12" height="10" fill="#6A1B9A"/>
-    <rect x="39" y="3"  width="14" height="8"  fill="#7B1FA2"/>
-    <rect x="42" y="3"  width="6"  height="5"  fill="#9C27B0"/>
-    <rect x="43" y="3"  width="4"  height="3"  fill="#AB47BC"/>
-    <rect x="44" y="3"  width="2"  height="2"  fill="#CE93D8"/>
-    <rect x="47" y="7"  width="5"  height="4"  fill="#4A148C"/>
-    <rect x="49" y="5"  width="3"  height="3"  fill="#4A148C"/>
-    <rect x="36" y="7"  width="20" height="1"  fill="#CE93D8"/>
-    <rect x="37" y="6"  width="18" height="1"  fill="#AB47BC"/>
-    <rect x="5"  y="20" width="7"  height="7"  fill="#1565C0"/>
-    <rect x="4"  y="21" width="9"  height="5"  fill="#1976D2"/>
-    <rect x="6"  y="21" width="3"  height="3"  fill="#42A5F5"/>
-    <rect x="16" y="17" width="6"  height="6"  fill="#ECEFF1"/>
-    <rect x="15" y="18" width="8"  height="4"  fill="#ECEFF1"/>
-    <rect x="58" y="14" width="1"  height="1"  fill="#FFFFFF"/>
-    <rect x="57" y="15" width="2"  height="1"  fill="#FFF9C4"/>
-    <rect x="55" y="16" width="3"  height="1"  fill="#FFD54F"/>
-    <rect x="53" y="17" width="3"  height="1"  fill="#FF8F00"/>
-  </svg>
-);
-
-const BG_CITY = () => (
-  <svg width="100%" height="100%" viewBox="0 0 64 32" preserveAspectRatio="xMidYMid slice" style={{ imageRendering: "pixelated" }}>
-    <rect x="0" y="0" width="64" height="32" fill="#0D0D2B"/>
-    <rect x="0" y="0" width="64" height="5"  fill="#0A0A25"/>
-    {[[3,1],[8,3],[14,1],[19,4],[24,2],[29,1],[35,3],[40,1],[45,4],[51,2],[57,1],[62,3],[1,6],[11,5],[22,6],[33,5],[44,6],[55,5],[63,7]].map(([x,y],i)=>(
-      <rect key={i} x={x} y={y} width="1" height="1" fill={i%4===0?"#FFF9C4":"#FFFFFF"}/>
-    ))}
-    <rect x="4"  y="1"  width="5" height="5"  fill="#FFF9C4"/>
-    <rect x="3"  y="2"  width="7" height="3"  fill="#FFF9C4"/>
-    <rect x="0"  y="9"  width="9" height="23" fill="#0D1117"/>
-    <rect x="3"  y="7"  width="3" height="3"  fill="#0D1117"/>
-    {[[1,10],[5,10],[1,13],[5,13],[1,16],[5,16],[1,19],[5,19],[1,22],[5,22],[1,25],[5,25]].map(([x,y],i)=>(
-      <rect key={i} x={x} y={y} width="2" height="2" fill={i%3===0?"#FFD54F":i%3===1?"#37474F":"#FFF176"}/>
-    ))}
-    <rect x="10" y="13" width="8"  height="19" fill="#161B22"/>
-    <rect x="12" y="11" width="4"  height="3"  fill="#161B22"/>
-    {[[11,14],[15,14],[11,17],[15,17],[11,20],[15,20],[11,23],[15,23],[11,26],[15,26]].map(([x,y],i)=>(
-      <rect key={i} x={x} y={y} width="2" height="2" fill={i%2===0?"#FFF176":"#37474F"}/>
-    ))}
-    <rect x="20" y="5"  width="10" height="27" fill="#111827"/>
-    <rect x="22" y="3"  width="6"  height="3"  fill="#111827"/>
-    <rect x="24" y="2"  width="2"  height="2"  fill="#E040FB"/>
-    <rect x="24" y="1"  width="2"  height="1"  fill="#EA80FC"/>
-    {[[21,6],[27,6],[21,9],[27,9],[21,12],[27,12],[21,15],[27,15],[21,18],[27,18],[21,21],[27,21],[21,24],[27,24],[21,27],[27,27]].map(([x,y],i)=>(
-      <rect key={i} x={x} y={y} width="2" height="2" fill={i%4===0?"#40C4FF":i%4===1?"#FFD54F":i%4===2?"#37474F":"#E040FB"}/>
-    ))}
-    <rect x="32" y="11" width="9"  height="21" fill="#0F1923"/>
-    <rect x="34" y="9"  width="5"  height="3"  fill="#0F1923"/>
-    {[[33,12],[38,12],[33,15],[38,15],[33,18],[38,18],[33,21],[38,21],[33,24],[38,24],[33,27],[38,27]].map(([x,y],i)=>(
-      <rect key={i} x={x} y={y} width="2" height="2" fill={i%3===0?"#FFF176":i%3===1?"#37474F":"#FFD54F"}/>
-    ))}
-    <rect x="43" y="7"  width="8"  height="25" fill="#0D1117"/>
-    <rect x="45" y="5"  width="4"  height="3"  fill="#0D1117"/>
-    <rect x="46" y="4"  width="2"  height="2"  fill="#E040FB"/>
-    {[[44,8],[49,8],[44,11],[49,11],[44,14],[49,14],[44,17],[49,17],[44,20],[49,20],[44,23],[49,23],[44,26],[49,26]].map(([x,y],i)=>(
-      <rect key={i} x={x} y={y} width="2" height="2" fill={i%4===0?"#E040FB":i%4===1?"#FFD54F":i%4===2?"#37474F":"#40C4FF"}/>
-    ))}
-    <rect x="53" y="14" width="11" height="18" fill="#161B22"/>
-    <rect x="56" y="12" width="5"  height="3"  fill="#161B22"/>
-    {[[54,15],[59,15],[54,18],[59,18],[54,21],[59,21],[54,24],[59,24],[54,27],[59,27]].map(([x,y],i)=>(
-      <rect key={i} x={x} y={y} width="2" height="2" fill={i%2===0?"#FFF176":"#40C4FF"}/>
-    ))}
-    <rect x="0"  y="29" width="64" height="3"  fill="#212121"/>
-    {[[6,30],[18,30],[30,30],[42,30],[54,30]].map(([x,y],i)=>(
-      <rect key={i} x={x} y={y} width="5" height="1" fill="#FFD54F"/>
-    ))}
-    <rect x="15" y="29" width="5" height="2"  fill="#1565C0"/>
-    <rect x="16" y="28" width="3" height="1"  fill="#1565C0"/>
-    <rect x="19" y="29" width="1" height="1"  fill="#FFD54F"/>
-    <rect x="46" y="29" width="5" height="2"  fill="#C62828"/>
-    <rect x="47" y="28" width="3" height="1"  fill="#C62828"/>
-    <rect x="45" y="29" width="1" height="1"  fill="#FFD54F"/>
-  </svg>
-);
-
-const PARTY_BACKGROUNDS = [
-  { name: "숲속", color: "#4CAF50", Component: BG_FOREST },
-  { name: "바다", color: "#1565C0", Component: BG_OCEAN },
-  { name: "우주", color: "#080820", Component: BG_SPACE },
-  { name: "도시", color: "#1A1A2E", Component: BG_CITY },
-];
 
 
 const STORY_GRADIENTS = [
@@ -369,7 +67,6 @@ export default function GroupDetailPage() {
   const [showInvite, setShowInvite] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [localExpenses] = useState<LocalExpense[]>([]);
-  const [partyBg, setPartyBg] = useState(0);
   const [stories] = useState<Record<number, StoryEntry>>(loadStories);
 
   /* ── Story overlay ── */
@@ -466,7 +163,7 @@ export default function GroupDetailPage() {
 
   return (
     <>
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
@@ -691,71 +388,25 @@ export default function GroupDetailPage() {
 
       {/* ── 파티 캐릭터 섹션 ── */}
       <div className="bg-card rounded-md border border-border overflow-hidden">
-        <div className="flex items-center justify-between px-5 pt-4 pb-3">
+        <div className="px-5 pt-4 pb-3">
           <h3 className="flex items-center gap-2">
             <Swords className="w-4 h-4 text-primary" />
             파티 캐릭터
           </h3>
-          <div className="flex items-center gap-1.5">
-            {PARTY_BACKGROUNDS.map((bg, i) => (
-              <button
-                key={i}
-                onClick={() => setPartyBg(i)}
-                title={bg.name}
-                className={`w-6 h-6 rounded border-2 transition-all ${
-                  partyBg === i
-                    ? "border-primary scale-110 shadow-md"
-                    : "border-transparent hover:border-muted-foreground/40"
-                }`}
-                style={{ backgroundColor: bg.color }}
-              />
-            ))}
-          </div>
         </div>
 
-        <div className="relative mx-4 mb-4 rounded-md overflow-hidden" style={{ height: 160 }}>
-          <div className="absolute inset-0">
-            {(() => {
-              const Bg = PARTY_BACKGROUNDS[partyBg].Component;
-              return <Bg />;
-            })()}
-          </div>
-
-          <div className="absolute inset-0 flex items-end justify-around pb-3 px-2">
-            {group.members.map((member) => {
-              const char = getMemberCharacter(member.id);
-              return (
-                <div key={member.id} className="flex flex-col items-center gap-1">
-                  {member.isHost && (
-                    <Crown className="w-3 h-3 text-amber-400 drop-shadow" />
-                  )}
-                  <div className="drop-shadow-lg">
-                    <PixelSprite type={char.type} colors={char.colors} size={48} />
-                  </div>
-                  <div style={{
-                    background: "linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)",
-                    border: "1px solid #4a9eff",
-                    borderTop: "2px solid #73c8ff",
-                    borderBottom: "2px solid #1a5fa8",
-                    padding: "1px 5px",
-                    maxWidth: "56px",
-                    fontFamily: "monospace",
-                    fontSize: "8px",
-                    color: "#e8f4ff",
-                    textAlign: "center",
-                    letterSpacing: "0.04em",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    boxShadow: "0 2px 4px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08)",
-                    imageRendering: "pixelated",
-                  }}>
-                    {member.name}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        <div className="mx-4 mb-4 rounded-md bg-background flex items-end justify-around pb-3 px-2" style={{ height: 120 }}>
+          {group.members.map((member) => {
+            const char = getMemberCharacter(member.id);
+            return (
+              <div key={member.id} className="flex flex-col items-center">
+                {member.isHost && (
+                  <Crown className="w-3 h-3 text-amber-400 mb-0.5" />
+                )}
+                <PixelSprite type={char.type} colors={char.colors} size={48} />
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

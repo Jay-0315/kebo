@@ -73,7 +73,7 @@ export default function KabemonPage() {
   const selectedChar = selected !== null ? CHARACTERS.find((c) => c.id === selected) : null;
 
   return (
-    <div className="space-y-4 max-w-lg">
+    <div className="space-y-4">
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
         <div>
@@ -114,96 +114,94 @@ export default function KabemonPage() {
 
       {/* ══════════════ CHARACTER TAB ══════════════ */}
       {tab === "character" && (
-        <div className="space-y-4">
-          {/* Hero — animated idle float + react on hover */}
-          <div
-            className={`bg-card rounded-2xl border-2 ${RARITY_BORDER[currentChar.rarity]} p-6 shadow-lg ${RARITY_GLOW[currentChar.rarity]}`}
-          >
-            <div className="flex flex-col items-center gap-4">
-              {/* Animated character */}
-              <div className={`p-5 rounded-2xl ${RARITY_BG[currentChar.rarity]} relative`}>
-                {/* Rarity glow ring */}
-                <div
-                  className={`absolute inset-0 rounded-2xl blur-md opacity-30 ${RARITY_BG[currentChar.rarity]}`}
-                  style={{ transform: "scale(1.1)" }}
-                />
-                <div className="relative z-10">
-                  <PixelCharacter characterId={currentChar.id} size={140} float />
-                </div>
-              </div>
-
-              {/* Info */}
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-1">
-                  <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${RARITY_BG[currentChar.rarity]} ${RARITY_COLOR[currentChar.rarity]}`}>
-                    {RARITY_LABEL[currentChar.rarity]}
-                  </span>
-                  <span className="text-xs text-muted-foreground">#{currentChar.id}</span>
-                </div>
-                <p className={`text-2xl font-bold ${RARITY_COLOR[currentChar.rarity]}`}>
-                  {currentChar.korName}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">{currentChar.description}</p>
-                <p className="text-[11px] text-muted-foreground/60 mt-2">
-                  마우스를 올리면 반응 모션을 볼 수 있어요
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="bg-card rounded-xl border border-border p-5">
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
-              <Trophy className="w-4 h-4 text-primary" />
-              캐릭터 스탯
-            </h3>
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              {[
-                { label: "출석 일수",    value: attendanceDays, unit: "일", color: "text-primary/80" },
-                { label: "미션 포인트",  value: missionPoints,  unit: "P",  color: "text-primary/80" },
-                { label: "연속 기록",    value: streakDays,     unit: "일", color: "text-accent" },
-              ].map(({ label, value, unit, color }) => (
-                <div key={label} className="bg-muted rounded-lg p-3 text-center">
-                  <p className="text-[10px] text-muted-foreground mb-1">{label}</p>
-                  <p className={`text-2xl font-bold ${color}`}>{value}</p>
-                  <p className="text-[10px] text-muted-foreground">{unit}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Next character progress */}
-            {nextChar ? (
-              <div className="bg-muted rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <PixelSprite type={nextChar.type} colors={nextChar.colors} size={28} />
-                  <div className="flex-1">
-                    <p className="text-xs font-medium">
-                      다음 해금: <span className={RARITY_COLOR[nextChar.rarity]}>{nextChar.korName}</span>
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">Lv.{nextChar.unlockLevel} 도달 시 해금</p>
-                  </div>
-                  <span className="text-xs font-semibold text-muted-foreground">Lv.{nextChar.unlockLevel}</span>
-                </div>
-                <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-                  <span>다음 레벨까지 {remaining}P</span>
-                  <span>{missionPoints}/{nextLevelTarget}P</span>
-                </div>
-                <div className="h-2 bg-card rounded-full overflow-hidden">
+        <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+          {/* ── Left column: Hero + Stats ── */}
+          <div className="flex flex-col gap-4 flex-1 min-w-0">
+            {/* Hero — animated idle float + react on hover */}
+            <div
+              className={`bg-card rounded-2xl border-2 ${RARITY_BORDER[currentChar.rarity]} p-6 shadow-lg ${RARITY_GLOW[currentChar.rarity]}`}
+            >
+              <div className="flex flex-col items-center gap-4">
+                <div className={`p-5 rounded-2xl ${RARITY_BG[currentChar.rarity]} relative`}>
                   <div
-                    className="h-full bg-primary/80 rounded-full transition-all"
-                    style={{ width: `${progress}%` }}
+                    className={`absolute inset-0 rounded-2xl blur-md opacity-30 ${RARITY_BG[currentChar.rarity]}`}
+                    style={{ transform: "scale(1.1)" }}
                   />
+                  <div className="relative z-10">
+                    <PixelCharacter characterId={currentChar.id} size={140} float />
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${RARITY_BG[currentChar.rarity]} ${RARITY_COLOR[currentChar.rarity]}`}>
+                      {RARITY_LABEL[currentChar.rarity]}
+                    </span>
+                    <span className="text-xs text-muted-foreground">#{currentChar.id}</span>
+                  </div>
+                  <p className={`text-2xl font-bold ${RARITY_COLOR[currentChar.rarity]}`}>
+                    {currentChar.korName}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">{currentChar.description}</p>
+                  <p className="text-[11px] text-muted-foreground/60 mt-2">
+                    마우스를 올리면 반응 모션을 볼 수 있어요
+                  </p>
                 </div>
               </div>
-            ) : (
-              <div className="bg-muted rounded-lg p-3 text-center text-sm text-muted-foreground">
-                🎉 모든 캐릭터 해금 완료!
+            </div>
+
+            {/* Stats */}
+            <div className="bg-card rounded-xl border border-border p-5">
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                <Trophy className="w-4 h-4 text-primary" />
+                캐릭터 스탯
+              </h3>
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {[
+                  { label: "출석 일수",   value: attendanceDays, unit: "일", color: "text-primary/80" },
+                  { label: "미션 포인트", value: missionPoints,  unit: "P",  color: "text-primary/80" },
+                  { label: "연속 기록",   value: streakDays,     unit: "일", color: "text-accent" },
+                ].map(({ label, value, unit, color }) => (
+                  <div key={label} className="bg-muted rounded-lg p-3 text-center">
+                    <p className="text-[10px] text-muted-foreground mb-1">{label}</p>
+                    <p className={`text-2xl font-bold ${color}`}>{value}</p>
+                    <p className="text-[10px] text-muted-foreground">{unit}</p>
+                  </div>
+                ))}
               </div>
-            )}
+
+              {nextChar ? (
+                <div className="bg-muted rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <PixelSprite type={nextChar.type} colors={nextChar.colors} size={28} />
+                    <div className="flex-1">
+                      <p className="text-xs font-medium">
+                        다음 해금: <span className={RARITY_COLOR[nextChar.rarity]}>{nextChar.korName}</span>
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">Lv.{nextChar.unlockLevel} 도달 시 해금</p>
+                    </div>
+                    <span className="text-xs font-semibold text-muted-foreground">Lv.{nextChar.unlockLevel}</span>
+                  </div>
+                  <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+                    <span>다음 레벨까지 {remaining}P</span>
+                    <span>{missionPoints}/{nextLevelTarget}P</span>
+                  </div>
+                  <div className="h-2 bg-card rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary/80 rounded-full transition-all"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-muted rounded-lg p-3 text-center text-sm text-muted-foreground">
+                  🎉 모든 캐릭터 해금 완료!
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Mission guide */}
-          <div className="bg-card rounded-xl border border-border p-5">
+          {/* ── Right column: Mission guide (desktop) / Bottom (mobile) ── */}
+          <div className="lg:w-64 lg:shrink-0 bg-card rounded-xl border border-border p-5">
             <h3 className="mb-3 text-sm font-semibold">미션 가이드</h3>
             <div className="space-y-2">
               {MISSIONS.map(({ icon, label, reward, desc }) => (
