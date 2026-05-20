@@ -57,7 +57,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md relative z-10">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/80 rounded-lg mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/80 rounded mb-4">
             <Wallet className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-foreground mb-2">가계부</h1>
@@ -65,7 +65,7 @@ export default function LoginPage() {
         </div>
 
         {/* Login Form */}
-        <div className="bg-card rounded-lg p-6 shadow-lg border border-border">
+        <div className="bg-card rounded p-6 shadow-lg border border-border">
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block mb-2 text-sm">이메일</label>
@@ -76,7 +76,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="example@email.com"
-                  className="w-full pl-10 pr-4 py-3 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full pl-10 pr-4 py-3 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring"
                   required
                 />
               </div>
@@ -91,7 +91,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-3 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full pl-10 pr-4 py-3 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring"
                   required
                 />
               </div>
@@ -100,7 +100,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-primary/80 text-primary-foreground rounded-lg py-3 font-medium shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
+              className="w-full bg-primary/80 text-primary-foreground rounded py-3 font-medium shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
             >
               {isSubmitting ? "로그인 중..." : "로그인"}
             </button>

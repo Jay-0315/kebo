@@ -1,11 +1,10 @@
 import { useRef, useState } from "react";
-import { Calendar, TrendingUp, Heart, LogOut, Globe2, Camera, X, Pencil, Check, Gamepad2, ChevronRight } from "lucide-react";
+import { Calendar, TrendingUp, Heart, Globe2, Camera, X, Pencil, Check, Gamepad2, ChevronRight } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router";
 import PixelCharacter from "./PixelCharacter";
 import { useAppData } from "../context/AppDataContext";
 import { formatCurrency, getCountryByCode } from "../data/currency";
-import { clearAuthSession } from "../lib/auth";
 import { CHARACTERS, getCurrentCharacter, RARITY_LABEL, RARITY_COLOR } from "../data/characters";
 
 export default function MyPage() {
@@ -43,13 +42,7 @@ export default function MyPage() {
     ? (CHARACTERS.find((c) => c.id === rewardSummary.equippedCharacterId) ?? getCurrentCharacter(rewardSummary.level))
     : getCurrentCharacter(rewardSummary.level);
 
-  const handleLogout = () => {
-    clearAuthSession();
-    navigate("/login");
-    window.location.reload();
-  };
-
-  return (
+return (
     <div className="space-y-6">
       {/* ── Profile header ── */}
       <div className="flex items-center gap-4">
@@ -119,19 +112,12 @@ export default function MyPage() {
           </p>
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1 text-sm shrink-0"
-        >
-          <LogOut className="w-4 h-4" />
-          로그아웃
-        </button>
       </div>
 
       {/* ── 캐보몬 shortcut card ── */}
       <button
         onClick={() => navigate("/kabemon")}
-        className="w-full bg-card rounded-xl border-2 border-primary/50 hover:border-primary p-4 transition-all hover:shadow-md group flex items-center gap-4 text-left"
+        className="w-full bg-card rounded-md border-2 border-primary/50 hover:border-primary p-4 transition-all hover:shadow-md group flex items-center gap-4 text-left"
       >
         {/* Character preview */}
         <div className="shrink-0">
@@ -154,7 +140,7 @@ export default function MyPage() {
       </button>
 
       {/* ── 월별 지출 합계 ── */}
-      <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
+      <div className="bg-card rounded-md p-5 shadow-sm border border-border">
         <h3 className="mb-4 flex items-center gap-2">
           <Calendar className="w-5 h-5 text-primary/80" />
           월별 지출 합계
@@ -179,26 +165,26 @@ export default function MyPage() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* ── 이번 달 요약 ── */}
-        <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
+        <div className="bg-card rounded-md p-5 shadow-sm border border-border">
           <h3 className="mb-4 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-accent" />
             이번 달 요약
           </h3>
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-muted rounded-lg p-3">
+            <div className="bg-muted rounded p-3">
               <p className="text-sm text-muted-foreground mb-1">총 지출</p>
               <p className="text-xl font-bold text-destructive">
                 {formatCurrency(totalSpent, profile.baseCurrency)}
               </p>
             </div>
-            <div className="bg-muted rounded-lg p-3">
+            <div className="bg-muted rounded p-3">
               <p className="text-sm text-muted-foreground mb-1">평균 기록 금액</p>
               <p className="text-xl font-bold text-accent">
                 {formatCurrency(averageSpend, profile.baseCurrency)}
               </p>
             </div>
           </div>
-          <div className="mt-4 bg-muted rounded-lg p-4">
+          <div className="mt-4 bg-muted rounded p-4">
             <div className="flex items-center gap-2 mb-2">
               <Globe2 className="w-4 h-4 text-primary" />
               <p className="font-medium">리워드 기준</p>
@@ -208,21 +194,21 @@ export default function MyPage() {
         </div>
 
         {/* ── 내가 작성한 게시글 ── */}
-        <div className="bg-card rounded-xl p-5 shadow-sm border border-border">
+        <div className="bg-card rounded-md p-5 shadow-sm border border-border">
           <h3 className="mb-4 flex items-center gap-2">
             <Heart className="w-5 h-5 text-primary/80" />
             내가 작성한 게시글
           </h3>
           <div className="space-y-2">
             {myPosts.length === 0 ? (
-              <div className="p-4 rounded-lg bg-muted text-sm text-muted-foreground">
+              <div className="p-4 rounded bg-muted text-sm text-muted-foreground">
                 아직 작성한 게시글이 없습니다.
               </div>
             ) : (
               myPosts.map((post) => (
                 <div
                   key={post.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted hover:bg-accent/30 transition-colors"
+                  className="flex items-center justify-between p-3 rounded bg-muted hover:bg-accent/30 transition-colors"
                 >
                   <div className="min-w-0">
                     <p className="font-medium truncate">{post.content}</p>

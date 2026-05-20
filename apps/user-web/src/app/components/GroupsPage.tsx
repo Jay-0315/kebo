@@ -149,12 +149,12 @@ export default function GroupsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
-        <h2 className="shrink-0">그룹 지출 관리</h2>
+        <h2 className="shrink-0">그룹 관리</h2>
         <div className="flex gap-2 shrink-0">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
             title="알림"
-            className="relative bg-accent text-accent-foreground rounded-xl w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all"
+            className="relative bg-accent text-accent-foreground rounded-md w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all"
           >
             <Bell className="w-5 h-5" />
             {joinRequests.length > 0 && (
@@ -166,14 +166,14 @@ export default function GroupsPage() {
           <button
             onClick={() => setShowJoinForm(true)}
             title="그룹 참가"
-            className="bg-secondary text-secondary-foreground rounded-xl w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all"
+            className="bg-secondary text-secondary-foreground rounded-md w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all"
           >
             <Users className="w-5 h-5" />
           </button>
           <button
             onClick={() => setShowCreateForm(true)}
             title="그룹 생성"
-            className="bg-primary/80 text-primary-foreground rounded-xl w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all"
+            className="bg-primary/80 text-primary-foreground rounded-md w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all"
           >
             <Plus className="w-5 h-5" />
           </button>
@@ -182,7 +182,7 @@ export default function GroupsPage() {
 
       {/* Notifications Panel */}
       {showNotifications && (
-        <div className="bg-card rounded-xl p-5 shadow-lg border border-border">
+        <div className="bg-card rounded-md p-5 shadow-lg border border-border">
           <h3 className="mb-4 flex items-center gap-2">
             <Bell className="w-5 h-5 text-primary/80" />
             가입 요청
@@ -192,7 +192,7 @@ export default function GroupsPage() {
           ) : (
             <div className="space-y-3">
               {joinRequests.map((request) => (
-                <div key={request.id} className="bg-muted rounded-lg p-4">
+                <div key={request.id} className="bg-muted rounded p-4">
                   <div className="mb-3">
                     <p className="font-medium">{request.userName}님이 가입을 요청했습니다</p>
                     <p className="text-sm text-muted-foreground">
@@ -202,13 +202,13 @@ export default function GroupsPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleApproveRequest(request)}
-                      className="flex-1 bg-primary/80 text-primary-foreground rounded-lg py-2 text-sm font-medium hover:shadow-md transition-all"
+                      className="flex-1 bg-primary/80 text-primary-foreground rounded py-2 text-sm font-medium hover:shadow-md transition-all"
                     >
                       승인
                     </button>
                     <button
                       onClick={() => handleRejectRequest(request)}
-                      className="flex-1 bg-destructive/10 text-destructive rounded-lg py-2 text-sm font-medium hover:bg-destructive/20 transition-all"
+                      className="flex-1 bg-destructive/10 text-destructive rounded py-2 text-sm font-medium hover:bg-destructive/20 transition-all"
                     >
                       거절
                     </button>
@@ -230,7 +230,7 @@ export default function GroupsPage() {
             <button
               key={group.id}
               onClick={() => navigate(`/groups/${group.id}`, { state: { group } })}
-              className="bg-card rounded-xl p-5 border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-left group"
+              className="bg-card rounded-md p-5 border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-left group"
             >
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -279,7 +279,7 @@ export default function GroupsPage() {
           onClick={() => setShowCreateForm(false)}
         >
           <div
-            className="bg-card rounded-xl p-6 max-w-md w-full shadow-2xl"
+            className="bg-card rounded-md p-6 max-w-md w-full shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
@@ -296,11 +296,11 @@ export default function GroupsPage() {
                   value={newGroupName}
                   onChange={(e) => setNewGroupName(e.target.value)}
                   placeholder="예: 가족, 친구들, 동료"
-                  className="w-full px-4 py-3 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full px-4 py-3 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring"
                   required
                 />
               </div>
-              <div className="bg-muted rounded-lg p-4 flex gap-3">
+              <div className="bg-muted rounded p-4 flex gap-3">
                 <TrendingUp className="w-5 h-5 text-primary/80 shrink-0" />
                 <p className="text-sm text-muted-foreground">
                   그룹을 생성하면 고유한 그룹 코드가 발급됩니다. 이 코드를 공유하여 다른 사람을 초대할 수 있습니다.
@@ -308,7 +308,7 @@ export default function GroupsPage() {
               </div>
               <button
                 type="submit"
-                className="w-full bg-primary/80 text-primary-foreground rounded-lg py-3 font-medium shadow-md hover:shadow-lg transition-all"
+                className="w-full bg-primary/80 text-primary-foreground rounded py-3 font-medium shadow-md hover:shadow-lg transition-all"
               >
                 생성하기
               </button>
@@ -324,7 +324,7 @@ export default function GroupsPage() {
           onClick={() => setShowJoinForm(false)}
         >
           <div
-            className="bg-card rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto shadow-2xl"
+            className="bg-card rounded-md p-6 max-w-md w-full max-h-[80vh] overflow-y-auto shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
@@ -336,7 +336,7 @@ export default function GroupsPage() {
             <div className="flex gap-2 mb-6">
               <button
                 onClick={() => setJoinMethod("code")}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                className={`flex-1 py-2 px-4 rounded font-medium transition-all ${
                   joinMethod === "code" ? "bg-primary/80 text-primary-foreground shadow-md" : "bg-muted text-muted-foreground hover:bg-accent/30"
                 }`}
               >
@@ -344,7 +344,7 @@ export default function GroupsPage() {
               </button>
               <button
                 onClick={() => setJoinMethod("request")}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+                className={`flex-1 py-2 px-4 rounded font-medium transition-all ${
                   joinMethod === "request" ? "bg-primary/80 text-primary-foreground shadow-md" : "bg-muted text-muted-foreground hover:bg-accent/30"
                 }`}
               >
@@ -362,11 +362,11 @@ export default function GroupsPage() {
                     onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
                     placeholder="8자리 코드 입력"
                     maxLength={8}
-                    className="w-full px-4 py-3 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring font-mono text-lg text-center"
+                    className="w-full px-4 py-3 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring font-mono text-lg text-center"
                     required
                   />
                 </div>
-                <div className="bg-muted rounded-lg p-4 flex gap-3">
+                <div className="bg-muted rounded p-4 flex gap-3">
                   <TrendingUp className="w-5 h-5 text-primary/80 shrink-0" />
                   <p className="text-sm text-muted-foreground">
                     코드를 입력하면 바로 그룹에 참가됩니다. 호스트로부터 코드를 전달받으세요.
@@ -374,7 +374,7 @@ export default function GroupsPage() {
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-primary/80 text-primary-foreground rounded-lg py-3 font-medium shadow-md hover:shadow-lg transition-all"
+                  className="w-full bg-primary/80 text-primary-foreground rounded py-3 font-medium shadow-md hover:shadow-lg transition-all"
                 >
                   바로 참가하기
                 </button>
@@ -392,11 +392,11 @@ export default function GroupsPage() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="그룹 이름 검색"
-                      className="w-full pl-10 pr-4 py-3 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="w-full pl-10 pr-4 py-3 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
                 </div>
-                <div className="bg-muted rounded-lg p-4 flex gap-3">
+                <div className="bg-muted rounded p-4 flex gap-3">
                   <TrendingUp className="w-5 h-5 text-primary/80 shrink-0" />
                   <p className="text-sm text-muted-foreground">
                     그룹을 선택하면 호스트에게 가입 신청이 전송됩니다.
@@ -407,7 +407,7 @@ export default function GroupsPage() {
                     <p className="text-center text-muted-foreground py-8">검색 결과가 없습니다</p>
                   ) : (
                     filteredGroups.map((group) => (
-                      <div key={group.id} className="bg-muted rounded-lg p-4">
+                      <div key={group.id} className="bg-muted rounded p-4">
                         <div className="flex items-center justify-between">
                           <div>
                             <h4 className="font-medium mb-1">{group.name}</h4>
@@ -424,7 +424,7 @@ export default function GroupsPage() {
                           </div>
                           <button
                             onClick={() => handleRequestJoin(group)}
-                            className="bg-primary/80 text-primary-foreground rounded-lg px-4 py-2 text-sm font-medium shadow-md hover:shadow-lg transition-all"
+                            className="bg-primary/80 text-primary-foreground rounded px-4 py-2 text-sm font-medium shadow-md hover:shadow-lg transition-all"
                           >
                             신청
                           </button>

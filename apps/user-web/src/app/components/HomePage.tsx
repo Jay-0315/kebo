@@ -1,145 +1,152 @@
-import { Link } from "react-router";
-import { Globe2 } from "lucide-react";
+import { useNavigate, Link } from "react-router";
+import { Heart, Pencil, Users, ChevronRight, TrendingUp, MessageSquare } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
-import { formatCurrency, getCountryByCode } from "../data/currency";
+import { formatRelativeTime } from "../lib/story-storage";
+import { loadPostCategories } from "../lib/post-categories";
 
 export default function HomePage() {
-  const { expenses, profile, rewardSummary } = useAppData();
-  const recentExpenses = expenses.slice(0, 4);
-  const totalSpent = expenses.reduce((sum, expense) => sum + expense.baseAmount, 0);
-  const sharedSpent = expenses
-    .filter((expense) => expense.sharedToCommunity)
-    .reduce((sum, expense) => sum + expense.baseAmount, 0);
-  const categoryTotals = Object.entries(
-    expenses.reduce<Record<string, number>>((acc, expense) => {
-      acc[expense.category] = (acc[expense.category] ?? 0) + expense.baseAmount;
-      return acc;
-    }, {}),
-  )
-    .map(([name, amount], index) => ({
-      name,
-      amount,
-      color: ["bg-primary", "bg-chart-2", "bg-chart-3", "bg-chart-4"][index % 4],
-    }))
-    .sort((a, b) => b.amount - a.amount)
-    .slice(0, 4);
-  const country = getCountryByCode(profile.baseCountryCode);
+  const navigate = useNavigate();
+  const { posts, profile, rewardSummary, profilePhoto, togglePostLike } = useAppData();
+
+  const categories = loadPostCategories();
+  const recentPosts = posts.slice(0, 5);
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      <div className="bg-gradient-to-br from-primary to-accent rounded-lg p-6 text-white shadow-lg">
-        <p className="text-sm opacity-90 mb-1">안녕하세요</p>
-        <h2 className="mb-6">{profile.name}님의 환율 가계부</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
-            <p className="text-xs opacity-80 mb-1">메인국가 기준 총지출</p>
-            <p className="text-xl font-bold">{formatCurrency(totalSpent, profile.baseCurrency)}</p>
-          </div>
-          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
-            <p className="text-xs opacity-80 mb-1">공유된 내역 합계</p>
-            <p className="text-xl font-bold">{formatCurrency(sharedSpent, profile.baseCurrency)}</p>
-          </div>
-          <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
-            <p className="text-xs opacity-80 mb-1">리워드 포인트</p>
-            <p className="text-xl font-bold">{rewardSummary.missionPoints}P</p>
-          </div>
+    <div className="space-y-5 max-w-2xl">
+
+      {/* ── Profile banner ── */}
+      <div className="bg-card rounded border border-border p-5 flex items-center gap-4">
+        <div
+          onClick={() => navigate("/mypage")}
+          className="shrink-0 cursor-pointer"
+        >
+          {profilePhoto ? (
+            <img src={profilePhoto} alt={profile.name} className="w-14 h-14 rounded-full object-cover ring-2 ring-primary/40" />
+          ) : (
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/70 to-accent/80 flex items-center justify-center text-white font-bold text-xl">
+              {profile.name[0]}
+            </div>
+          )}
         </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold truncate">{profile.name}</p>
+          <p className="text-sm text-muted-foreground">Lv.{rewardSummary.level} · {rewardSummary.missionPoints}P</p>
+        </div>
+        <button
+          onClick={() => navigate("/community")}
+          className="shrink-0 flex items-center gap-1.5 bg-primary/80 text-primary-foreground rounded-md px-4 py-2 text-sm font-medium hover:shadow-md transition-all"
+        >
+          <Pencil className="w-4 h-4" />
+          글쓰기
+        </button>
       </div>
 
-      <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6">
-        <div className="bg-card rounded-lg p-5 border border-border">
-          <div className="flex items-center justify-between mb-4">
-            <h3>최근 지출</h3>
-            <Link to="/expenses" className="text-primary text-sm hover:underline">
-              전체보기
-            </Link>
+      {/* ── Quick links ── */}
+      <div className="grid grid-cols-2 gap-3">
+        <Link
+          to="/groups"
+          className="bg-card rounded border border-border p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors"
+        >
+          <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+            <Users className="w-5 h-5 text-primary" />
           </div>
+          <div className="min-w-0">
+            <p className="font-medium text-sm">그룹 지출</p>
+            <p className="text-xs text-muted-foreground">금액 정산</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto shrink-0" />
+        </Link>
+        <Link
+          to="/kabemon"
+          className="bg-card rounded border border-border p-4 flex items-center gap-3 hover:bg-muted/50 transition-colors"
+        >
+          <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+            <TrendingUp className="w-5 h-5 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <p className="font-medium text-sm">캐보몬</p>
+            <p className="text-xs text-muted-foreground">도감 · 리워드</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto shrink-0" />
+        </Link>
+      </div>
+
+      {/* ── Feed ── */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-primary" />
+            최근 게시글
+          </h3>
+          <Link to="/community" className="text-sm text-primary hover:underline">
+            전체보기
+          </Link>
+        </div>
+
+        {recentPosts.length === 0 ? (
+          <div className="bg-card rounded border border-border p-10 text-center text-muted-foreground">
+            <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" />
+            <p className="text-sm">아직 게시글이 없습니다</p>
+            <button
+              onClick={() => navigate("/community")}
+              className="mt-3 text-sm text-primary hover:underline"
+            >
+              첫 글 작성하기
+            </button>
+          </div>
+        ) : (
           <div className="space-y-3">
-            {recentExpenses.map((expense) => (
-              <div
-                key={expense.id}
-                className="flex items-start gap-3 p-3 rounded-xl bg-muted hover:bg-accent/20 transition-colors"
-              >
-                <div className="w-11 h-11 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <span className="text-lg">{getCountryByCode(expense.countryCode).flag}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{expense.memo}</p>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                    <span>{expense.date} · {expense.category}</span>
-                    <span>{getCountryByCode(expense.countryCode).name}</span>
-                    {expense.sharedToCommunity && (
-                      <span className="bg-primary/20 text-primary px-2 py-0.5 rounded">
-                        커뮤니티 공유
-                      </span>
+            {recentPosts.map((post) => {
+              const cat = categories[post.id] ?? "잡담";
+              const catColors: Record<string, string> = {
+                자랑: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+                공략: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+                잡담: "bg-muted text-muted-foreground",
+              };
+              return (
+                <div
+                  key={post.id}
+                  className="bg-card rounded border border-border p-4 hover:border-primary/30 transition-colors cursor-pointer"
+                  onClick={() => navigate("/community")}
+                >
+                  {/* Author row */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/60 to-accent/70 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                      {post.authorName[0]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm">{post.authorName}</p>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${catColors[cat]}`}>
+                          {cat}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</p>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <p className="text-sm leading-relaxed line-clamp-3 mb-3">{post.content}</p>
+
+                  {/* Engagement */}
+                  <div className="flex items-center gap-4 text-muted-foreground">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); togglePostLike(post.id); }}
+                      className={`flex items-center gap-1 text-xs transition-colors ${post.isLiked ? "text-primary" : "hover:text-primary"}`}
+                    >
+                      <Heart className={`w-3.5 h-3.5 ${post.isLiked ? "fill-current" : ""}`} />
+                      {post.likes}
+                    </button>
+                    {post.sharedExpenses.length > 0 && (
+                      <span className="text-xs">{post.sharedExpenses.length}개 내역 첨부</span>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    사용 금액 {formatCurrency(expense.spentAmount, expense.spentCurrency)}
-                  </p>
                 </div>
-                <p className="font-bold text-destructive">
-                  {formatCurrency(expense.baseAmount, expense.baseCurrency)}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
-        </div>
-
-        <div className="space-y-6">
-          <div className="bg-card rounded-lg p-5 border border-border">
-            <h3 className="mb-4">카테고리별 지출</h3>
-            <div className="space-y-4">
-              {categoryTotals.map((category) => (
-                <div key={category.name}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm">{category.name}</span>
-                    <span className="font-bold text-destructive">
-                      {formatCurrency(category.amount, profile.baseCurrency)}
-                    </span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${category.color} rounded-full`}
-                      style={{ width: `${totalSpent ? (category.amount / totalSpent) * 100 : 0}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-card rounded-lg p-5 border border-border">
-            <h3 className="mb-4">기준 통화</h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <Globe2 className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium">
-                    {country.flag} {country.name}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    모든 통계는 {profile.baseCurrency} 기준으로 고정 표시됩니다.
-                  </p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-muted rounded-lg p-3">
-                  <p className="text-sm text-muted-foreground mb-1">출석 일수</p>
-                  <p className="text-xl font-bold text-primary/80">{rewardSummary.attendanceDays}일</p>
-                </div>
-                <div className="bg-muted rounded-lg p-3">
-                  <p className="text-sm text-muted-foreground mb-1">연속 기록</p>
-                  <p className="text-xl font-bold text-accent">{rewardSummary.streakDays}일</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
-
     </div>
   );
 }

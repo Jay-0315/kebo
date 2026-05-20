@@ -438,7 +438,7 @@ export default function GroupDetailPage() {
         <p className="mb-4">그룹 정보를 찾을 수 없습니다.</p>
         <button
           onClick={() => navigate("/groups")}
-          className="bg-primary/80 text-primary-foreground rounded-lg px-4 py-2 text-sm font-medium"
+          className="bg-primary/80 text-primary-foreground rounded px-4 py-2 text-sm font-medium"
         >
           그룹 목록으로
         </button>
@@ -471,7 +471,7 @@ export default function GroupDetailPage() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate("/groups")}
-          className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+          className="p-2 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -483,7 +483,7 @@ export default function GroupDetailPage() {
         </div>
         <button
           onClick={() => setShowInvite(!showInvite)}
-          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
+          className={`flex items-center gap-2 rounded px-3 py-2 text-sm font-medium transition-all ${
             showInvite
               ? "bg-primary/10 text-primary border border-primary/30"
               : "bg-muted hover:bg-muted/70 text-foreground"
@@ -496,15 +496,15 @@ export default function GroupDetailPage() {
 
       {/* 초대 코드 패널 */}
       {showInvite && (
-        <div className="bg-card rounded-xl border border-primary/20 p-5">
+        <div className="bg-card rounded-md border border-primary/20 p-5">
           <p className="text-sm text-muted-foreground mb-3">아래 코드를 공유해 멤버를 초대하세요</p>
           <div className="flex items-center gap-3">
-            <div className="flex-1 bg-muted rounded-lg px-4 py-3 font-mono text-xl font-bold text-center tracking-widest">
+            <div className="flex-1 bg-muted rounded px-4 py-3 font-mono text-xl font-bold text-center tracking-widest">
               {group.code}
             </div>
             <button
               onClick={copyCode}
-              className="bg-primary/80 text-primary-foreground rounded-lg px-4 py-3 flex items-center gap-2 transition-all hover:shadow-md"
+              className="bg-primary/80 text-primary-foreground rounded px-4 py-3 flex items-center gap-2 transition-all hover:shadow-md"
             >
               {codeCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {codeCopied ? "복사됨" : "복사"}
@@ -514,7 +514,7 @@ export default function GroupDetailPage() {
       )}
 
       {/* ── Members Section ── */}
-      <div className="bg-card rounded-xl border border-border p-5">
+      <div className="bg-card rounded-md border border-border p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="flex items-center gap-2">
             <Users className="w-4 h-4 text-primary" />
@@ -597,7 +597,7 @@ export default function GroupDetailPage() {
       </div>
 
       {/* ── 그룹 지출 ── */}
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
+      <div className="bg-card rounded-md border border-border overflow-hidden">
         {/* Section header — 클릭 시 전체 목록 페이지 이동 */}
         <button
           onClick={() => goToExpenses(false)}
@@ -620,7 +620,7 @@ export default function GroupDetailPage() {
           {/* 지출 추가 → 전체 목록 페이지에서 폼 열기 */}
           <button
             onClick={() => goToExpenses(true)}
-            className="w-full flex items-center justify-center gap-1.5 rounded-xl py-2 text-sm font-medium transition-all border border-dashed border-primary/40 text-primary hover:bg-primary/5"
+            className="w-full flex items-center justify-center gap-1.5 rounded-md py-2 text-sm font-medium transition-all border border-dashed border-primary/40 text-primary hover:bg-primary/5"
           >
             <Plus className="w-4 h-4" />
             지출 추가
@@ -630,8 +630,8 @@ export default function GroupDetailPage() {
           {isLoading ? (
             <div className="space-y-2">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-muted animate-pulse">
-                  <div className="w-10 h-10 rounded-xl bg-muted-foreground/20 shrink-0" />
+                <div key={i} className="flex items-center gap-3 p-3 rounded-md bg-muted animate-pulse">
+                  <div className="w-10 h-10 rounded-md bg-muted-foreground/20 shrink-0" />
                   <div className="flex-1 space-y-2">
                     <div className="h-3 bg-muted-foreground/20 rounded w-3/4" />
                     <div className="h-2.5 bg-muted-foreground/20 rounded w-1/2" />
@@ -651,8 +651,8 @@ export default function GroupDetailPage() {
           ) : (
             <div className="space-y-2">
               {allExpenses.slice(0, 3).map((expense) => (
-                <div key={expense.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-lg shrink-0">
+                <div key={expense.id} className="flex items-center gap-3 p-3 rounded-md bg-muted">
+                  <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center text-lg shrink-0">
                     {CATEGORY_EMOJI[expense.category] ?? "💳"}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -690,7 +690,7 @@ export default function GroupDetailPage() {
       </div>
 
       {/* ── 파티 캐릭터 섹션 ── */}
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
+      <div className="bg-card rounded-md border border-border overflow-hidden">
         <div className="flex items-center justify-between px-5 pt-4 pb-3">
           <h3 className="flex items-center gap-2">
             <Swords className="w-4 h-4 text-primary" />
@@ -702,7 +702,7 @@ export default function GroupDetailPage() {
                 key={i}
                 onClick={() => setPartyBg(i)}
                 title={bg.name}
-                className={`w-6 h-6 rounded-lg border-2 transition-all ${
+                className={`w-6 h-6 rounded border-2 transition-all ${
                   partyBg === i
                     ? "border-primary scale-110 shadow-md"
                     : "border-transparent hover:border-muted-foreground/40"
@@ -713,7 +713,7 @@ export default function GroupDetailPage() {
           </div>
         </div>
 
-        <div className="relative mx-4 mb-4 rounded-xl overflow-hidden" style={{ height: 160 }}>
+        <div className="relative mx-4 mb-4 rounded-md overflow-hidden" style={{ height: 160 }}>
           <div className="absolute inset-0">
             {(() => {
               const Bg = PARTY_BACKGROUNDS[partyBg].Component;

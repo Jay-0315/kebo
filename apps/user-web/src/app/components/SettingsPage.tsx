@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { Bell, Moon, Sun, Shield, Database, Trash2, ChevronRight, Globe, Check, Palette, LogOut } from "lucide-react";
-import { useNavigate } from "react-router";
+import { Bell, Moon, Sun, Shield, Database, Trash2, ChevronRight, Globe, Check, Palette } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
 import { THEME_PRESETS } from "../lib/theme-presets";
-import { clearAuthSession } from "../lib/auth";
 
 const languages = [
   { code: "ko", name: "Korean", nativeName: "한국어" },
@@ -12,14 +10,7 @@ const languages = [
 
 export default function SettingsPage() {
   const { settings, countries, profile, updateProfileCurrency, updateSettings } = useAppData();
-  const navigate = useNavigate();
   const [selectedLanguage, setSelectedLanguage] = useState("ko");
-
-  const handleLogout = () => {
-    clearAuthSession();
-    navigate("/login");
-    window.location.reload();
-  };
 
   const handleLanguageChange = (code: string) => {
     setSelectedLanguage(code);
@@ -31,7 +22,7 @@ export default function SettingsPage() {
       <h2>설정</h2>
 
       {/* Appearance */}
-      <div className="bg-card rounded-xl p-5 border border-border">
+      <div className="bg-card rounded-md p-5 border border-border">
         <h3 className="mb-4">표시</h3>
         <div className="space-y-5">
           {/* Dark mode toggle */}
@@ -102,7 +93,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Notifications */}
-      <div className="bg-card rounded-xl p-5 border border-border">
+      <div className="bg-card rounded-md p-5 border border-border">
         <h3 className="mb-4">알림</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -130,7 +121,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Data & Privacy */}
-      <div className="bg-card rounded-xl p-5 border border-border">
+      <div className="bg-card rounded-md p-5 border border-border">
         <h3 className="mb-4">데이터 및 개인정보</h3>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -155,12 +146,12 @@ export default function SettingsPage() {
             </button>
           </div>
 
-          <div className="p-3 rounded-lg bg-muted">
+          <div className="p-3 rounded bg-muted">
             <p className="font-medium mb-2">메인 국가 / 기준 통화</p>
             <select
               value={profile.baseCountryCode}
               onChange={(e) => updateProfileCurrency(e.target.value)}
-              className="w-full px-3 py-2 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full px-3 py-2 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring"
             >
               {countries.map((country) => (
                 <option key={country.code} value={country.code}>
@@ -173,7 +164,7 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          <button className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors">
+          <button className="w-full flex items-center justify-between p-3 rounded hover:bg-muted transition-colors">
             <div className="flex items-center gap-3">
               <Shield className="w-5 h-5 text-primary" />
               <div className="text-left">
@@ -184,7 +175,7 @@ export default function SettingsPage() {
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
 
-          <button className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-destructive/10 transition-colors text-destructive">
+          <button className="w-full flex items-center justify-between p-3 rounded hover:bg-destructive/10 transition-colors text-destructive">
             <div className="flex items-center gap-3">
               <Trash2 className="w-5 h-5" />
               <div className="text-left">
@@ -198,14 +189,14 @@ export default function SettingsPage() {
       </div>
 
       {/* Language */}
-      <div className="bg-card rounded-xl p-5 border border-border">
+      <div className="bg-card rounded-md p-5 border border-border">
         <h3 className="mb-4">언어</h3>
         <div className="space-y-2">
           {languages.map((language) => (
             <button
               key={language.code}
               onClick={() => handleLanguageChange(language.code)}
-              className={`w-full flex items-center justify-between p-4 rounded-lg transition-colors ${
+              className={`w-full flex items-center justify-between p-4 rounded transition-colors ${
                 selectedLanguage === language.code
                   ? "bg-primary/10 border-2 border-primary"
                   : "bg-muted hover:bg-muted/70 border-2 border-transparent"
@@ -227,7 +218,7 @@ export default function SettingsPage() {
       </div>
 
       {/* App Info */}
-      <div className="bg-card rounded-xl p-5 border border-border">
+      <div className="bg-card rounded-md p-5 border border-border">
         <h3 className="mb-4">앱 정보</h3>
         <div className="space-y-2">
           <div className="flex justify-between py-2">
@@ -241,14 +232,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Logout */}
-      <button
-        onClick={handleLogout}
-        className="w-full flex items-center gap-3 text-destructive hover:text-destructive/80 transition-colors py-2"
-      >
-        <LogOut className="w-5 h-5 shrink-0" />
-        <span className="font-medium">로그아웃</span>
-      </button>
     </div>
   );
 }

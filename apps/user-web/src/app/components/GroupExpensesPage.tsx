@@ -65,7 +65,7 @@ export default function GroupExpensesPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <p className="mb-4">그룹 정보를 찾을 수 없습니다.</p>
-        <button onClick={() => navigate("/groups")} className="bg-primary/80 text-primary-foreground rounded-lg px-4 py-2 text-sm font-medium">
+        <button onClick={() => navigate("/groups")} className="bg-primary/80 text-primary-foreground rounded px-4 py-2 text-sm font-medium">
           그룹 목록으로
         </button>
       </div>
@@ -135,7 +135,7 @@ export default function GroupExpensesPage() {
       <div className="flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+          className="p-2 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -145,7 +145,7 @@ export default function GroupExpensesPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all shrink-0 ${
+          className={`w-10 h-10 flex items-center justify-center rounded-md transition-all shrink-0 ${
             showForm ? "bg-muted text-muted-foreground" : "bg-primary/80 text-primary-foreground hover:shadow-md"
           }`}
         >
@@ -155,7 +155,7 @@ export default function GroupExpensesPage() {
 
       {/* Add form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-card rounded-xl border border-border p-4 space-y-3">
+        <form onSubmit={handleSubmit} className="bg-card rounded-md border border-border p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-muted-foreground mb-1">날짜</label>
@@ -163,7 +163,7 @@ export default function GroupExpensesPage() {
                 type="date"
                 value={form.date}
                 onChange={(e) => setForm({ ...form, date: e.target.value })}
-                className="w-full px-3 py-2 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                className="w-full px-3 py-2 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
               />
             </div>
             <div>
@@ -171,7 +171,7 @@ export default function GroupExpensesPage() {
               <select
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="w-full px-3 py-2 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                className="w-full px-3 py-2 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
               >
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -187,7 +187,7 @@ export default function GroupExpensesPage() {
                 placeholder="0"
                 min="0"
                 required
-                className="w-full px-3 py-2 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                className="w-full px-3 py-2 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
               />
             </div>
             <div>
@@ -195,7 +195,7 @@ export default function GroupExpensesPage() {
               <select
                 value={form.spentCurrency}
                 onChange={(e) => setForm({ ...form, spentCurrency: e.target.value as CurrencyCode })}
-                className="w-full px-3 py-2 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                className="w-full px-3 py-2 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
               >
                 <option value="JPY">¥ JPY (엔)</option>
                 <option value="KRW">₩ KRW (원)</option>
@@ -210,7 +210,7 @@ export default function GroupExpensesPage() {
               onChange={(e) => setForm({ ...form, memo: e.target.value })}
               placeholder="어디서 쓴 돈인지 입력하세요"
               required
-              className="w-full px-3 py-2 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+              className="w-full px-3 py-2 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
             />
           </div>
           <div>
@@ -221,13 +221,13 @@ export default function GroupExpensesPage() {
               onChange={(e) => setForm({ ...form, participants: e.target.value })}
               placeholder="함께한 인원"
               min="1"
-              className="w-full px-3 py-2 bg-input-background rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+              className="w-full px-3 py-2 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
             />
           </div>
           <button
             type="submit"
             disabled={submitting}
-            className="w-full bg-primary/80 text-primary-foreground rounded-lg py-2.5 text-sm font-medium hover:shadow-md transition-all disabled:opacity-50"
+            className="w-full bg-primary/80 text-primary-foreground rounded py-2.5 text-sm font-medium hover:shadow-md transition-all disabled:opacity-50"
           >
             {submitting ? "저장 중..." : "지출 추가"}
           </button>
@@ -236,15 +236,15 @@ export default function GroupExpensesPage() {
 
       {/* Expense list */}
       {allExpenses.length === 0 ? (
-        <div className="bg-card rounded-xl border border-border p-10 text-center text-muted-foreground">
+        <div className="bg-card rounded-md border border-border p-10 text-center text-muted-foreground">
           <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-30" />
           <p className="text-sm">아직 지출 내역이 없습니다</p>
         </div>
       ) : (
         <div className="space-y-2">
           {allExpenses.map((expense) => (
-            <div key={expense.id} className="flex items-center gap-3 p-4 rounded-xl bg-card border border-border">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-lg shrink-0">
+            <div key={expense.id} className="flex items-center gap-3 p-4 rounded-md bg-card border border-border">
+              <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center text-lg shrink-0">
                 {CATEGORY_EMOJI[expense.category] ?? "💳"}
               </div>
               <div className="flex-1 min-w-0">

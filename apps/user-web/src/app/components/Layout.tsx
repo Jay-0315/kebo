@@ -1,20 +1,21 @@
-import { Outlet, Link, useLocation } from "react-router";
-import { Home, Wallet, Users, User, Settings, Globe, Menu, X, Gamepad2 } from "lucide-react";
+import { Outlet, Link, useLocation, useNavigate } from "react-router";
+import { Home, Users, User, Settings, Globe, Menu, X, Gamepad2, LogOut, Newspaper } from "lucide-react";
 import { useState } from "react";
 import { useAppData } from "../context/AppDataContext";
+import { clearAuthSession } from "../lib/auth";
 
 export default function Layout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { profile, rewardSummary, profilePhoto } = useAppData();
 
   const navItems = [
-    { path: "/",          icon: Home,     label: "지출 홈" },
-    { path: "/expenses",  icon: Wallet,   label: "개인 지출 관리" },
-    { path: "/groups",    icon: Users,    label: "그룹 지출 관리" },
-    { path: "/community", icon: Globe,    label: "커뮤니티" },
-    { path: "/kabemon",   icon: Gamepad2, label: "캐보몬" },
-    { path: "/mypage",    icon: User,     label: "마이페이지" },
+    { path: "/",          icon: Home,      label: "홈" },
+    { path: "/community", icon: Newspaper, label: "게시판" },
+    { path: "/groups",    icon: Users,     label: "그룹" },
+    { path: "/kabemon",   icon: Gamepad2,  label: "캐보몬" },
+    { path: "/mypage",    icon: User,      label: "마이페이지" },
   ];
 
   const settingsItems = [
@@ -24,6 +25,57 @@ export default function Layout() {
   const isActive = (path: string) =>
     path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
 
+  const handleLogout = () => {
+    clearAuthSession();
+    navigate("/login");
+    window.location.reload();
+  };
+
+  const NavLinks = ({ onNav }: { onNav?: () => void }) => (
+    <>
+      <div className="space-y-1">
+        <p className="text-xs text-muted-foreground px-3 mb-2">메뉴</p>
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item.path);
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={onNav}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded transition-colors ${
+                active
+                  ? "bg-primary/10 text-primary"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent"
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+
+      <div className="mt-8 space-y-1">
+        <p className="text-xs text-muted-foreground px-3 mb-2">설정</p>
+        {settingsItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={onNav}
+              className="flex items-center gap-3 px-3 py-2.5 rounded text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+            >
+              <Icon className="w-5 h-5" />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* ── Desktop Sidebar ── */}
@@ -31,60 +83,23 @@ export default function Layout() {
         {/* Logo */}
         <div className="p-6 border-b border-sidebar-border">
           <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <Wallet className="w-6 h-6 text-primary-foreground" />
+            <div className="w-10 h-10 bg-primary rounded flex items-center justify-center">
+              <Globe className="w-6 h-6 text-primary-foreground" />
             </div>
-            <h1 className="font-bold text-foreground">Kakeibo</h1>
+            <h1 className="font-bold text-foreground">Kebo</h1>
           </Link>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 p-4 overflow-y-auto">
-          <div className="space-y-1">
-            <p className="text-xs text-muted-foreground px-3 mb-2">메뉴</p>
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const active = isActive(item.path);
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                    active
-                      ? "bg-primary/10 text-primary"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent"
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </div>
-
-          <div className="mt-8 space-y-1">
-            <p className="text-xs text-muted-foreground px-3 mb-2">설정</p>
-            {settingsItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
-                >
-                  <Icon className="w-5 h-5" />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </div>
+          <NavLinks />
         </nav>
 
-        {/* User Info */}
-        <div className="p-4 border-t border-sidebar-border">
+        {/* User Info + Logout */}
+        <div className="p-4 border-t border-sidebar-border space-y-2">
           <Link
             to="/mypage"
-            className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent hover:bg-primary/10 transition-colors"
+            className="flex items-center gap-3 p-2 rounded bg-sidebar-accent hover:bg-primary/10 transition-colors"
           >
             {profilePhoto ? (
               <img src={profilePhoto} alt={profile.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
@@ -98,6 +113,13 @@ export default function Layout() {
               <p className="text-xs text-muted-foreground">Lv.{rewardSummary.level} 환율 탐험가</p>
             </div>
           </Link>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors text-sm"
+          >
+            <LogOut className="w-4 h-4" />
+            로그아웃
+          </button>
         </div>
       </aside>
 
@@ -105,10 +127,10 @@ export default function Layout() {
       <div className="lg:hidden fixed top-0 left-0 right-0 bg-sidebar border-b border-sidebar-border z-40 px-4 py-3">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-primary-foreground" />
+            <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
+              <Globe className="w-5 h-5 text-primary-foreground" />
             </div>
-            <h1 className="font-bold text-foreground">Kakeibo</h1>
+            <h1 className="font-bold text-foreground">Kebo</h1>
           </Link>
           <button
             onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
@@ -126,57 +148,18 @@ export default function Layout() {
           onClick={() => setIsMobileSidebarOpen(false)}
         >
           <aside
-            className="w-64 bg-sidebar h-full overflow-y-auto"
+            className="w-64 bg-sidebar h-full flex flex-col overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <nav className="p-4">
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground px-3 mb-2">메뉴</p>
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  const active = isActive(item.path);
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setIsMobileSidebarOpen(false)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                        active
-                          ? "bg-primary/10 text-primary"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent"
-                      }`}
-                    >
-                      <Icon className="w-5 h-5" />
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-
-              <div className="mt-8 space-y-1">
-                <p className="text-xs text-muted-foreground px-3 mb-2">설정</p>
-                {settingsItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setIsMobileSidebarOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
-                    >
-                      <Icon className="w-5 h-5" />
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
+            <nav className="flex-1 p-4">
+              <NavLinks onNav={() => setIsMobileSidebarOpen(false)} />
             </nav>
 
-            <div className="p-4 border-t border-sidebar-border">
+            <div className="p-4 border-t border-sidebar-border space-y-2">
               <Link
                 to="/mypage"
                 onClick={() => setIsMobileSidebarOpen(false)}
-                className="flex items-center gap-3 p-2 rounded-lg bg-sidebar-accent hover:bg-primary/10 transition-colors"
+                className="flex items-center gap-3 p-2 rounded bg-sidebar-accent hover:bg-primary/10 transition-colors"
               >
                 {profilePhoto ? (
                   <img src={profilePhoto} alt={profile.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
@@ -190,6 +173,13 @@ export default function Layout() {
                   <p className="text-xs text-muted-foreground">Lv.{rewardSummary.level} 환율 탐험가</p>
                 </div>
               </Link>
+              <button
+                onClick={() => { setIsMobileSidebarOpen(false); handleLogout(); }}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors text-sm"
+              >
+                <LogOut className="w-4 h-4" />
+                로그아웃
+              </button>
             </div>
           </aside>
         </div>
