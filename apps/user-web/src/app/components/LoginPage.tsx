@@ -3,9 +3,11 @@ import { useNavigate, Link } from "react-router";
 import { Wallet, Mail, Lock } from "lucide-react";
 import { api } from "../lib/api";
 import { setAuthSession } from "../lib/auth";
+import { useLang } from "../context/LangContext";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { t } = useLang();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,7 +37,7 @@ export default function LoginPage() {
       navigate("/");
       window.location.reload();
     } catch (error) {
-      setErrorMessage("로그인에 실패했습니다. 계정 정보를 확인해주세요.");
+      setErrorMessage(t("login.error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -60,15 +62,15 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/80 rounded mb-4">
             <Wallet className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-foreground mb-2">가계부</h1>
-          <p className="text-muted-foreground">똑똑한 소비 습관을 만들어요</p>
+          <h1 className="text-foreground mb-2">{t("login.title")}</h1>
+          <p className="text-muted-foreground">{t("login.subtitle")}</p>
         </div>
 
         {/* Login Form */}
         <div className="bg-card rounded p-6 shadow-lg border border-border">
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block mb-2 text-sm">이메일</label>
+              <label className="block mb-2 text-sm">{t("login.email")}</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
@@ -83,7 +85,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block mb-2 text-sm">비밀번호</label>
+              <label className="block mb-2 text-sm">{t("login.password")}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
@@ -102,16 +104,16 @@ export default function LoginPage() {
               disabled={isSubmitting}
               className="w-full bg-primary/80 text-primary-foreground rounded py-3 font-medium shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
             >
-              {isSubmitting ? "로그인 중..." : "로그인"}
+              {isSubmitting ? t("login.loading") : t("login.submit")}
             </button>
             {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
-              계정이 없으신가요?{" "}
+              {t("login.no_account")}{" "}
               <Link to="/signup" className="text-primary/80 font-medium hover:underline">
-                회원가입
+                {t("login.signup")}
               </Link>
             </p>
           </div>

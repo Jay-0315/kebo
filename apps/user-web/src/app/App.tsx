@@ -13,6 +13,7 @@ import StoryCreatePage from "./components/StoryCreatePage";
 import GroupExpensesPage from "./components/GroupExpensesPage";
 import SettingsPage from "./components/SettingsPage";
 import { isAuthenticated } from "./lib/auth";
+import { LangProvider } from "./context/LangContext";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return isAuthenticated() ? <>{children}</> : <Navigate to="/login" replace />;
@@ -21,6 +22,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <BrowserRouter>
+      <LangProvider>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
@@ -46,6 +48,7 @@ export default function App() {
           <Route path="mypage/character" element={<Navigate to="/kabemon" replace />} />
         </Route>
       </Routes>
+      </LangProvider>
     </BrowserRouter>
   );
 }

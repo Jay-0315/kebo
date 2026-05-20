@@ -3,9 +3,11 @@ import { useNavigate, Link } from "react-router";
 import { Wallet, Mail, Lock, User } from "lucide-react";
 import { api } from "../lib/api";
 import { setAuthSession } from "../lib/auth";
+import { useLang } from "../context/LangContext";
 
 export default function SignupPage() {
   const navigate = useNavigate();
+  const { t } = useLang();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -18,7 +20,7 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      setErrorMessage("비밀번호가 일치하지 않습니다.");
+      setErrorMessage(t("signup.pw_mismatch"));
       return;
     }
 
@@ -45,7 +47,7 @@ export default function SignupPage() {
       navigate("/");
       window.location.reload();
     } catch (error) {
-      setErrorMessage("회원가입에 실패했습니다. 이미 사용 중인 이메일일 수 있습니다.");
+      setErrorMessage(t("signup.error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -70,15 +72,15 @@ export default function SignupPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/80 rounded mb-4">
             <Wallet className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-foreground mb-2">회원가입</h1>
-          <p className="text-muted-foreground">가계부와 함께 시작해보세요</p>
+          <h1 className="text-foreground mb-2">{t("signup.title")}</h1>
+          <p className="text-muted-foreground">{t("signup.subtitle")}</p>
         </div>
 
         {/* Signup Form */}
         <div className="bg-card rounded p-6 shadow-lg border border-border">
           <form onSubmit={handleSignup} className="space-y-4">
             <div>
-              <label className="block mb-2 text-sm">이름</label>
+              <label className="block mb-2 text-sm">{t("signup.name")}</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
@@ -93,7 +95,7 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label className="block mb-2 text-sm">이메일</label>
+              <label className="block mb-2 text-sm">{t("signup.email")}</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
@@ -108,7 +110,7 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label className="block mb-2 text-sm">비밀번호</label>
+              <label className="block mb-2 text-sm">{t("signup.password")}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
@@ -123,7 +125,7 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label className="block mb-2 text-sm">비밀번호 확인</label>
+              <label className="block mb-2 text-sm">{t("signup.confirm_password")}</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
@@ -142,16 +144,16 @@ export default function SignupPage() {
               disabled={isSubmitting}
               className="w-full bg-primary/80 text-primary-foreground rounded py-3 font-medium shadow-md hover:shadow-lg transition-all hover:scale-[1.02]"
             >
-              {isSubmitting ? "가입 중..." : "회원가입"}
+              {isSubmitting ? t("signup.loading") : t("signup.submit")}
             </button>
             {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
-              이미 계정이 있으신가요?{" "}
+              {t("signup.has_account")}{" "}
               <Link to="/login" className="text-primary/80 font-medium hover:underline">
-                로그인
+                {t("signup.login")}
               </Link>
             </p>
           </div>

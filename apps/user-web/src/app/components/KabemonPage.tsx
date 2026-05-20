@@ -4,6 +4,7 @@ import {
   Flame, Star, Zap, Sparkles, CheckCircle2, Shield, Gamepad2,
 } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
+import { useLang } from "../context/LangContext";
 import PixelCharacter, { PixelSprite } from "./PixelCharacter";
 import {
   CHARACTERS, getCurrentCharacter, getNextCharacter,
@@ -30,11 +31,11 @@ const RARITY_GLOW: Record<CharacterRarity, string> = {
 };
 
 const MISSIONS = [
-  { icon: <CheckCircle2 className="w-4 h-4 text-green-400" />,  label: "출석 체크",  reward: "+5P",  desc: "앱을 열고 하루 한 번 출석" },
-  { icon: <Flame        className="w-4 h-4 text-orange-400" />, label: "지출 기록",  reward: "+3P",  desc: "지출 내역 1건 추가" },
-  { icon: <Star         className="w-4 h-4 text-yellow-400" />, label: "내역 공유",  reward: "+8P",  desc: "커뮤니티에 지출 공유" },
-  { icon: <Zap          className="w-4 h-4 text-blue-400"   />, label: "글 작성",    reward: "+5P",  desc: "커뮤니티 게시글 작성" },
-  { icon: <Sparkles     className="w-4 h-4 text-pink-400"   />, label: "연속 기록",  reward: "+2P",  desc: "매일 연속 기록 보너스" },
+  { icon: <CheckCircle2 className="w-4 h-4 text-green-400" />,  labelKey: "mission.attendance" as const, reward: "+5P",  descKey: "mission.attendance_desc" as const },
+  { icon: <Flame        className="w-4 h-4 text-orange-400" />, labelKey: "mission.record" as const,     reward: "+3P",  descKey: "mission.record_desc" as const },
+  { icon: <Star         className="w-4 h-4 text-yellow-400" />, labelKey: "mission.share" as const,      reward: "+8P",  descKey: "mission.share_desc" as const },
+  { icon: <Zap          className="w-4 h-4 text-blue-400"   />, labelKey: "mission.write" as const,      reward: "+5P",  descKey: "mission.write_desc" as const },
+  { icon: <Sparkles     className="w-4 h-4 text-pink-400"   />, labelKey: "mission.streak" as const,     reward: "+2P",  descKey: "mission.streak_desc" as const },
 ];
 
 type Tab = "character" | "pokedex";
@@ -42,6 +43,7 @@ type Filter = "all" | CharacterRarity;
 
 export default function KabemonPage() {
   const { rewardSummary, equipCharacter } = useAppData();
+  const { t } = useLang();
   const [tab, setTab] = useState<Tab>("character");
   const [filter, setFilter] = useState<Filter>("all");
   const [selected, setSelected] = useState<number | null>(null);
@@ -79,10 +81,10 @@ export default function KabemonPage() {
         <div>
           <h2 className="flex items-center gap-2">
             <Gamepad2 className="w-6 h-6 text-primary" />
-            캐보몬 도감
+            {t("kabemon.title")}
           </h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {unlockedCount}/100 해금 · Lv.{level}
+            {unlockedCount}/100 {t("kabemon.unlock_progress_suffix")} · Lv.{level}
           </p>
         </div>
         <div className="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-semibold">
@@ -99,7 +101,7 @@ export default function KabemonPage() {
           }`}
         >
           <User className="w-4 h-4" />
-          내 캐릭터
+          {t("kabemon.my_character")}
         </button>
         <button
           onClick={() => setTab("pokedex")}
@@ -108,7 +110,7 @@ export default function KabemonPage() {
           }`}
         >
           <BookOpen className="w-4 h-4" />
-          도감
+          {t("kabemon.pokedex")}
         </button>
       </div>
 
@@ -143,7 +145,7 @@ export default function KabemonPage() {
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">{currentChar.description}</p>
                   <p className="text-[11px] text-muted-foreground/60 mt-2">
-                    마우스를 올리면 반응 모션을 볼 수 있어요
+                    {t("kabemon.mouse_hint")}
                   </p>
                 </div>
               </div>
@@ -153,13 +155,13 @@ export default function KabemonPage() {
             <div className="bg-card rounded-xl border border-border p-5">
               <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold">
                 <Trophy className="w-4 h-4 text-primary" />
-                캐릭터 스탯
+                {t("kabemon.stats")}
               </h3>
               <div className="grid grid-cols-3 gap-2 mb-4">
                 {[
-                  { label: "출석 일수",   value: attendanceDays, unit: "일", color: "text-primary/80" },
-                  { label: "미션 포인트", value: missionPoints,  unit: "P",  color: "text-primary/80" },
-                  { label: "연속 기록",   value: streakDays,     unit: "일", color: "text-accent" },
+                  { label: t("kabemon.attendance"),     value: attendanceDays, unit: t("kabemon.days"), color: "text-primary/80" },
+                  { label: t("kabemon.mission_points"), value: missionPoints,  unit: "P",               color: "text-primary/80" },
+                  { label: t("kabemon.streak"),         value: streakDays,     unit: t("kabemon.days"), color: "text-accent" },
                 ].map(({ label, value, unit, color }) => (
                   <div key={label} className="bg-muted rounded-lg p-3 text-center">
                     <p className="text-[10px] text-muted-foreground mb-1">{label}</p>
@@ -175,14 +177,14 @@ export default function KabemonPage() {
                     <PixelSprite type={nextChar.type} colors={nextChar.colors} size={28} />
                     <div className="flex-1">
                       <p className="text-xs font-medium">
-                        다음 해금: <span className={RARITY_COLOR[nextChar.rarity]}>{nextChar.korName}</span>
+                        {t("kabemon.next_unlock")} <span className={RARITY_COLOR[nextChar.rarity]}>{nextChar.korName}</span>
                       </p>
-                      <p className="text-[10px] text-muted-foreground">Lv.{nextChar.unlockLevel} 도달 시 해금</p>
+                      <p className="text-[10px] text-muted-foreground">Lv.{nextChar.unlockLevel} {t("kabemon.unlock_at_suffix")}</p>
                     </div>
                     <span className="text-xs font-semibold text-muted-foreground">Lv.{nextChar.unlockLevel}</span>
                   </div>
                   <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-                    <span>다음 레벨까지 {remaining}P</span>
+                    <span>{t("kabemon.points_to_next_prefix")} {remaining}P</span>
                     <span>{missionPoints}/{nextLevelTarget}P</span>
                   </div>
                   <div className="h-2 bg-card rounded-full overflow-hidden">
@@ -194,7 +196,7 @@ export default function KabemonPage() {
                 </div>
               ) : (
                 <div className="bg-muted rounded-lg p-3 text-center text-sm text-muted-foreground">
-                  🎉 모든 캐릭터 해금 완료!
+                  {t("kabemon.all_unlocked")}
                 </div>
               )}
             </div>
@@ -202,23 +204,23 @@ export default function KabemonPage() {
 
           {/* ── Right column: Mission guide (desktop) / Bottom (mobile) ── */}
           <div className="lg:w-64 lg:shrink-0 bg-card rounded-xl border border-border p-5">
-            <h3 className="mb-3 text-sm font-semibold">미션 가이드</h3>
+            <h3 className="mb-3 text-sm font-semibold">{t("kabemon.mission_guide")}</h3>
             <div className="space-y-2">
-              {MISSIONS.map(({ icon, label, reward, desc }) => (
-                <div key={label} className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+              {MISSIONS.map(({ icon, labelKey, reward, descKey }) => (
+                <div key={labelKey} className="flex items-center gap-3 p-3 rounded-lg bg-muted">
                   <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center shrink-0">
                     {icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{label}</p>
-                    <p className="text-xs text-muted-foreground">{desc}</p>
+                    <p className="text-sm font-medium">{t(labelKey)}</p>
+                    <p className="text-xs text-muted-foreground">{t(descKey)}</p>
                   </div>
                   <span className="text-sm font-bold text-primary shrink-0">{reward}</span>
                 </div>
               ))}
             </div>
             <p className="text-[11px] text-muted-foreground mt-3 text-center">
-              포인트가 쌓이면 레벨이 오르고 새 캐릭터가 해금됩니다
+              {t("kabemon.mission_footer")}
             </p>
           </div>
         </div>
@@ -262,7 +264,7 @@ export default function KabemonPage() {
                   ) : equippedCharacterId === selectedChar.id ? (
                     <span className="flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 px-2 py-1.5 rounded-lg">
                       <Shield className="w-3.5 h-3.5" />
-                      장착 중
+                      {t("kabemon.equipped")}
                     </span>
                   ) : (
                     <button
@@ -271,7 +273,7 @@ export default function KabemonPage() {
                       className="flex items-center gap-1 text-xs font-semibold bg-primary/80 text-primary-foreground px-2.5 py-1.5 rounded-lg hover:shadow-md transition-all disabled:opacity-50"
                     >
                       <Shield className="w-3.5 h-3.5" />
-                      {equipping ? "..." : "장착"}
+                      {equipping ? "..." : t("kabemon.equip")}
                     </button>
                   )}
                 </div>
@@ -291,7 +293,7 @@ export default function KabemonPage() {
                     : "bg-muted text-muted-foreground hover:bg-muted/70"
                 }`}
               >
-                {r === "all" ? "전체" : RARITY_LABEL[r as CharacterRarity]}
+                {r === "all" ? t("kabemon.all_rarity") : RARITY_LABEL[r as CharacterRarity]}
               </button>
             ))}
           </div>
@@ -299,8 +301,8 @@ export default function KabemonPage() {
           {/* Counter */}
           <p className="text-xs text-muted-foreground">
             {filter === "all"
-              ? `${unlockedCount}/100 해금`
-              : `${filtered.filter((c) => c.unlockLevel <= level).length}/${filtered.length} 해금`}
+              ? `${unlockedCount}/100 ${t("kabemon.unlock_progress_suffix")}`
+              : `${filtered.filter((c) => c.unlockLevel <= level).length}/${filtered.length} ${t("kabemon.unlock_progress_suffix")}`}
           </p>
 
           {/* Grid */}

@@ -1,37 +1,48 @@
 import { useState } from "react";
-import { Bell, Moon, Sun, Shield, Database, Trash2, ChevronRight, Globe, Check, Palette } from "lucide-react";
+import { useNavigate } from "react-router";
+import { Bell, Moon, Sun, Shield, Database, Trash2, ChevronRight, Globe, Check, Palette, AlertTriangle, X } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
+import { useLang } from "../context/LangContext";
+import { clearAuthSession } from "../lib/auth";
 import { THEME_PRESETS } from "../lib/theme-presets";
 
-const languages = [
-  { code: "ko", name: "Korean", nativeName: "한국어" },
-  { code: "ja", name: "Japanese", nativeName: "日本語" },
+const LANGUAGES = [
+  { code: "ko" as const, nativeName: "한국어", name: "Korean" },
+  { code: "ja" as const, nativeName: "日本語", name: "Japanese" },
 ];
 
 export default function SettingsPage() {
   const { settings, countries, profile, updateProfileCurrency, updateSettings } = useAppData();
-  const [selectedLanguage, setSelectedLanguage] = useState("ko");
+  const { t } = useLang();
+  const navigate = useNavigate();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const handleLanguageChange = (code: string) => {
-    setSelectedLanguage(code);
-    alert(`언어가 ${languages.find(l => l.code === code)?.nativeName}(으)로 변경되었습니다.`);
+  const handleAccountDelete = () => {
+    clearAuthSession();
+    localStorage.removeItem("kebo-local-settings");
+    localStorage.removeItem("kebo-liked-posts");
+    localStorage.removeItem("kebo-profile-photo");
+    navigate("/login");
+    window.location.reload();
   };
+
+  const currentLang = settings.language ?? "ko";
 
   return (
     <div className="space-y-6">
-      <h2>설정</h2>
+      <h2>{t("settings.title")}</h2>
 
       {/* Appearance */}
       <div className="bg-card rounded-md p-5 border border-border">
-        <h3 className="mb-4">표시</h3>
+        <h3 className="mb-4">{t("settings.display")}</h3>
         <div className="space-y-5">
           {/* Dark mode toggle */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               {settings.darkMode ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-primary" />}
               <div>
-                <p className="font-medium">다크 모드</p>
-                <p className="text-sm text-muted-foreground">어두운 테마 사용</p>
+                <p className="font-medium">{t("settings.dark_mode")}</p>
+                <p className="text-sm text-muted-foreground">{t("settings.dark_mode_desc")}</p>
               </div>
             </div>
             <button
@@ -53,8 +64,8 @@ export default function SettingsPage() {
             <div className="flex items-center gap-2 mb-3">
               <Palette className="w-5 h-5 text-primary" />
               <div>
-                <p className="font-medium">테마 색상</p>
-                <p className="text-sm text-muted-foreground">앱 전체 강조 색상 변경</p>
+                <p className="font-medium">{t("settings.theme_color")}</p>
+                <p className="text-sm text-muted-foreground">{t("settings.theme_color_desc")}</p>
               </div>
             </div>
             <div className="grid grid-cols-5 gap-2">
@@ -94,14 +105,14 @@ export default function SettingsPage() {
 
       {/* Notifications */}
       <div className="bg-card rounded-md p-5 border border-border">
-        <h3 className="mb-4">알림</h3>
+        <h3 className="mb-4">{t("settings.notifications_section")}</h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Bell className="w-5 h-5 text-primary" />
               <div>
-                <p className="font-medium">푸시 알림</p>
-                <p className="text-sm text-muted-foreground">새로운 활동 알림 받기</p>
+                <p className="font-medium">{t("settings.push_notifications")}</p>
+                <p className="text-sm text-muted-foreground">{t("settings.push_notifications_desc")}</p>
               </div>
             </div>
             <button
@@ -122,14 +133,14 @@ export default function SettingsPage() {
 
       {/* Data & Privacy */}
       <div className="bg-card rounded-md p-5 border border-border">
-        <h3 className="mb-4">데이터 및 개인정보</h3>
+        <h3 className="mb-4">{t("settings.data_privacy")}</h3>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Database className="w-5 h-5 text-primary" />
               <div>
-                <p className="font-medium">자동 백업</p>
-                <p className="text-sm text-muted-foreground">클라우드에 데이터 백업</p>
+                <p className="font-medium">{t("settings.auto_backup")}</p>
+                <p className="text-sm text-muted-foreground">{t("settings.auto_backup_desc")}</p>
               </div>
             </div>
             <button
@@ -147,7 +158,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="p-3 rounded bg-muted">
-            <p className="font-medium mb-2">메인 국가 / 기준 통화</p>
+            <p className="font-medium mb-2">{t("settings.base_country")}</p>
             <select
               value={profile.baseCountryCode}
               onChange={(e) => updateProfileCurrency(e.target.value)}
@@ -160,7 +171,7 @@ export default function SettingsPage() {
               ))}
             </select>
             <p className="text-sm text-muted-foreground mt-2">
-              변경 시 기존 내역도 선택한 기준 통화로 다시 환산해 표시합니다.
+              {t("settings.currency_note")}
             </p>
           </div>
 
@@ -168,19 +179,22 @@ export default function SettingsPage() {
             <div className="flex items-center gap-3">
               <Shield className="w-5 h-5 text-primary" />
               <div className="text-left">
-                <p className="font-medium">개인정보 보호</p>
-                <p className="text-sm text-muted-foreground">개인정보 처리방침 확인</p>
+                <p className="font-medium">{t("settings.privacy")}</p>
+                <p className="text-sm text-muted-foreground">{t("settings.privacy_desc")}</p>
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
 
-          <button className="w-full flex items-center justify-between p-3 rounded hover:bg-destructive/10 transition-colors text-destructive">
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="w-full flex items-center justify-between p-3 rounded hover:bg-destructive/10 transition-colors text-destructive"
+          >
             <div className="flex items-center gap-3">
               <Trash2 className="w-5 h-5" />
               <div className="text-left">
-                <p className="font-medium">데이터 삭제</p>
-                <p className="text-sm text-destructive/80">모든 데이터 영구 삭제</p>
+                <p className="font-medium">{t("settings.account_delete")}</p>
+                <p className="text-sm text-destructive/80">{t("settings.account_delete_desc")}</p>
               </div>
             </div>
             <ChevronRight className="w-5 h-5" />
@@ -190,26 +204,26 @@ export default function SettingsPage() {
 
       {/* Language */}
       <div className="bg-card rounded-md p-5 border border-border">
-        <h3 className="mb-4">언어</h3>
+        <h3 className="mb-4">{t("settings.language")}</h3>
         <div className="space-y-2">
-          {languages.map((language) => (
+          {LANGUAGES.map((language) => (
             <button
               key={language.code}
-              onClick={() => handleLanguageChange(language.code)}
+              onClick={() => updateSettings({ language: language.code })}
               className={`w-full flex items-center justify-between p-4 rounded transition-colors ${
-                selectedLanguage === language.code
+                currentLang === language.code
                   ? "bg-primary/10 border-2 border-primary"
                   : "bg-muted hover:bg-muted/70 border-2 border-transparent"
               }`}
             >
               <div className="flex items-center gap-3">
-                <Globe className={`w-5 h-5 ${selectedLanguage === language.code ? "text-primary" : "text-muted-foreground"}`} />
+                <Globe className={`w-5 h-5 ${currentLang === language.code ? "text-primary" : "text-muted-foreground"}`} />
                 <div className="text-left">
                   <p className="font-medium">{language.nativeName}</p>
                   <p className="text-sm text-muted-foreground">{language.name}</p>
                 </div>
               </div>
-              {selectedLanguage === language.code && (
+              {currentLang === language.code && (
                 <Check className="w-5 h-5 text-primary" />
               )}
             </button>
@@ -219,19 +233,60 @@ export default function SettingsPage() {
 
       {/* App Info */}
       <div className="bg-card rounded-md p-5 border border-border">
-        <h3 className="mb-4">앱 정보</h3>
+        <h3 className="mb-4">{t("settings.app_info")}</h3>
         <div className="space-y-2">
           <div className="flex justify-between py-2">
-            <span className="text-muted-foreground">버전</span>
+            <span className="text-muted-foreground">{t("settings.version")}</span>
             <span className="font-medium">1.0.0</span>
           </div>
           <div className="flex justify-between py-2">
-            <span className="text-muted-foreground">빌드</span>
+            <span className="text-muted-foreground">{t("settings.build")}</span>
             <span className="font-medium">2026.05.15</span>
           </div>
         </div>
       </div>
 
+      {/* Account Deletion Modal */}
+      {showDeleteModal && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowDeleteModal(false)}
+        >
+          <div
+            className="bg-card rounded-md p-6 max-w-sm w-full shadow-2xl border border-border"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-destructive" />
+                </div>
+                <h3 className="text-destructive">{t("settings.delete_modal_title")}</h3>
+              </div>
+              <button onClick={() => setShowDeleteModal(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+              {t("settings.delete_modal_body")}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-2.5 rounded border border-border text-sm font-medium hover:bg-muted transition-colors"
+              >
+                {t("settings.cancel")}
+              </button>
+              <button
+                onClick={handleAccountDelete}
+                className="flex-1 py-2.5 rounded bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 transition-colors"
+              >
+                {t("settings.delete_confirm")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

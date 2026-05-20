@@ -4,12 +4,14 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useNavigate } from "react-router";
 import PixelCharacter from "./PixelCharacter";
 import { useAppData } from "../context/AppDataContext";
+import { useLang } from "../context/LangContext";
 import { formatCurrency, getCountryByCode } from "../data/currency";
 import { CHARACTERS, getCurrentCharacter, RARITY_LABEL, RARITY_COLOR } from "../data/characters";
 
 export default function MyPage() {
   const navigate = useNavigate();
   const { profile, rewardSummary, monthlyTotals, expenses, posts, profilePhoto, updateProfilePhoto, updateProfileName } = useAppData();
+  const { t } = useLang();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState(profile.name);
@@ -75,7 +77,7 @@ return (
         </div>
 
         <div className="flex-1 min-w-0">
-          <h2>마이페이지</h2>
+          <h2>{t("mypage.title")}</h2>
           {editingName ? (
             <div className="flex items-center gap-1.5 mt-1">
               <input
@@ -108,7 +110,7 @@ return (
             </div>
           )}
           <p className="text-xs text-muted-foreground mt-0.5">
-            {country.flag} {country.name} · {profile.baseCurrency} 기준
+            {country.flag} {country.name} · {profile.baseCurrency} {t("mypage.currency_basis")}
           </p>
         </div>
 
@@ -127,7 +129,7 @@ return (
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">
             <Gamepad2 className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold">캐보몬 도감</span>
+            <span className="text-sm font-semibold">{t("mypage.kabemon_link")}</span>
           </div>
           <p className={`text-sm font-medium ${RARITY_COLOR[displayChar.rarity]}`}>
             {displayChar.korName}
@@ -143,7 +145,7 @@ return (
       <div className="bg-card rounded-md p-5 shadow-sm border border-border">
         <h3 className="mb-4 flex items-center gap-2">
           <Calendar className="w-5 h-5 text-primary/80" />
-          월별 지출 합계
+          {t("mypage.monthly_chart")}
         </h3>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={monthlyTotals}>
@@ -168,17 +170,17 @@ return (
         <div className="bg-card rounded-md p-5 shadow-sm border border-border">
           <h3 className="mb-4 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-accent" />
-            이번 달 요약
+            {t("mypage.monthly_summary")}
           </h3>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-muted rounded p-3">
-              <p className="text-sm text-muted-foreground mb-1">총 지출</p>
+              <p className="text-sm text-muted-foreground mb-1">{t("mypage.total_spent")}</p>
               <p className="text-xl font-bold text-destructive">
                 {formatCurrency(totalSpent, profile.baseCurrency)}
               </p>
             </div>
             <div className="bg-muted rounded p-3">
-              <p className="text-sm text-muted-foreground mb-1">평균 기록 금액</p>
+              <p className="text-sm text-muted-foreground mb-1">{t("mypage.avg_amount")}</p>
               <p className="text-xl font-bold text-accent">
                 {formatCurrency(averageSpend, profile.baseCurrency)}
               </p>
@@ -187,7 +189,7 @@ return (
           <div className="mt-4 bg-muted rounded p-4">
             <div className="flex items-center justify-between mb-2">
               <div>
-                <p className="text-xs text-muted-foreground">현재 포인트</p>
+                <p className="text-xs text-muted-foreground">{t("mypage.current_points")}</p>
                 <p className="text-2xl font-bold text-primary mt-0.5">{rewardSummary.missionPoints}P</p>
               </div>
               <div className="text-right">
@@ -210,12 +212,12 @@ return (
         <div className="bg-card rounded-md p-5 shadow-sm border border-border">
           <h3 className="mb-4 flex items-center gap-2">
             <Heart className="w-5 h-5 text-primary/80" />
-            내가 작성한 게시글
+            {t("mypage.my_posts")}
           </h3>
           <div className="space-y-2">
             {myPosts.length === 0 ? (
               <div className="p-4 rounded bg-muted text-sm text-muted-foreground">
-                아직 작성한 게시글이 없습니다.
+                {t("mypage.no_posts")}
               </div>
             ) : (
               myPosts.map((post) => (
@@ -226,7 +228,7 @@ return (
                   <div className="min-w-0">
                     <p className="font-medium truncate">{post.content}</p>
                     <p className="text-sm text-muted-foreground">
-                      공유 내역 {post.sharedExpenses.length}건 · 좋아요 {post.likes}
+                      {t("mypage.post_shared_prefix")}{post.sharedExpenses.length}{t("mypage.post_shared_suffix")} · {t("mypage.post_likes_prefix")}{post.likes}
                     </p>
                   </div>
                   <Heart className="w-5 h-5 text-primary/80 fill-current shrink-0" />

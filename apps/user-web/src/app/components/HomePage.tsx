@@ -1,12 +1,14 @@
 import { useNavigate, Link } from "react-router";
 import { Heart, Pencil, Users, ChevronRight, TrendingUp, MessageSquare } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
+import { useLang } from "../context/LangContext";
 import { formatRelativeTime } from "../lib/story-storage";
 import { loadPostCategories } from "../lib/post-categories";
 
 export default function HomePage() {
   const navigate = useNavigate();
   const { posts, profile, rewardSummary, profilePhoto, togglePostLike } = useAppData();
+  const { t } = useLang();
 
   const categories = loadPostCategories();
   const recentPosts = posts.slice(0, 5);
@@ -37,7 +39,7 @@ export default function HomePage() {
           className="shrink-0 flex items-center gap-1.5 bg-primary/80 text-primary-foreground rounded-md px-4 py-2 text-sm font-medium hover:shadow-md transition-all"
         >
           <Pencil className="w-4 h-4" />
-          글쓰기
+          {t("home.write")}
         </button>
       </div>
 
@@ -51,8 +53,8 @@ export default function HomePage() {
             <Users className="w-5 h-5 text-primary" />
           </div>
           <div className="min-w-0">
-            <p className="font-medium text-sm">그룹 지출</p>
-            <p className="text-xs text-muted-foreground">금액 정산</p>
+            <p className="font-medium text-sm">{t("home.group_expense")}</p>
+            <p className="text-xs text-muted-foreground">{t("home.settlement")}</p>
           </div>
           <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto shrink-0" />
         </Link>
@@ -64,8 +66,8 @@ export default function HomePage() {
             <TrendingUp className="w-5 h-5 text-primary" />
           </div>
           <div className="min-w-0">
-            <p className="font-medium text-sm">캐보몬</p>
-            <p className="text-xs text-muted-foreground">도감 · 리워드</p>
+            <p className="font-medium text-sm">{t("nav.kabemon")}</p>
+            <p className="text-xs text-muted-foreground">{t("home.kabemon_sub")}</p>
           </div>
           <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto shrink-0" />
         </Link>
@@ -76,22 +78,22 @@ export default function HomePage() {
         <div className="flex items-center justify-between mb-3">
           <h3 className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-primary" />
-            최근 게시글
+            {t("home.recent_posts")}
           </h3>
           <Link to="/community" className="text-sm text-primary hover:underline">
-            전체보기
+            {t("home.view_all")}
           </Link>
         </div>
 
         {recentPosts.length === 0 ? (
           <div className="bg-card rounded border border-border p-10 text-center text-muted-foreground">
             <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-30" />
-            <p className="text-sm">아직 게시글이 없습니다</p>
+            <p className="text-sm">{t("home.no_posts")}</p>
             <button
               onClick={() => navigate("/community")}
               className="mt-3 text-sm text-primary hover:underline"
             >
-              첫 글 작성하기
+              {t("home.first_post")}
             </button>
           </div>
         ) : (
@@ -138,7 +140,7 @@ export default function HomePage() {
                       {post.likes}
                     </button>
                     {post.sharedExpenses.length > 0 && (
-                      <span className="text-xs">{post.sharedExpenses.length}개 내역 첨부</span>
+                      <span className="text-xs">{post.sharedExpenses.length}{t("community.expense_count_suffix")} 첨부</span>
                     )}
                   </div>
                 </div>

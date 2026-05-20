@@ -2,6 +2,7 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router";
 import { Home, Users, User, Settings, Globe, Menu, X, Gamepad2, LogOut, Newspaper } from "lucide-react";
 import { useState } from "react";
 import { useAppData } from "../context/AppDataContext";
+import { useLang } from "../context/LangContext";
 import { clearAuthSession } from "../lib/auth";
 
 export default function Layout() {
@@ -9,17 +10,18 @@ export default function Layout() {
   const navigate = useNavigate();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { profile, rewardSummary, profilePhoto } = useAppData();
+  const { t } = useLang();
 
   const navItems = [
-    { path: "/",          icon: Home,      label: "홈" },
-    { path: "/community", icon: Newspaper, label: "게시판" },
-    { path: "/groups",    icon: Users,     label: "그룹" },
-    { path: "/kabemon",   icon: Gamepad2,  label: "캐보몬" },
-    { path: "/mypage",    icon: User,      label: "마이페이지" },
+    { path: "/",          icon: Home,      label: t("nav.home") },
+    { path: "/community", icon: Newspaper, label: t("nav.community") },
+    { path: "/groups",    icon: Users,     label: t("nav.groups") },
+    { path: "/kabemon",   icon: Gamepad2,  label: t("nav.kabemon") },
+    { path: "/mypage",    icon: User,      label: t("nav.mypage") },
   ];
 
   const settingsItems = [
-    { path: "/settings", icon: Settings, label: "설정" },
+    { path: "/settings", icon: Settings, label: t("nav.settings") },
   ];
 
   const isActive = (path: string) =>
@@ -34,7 +36,7 @@ export default function Layout() {
   const NavLinks = ({ onNav }: { onNav?: () => void }) => (
     <>
       <div className="space-y-1">
-        <p className="text-xs text-muted-foreground px-3 mb-2">메뉴</p>
+        <p className="text-xs text-muted-foreground px-3 mb-2">{t("nav.menu")}</p>
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -57,7 +59,7 @@ export default function Layout() {
       </div>
 
       <div className="mt-8 space-y-1">
-        <p className="text-xs text-muted-foreground px-3 mb-2">설정</p>
+        <p className="text-xs text-muted-foreground px-3 mb-2">{t("nav.settings_section")}</p>
         {settingsItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -110,7 +112,7 @@ export default function Layout() {
             )}
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm truncate">{profile.name}</p>
-              <p className="text-xs text-muted-foreground">Lv.{rewardSummary.level} 환율 탐험가</p>
+              <p className="text-xs text-muted-foreground">Lv.{rewardSummary.level} {t("nav.explorer")}</p>
             </div>
           </Link>
           <button
@@ -118,7 +120,7 @@ export default function Layout() {
             className="w-full flex items-center gap-3 px-3 py-2 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors text-sm"
           >
             <LogOut className="w-4 h-4" />
-            로그아웃
+            {t("nav.logout")}
           </button>
         </div>
       </aside>
@@ -170,7 +172,7 @@ export default function Layout() {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{profile.name}</p>
-                  <p className="text-xs text-muted-foreground">Lv.{rewardSummary.level} 환율 탐험가</p>
+                  <p className="text-xs text-muted-foreground">Lv.{rewardSummary.level} {t("nav.explorer")}</p>
                 </div>
               </Link>
               <button
@@ -178,7 +180,7 @@ export default function Layout() {
                 className="w-full flex items-center gap-3 px-3 py-2 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors text-sm"
               >
                 <LogOut className="w-4 h-4" />
-                로그아웃
+                {t("nav.logout")}
               </button>
             </div>
           </aside>

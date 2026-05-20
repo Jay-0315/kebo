@@ -4,6 +4,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 import { useAppData } from "../context/AppDataContext";
+import { useLang } from "../context/LangContext";
 import { formatCurrency, getCountryByCode } from "../data/currency";
 import { formatRelativeTime } from "../lib/story-storage";
 import {
@@ -20,6 +21,7 @@ const CAT_STYLE: Record<PostCategory, string> = {
 
 export default function CommunityPage() {
   const { expenses, posts, profile, createPost, updatePost, deletePost, togglePostLike } = useAppData();
+  const { t } = useLang();
 
   const [activeTab, setActiveTab] = useState<PostCategory | "전체">("전체");
   const [categories, setCategories] = useState<Record<string, PostCategory>>(loadPostCategories);
@@ -99,7 +101,7 @@ export default function CommunityPage() {
     <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
-        <h2 className="shrink-0">게시판</h2>
+        <h2 className="shrink-0">{t("nav.community")}</h2>
         <div className="flex gap-2 shrink-0">
           <Link to="/groups">
             <button
@@ -131,7 +133,7 @@ export default function CommunityPage() {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {tab}
+            {tab === "전체" ? t("community.all") : tab === "자랑" ? t("community.brag") : tab === "공략" ? t("community.tip") : t("community.chat")}
           </button>
         ))}
       </div>
@@ -140,7 +142,7 @@ export default function CommunityPage() {
       <div className="space-y-3">
         {visiblePosts.length === 0 ? (
           <div className="bg-card rounded border border-border p-10 text-center text-muted-foreground">
-            <p className="text-sm">이 탭에 아직 게시글이 없습니다</p>
+            <p className="text-sm">{t("community.no_posts")}</p>
           </div>
         ) : (
           visiblePosts.map((post) => {
@@ -217,7 +219,7 @@ export default function CommunityPage() {
                   {post.sharedExpenses.length > 0 && (
                     <div className="flex items-center gap-1.5 text-sm">
                       <Share2 className="w-4 h-4" />
-                      {post.sharedExpenses.length}개 내역
+                      {post.sharedExpenses.length}{t("community.expense_count_suffix")}
                     </div>
                   )}
                 </div>
@@ -238,7 +240,7 @@ export default function CommunityPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-5">
-              <h3>{editingPost ? "글 수정" : "새 글 작성"}</h3>
+              <h3>{editingPost ? t("community.edit_post") : t("community.new_post")}</h3>
               <button onClick={closeForm} className="text-muted-foreground hover:text-foreground transition-colors">
                 <X className="w-6 h-6" />
               </button>
@@ -258,7 +260,7 @@ export default function CommunityPage() {
                         : "border-border bg-muted text-muted-foreground hover:border-primary/40"
                     }`}
                   >
-                    {cat}
+                    {cat === "자랑" ? t("community.brag") : cat === "공략" ? t("community.tip") : t("community.chat")}
                   </button>
                 ))}
               </div>
@@ -267,7 +269,7 @@ export default function CommunityPage() {
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="절약 팁, 여행 후기, 지출 자랑 등을 자유롭게 공유해보세요."
+                  placeholder={t("community.placeholder")}
                   className="w-full px-4 py-3 bg-input-background rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-ring min-h-[120px] resize-none text-sm"
                   required
                 />
@@ -277,7 +279,7 @@ export default function CommunityPage() {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <CheckSquare className="w-4 h-4 text-primary" />
-                    <label className="text-sm font-medium">지출 내역 첨부 (선택)</label>
+                    <label className="text-sm font-medium">{t("community.attach_expense")}</label>
                   </div>
                   <div className="space-y-2 max-h-48 overflow-y-auto">
                     {shareableExpenses.map((expense) => {
@@ -311,7 +313,7 @@ export default function CommunityPage() {
                 type="submit"
                 className="w-full bg-primary/80 text-primary-foreground rounded-md py-3 font-medium shadow-md hover:shadow-lg transition-all"
               >
-                {editingPost ? "수정하기" : "작성하기"}
+                {editingPost ? t("community.update") : t("community.submit")}
               </button>
             </form>
           </div>

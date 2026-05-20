@@ -97,6 +97,7 @@ export interface AppSettings {
   darkMode: boolean;
   autoBackup: boolean;
   themeColor: string;
+  language?: "ko" | "ja";
 }
 
 export interface AppData {

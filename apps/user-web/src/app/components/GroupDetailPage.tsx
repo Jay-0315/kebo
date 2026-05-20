@@ -5,6 +5,7 @@ import {
   Copy, Check, UserPlus, Plus, X, Swords, Pencil, Camera, ChevronRight,
 } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
+import { useLang } from "../context/LangContext";
 import type { CurrencyCode } from "../types/domain";
 import { PixelSprite } from "./PixelCharacter";
 import { CHARACTERS } from "../data/characters";
@@ -61,6 +62,7 @@ export default function GroupDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { expenses, profile, profilePhoto, isLoading } = useAppData();
+  const { t } = useLang();
 
   const group: Group | undefined = location.state?.group;
 
@@ -132,12 +134,12 @@ export default function GroupDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
         <Users className="w-12 h-12 mb-4 opacity-30" />
-        <p className="mb-4">그룹 정보를 찾을 수 없습니다.</p>
+        <p className="mb-4">{t("group.not_found")}</p>
         <button
           onClick={() => navigate("/groups")}
           className="bg-primary/80 text-primary-foreground rounded px-4 py-2 text-sm font-medium"
         >
-          그룹 목록으로
+          {t("group.back_to_list")}
         </button>
       </div>
     );
@@ -187,14 +189,14 @@ export default function GroupDetailPage() {
           }`}
         >
           <UserPlus className="w-4 h-4" />
-          초대
+          {t("group.invite")}
         </button>
       </div>
 
       {/* 초대 코드 패널 */}
       {showInvite && (
         <div className="bg-card rounded-md border border-primary/20 p-5">
-          <p className="text-sm text-muted-foreground mb-3">아래 코드를 공유해 멤버를 초대하세요</p>
+          <p className="text-sm text-muted-foreground mb-3">{t("group.share_code")}</p>
           <div className="flex items-center gap-3">
             <div className="flex-1 bg-muted rounded px-4 py-3 font-mono text-xl font-bold text-center tracking-widest">
               {group.code}
@@ -204,7 +206,7 @@ export default function GroupDetailPage() {
               className="bg-primary/80 text-primary-foreground rounded px-4 py-3 flex items-center gap-2 transition-all hover:shadow-md"
             >
               {codeCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {codeCopied ? "복사됨" : "복사"}
+              {codeCopied ? t("group.copied") : t("group.copy")}
             </button>
           </div>
         </div>
@@ -215,9 +217,9 @@ export default function GroupDetailPage() {
         <div className="flex items-center justify-between mb-4">
           <h3 className="flex items-center gap-2">
             <Users className="w-4 h-4 text-primary" />
-            참여 인원
+            {t("group.members")}
           </h3>
-          <span className="text-sm text-muted-foreground">{group.members.length}명</span>
+          <span className="text-sm text-muted-foreground">{group.members.length}{t("group.member_suffix")}</span>
         </div>
 
         {/* Member story avatars — Instagram 스타일 */}
@@ -268,24 +270,24 @@ export default function GroupDetailPage() {
 
                 {/* 이름 */}
                 <p className="text-[11px] font-medium text-center w-full truncate leading-tight">
-                  {isMe ? "내 스토리" : member.name}
+                  {isMe ? t("group.my_story") : member.name}
                 </p>
 
                 {/* 상태 힌트 */}
                 {isMe && !hasStory ? (
                   <span className="text-[10px] text-muted-foreground/60 group-hover:text-primary transition-colors flex items-center gap-0.5">
                     <Camera className="w-2.5 h-2.5" />
-                    추가
+                    {t("group.add")}
                   </span>
                 ) : member.isHost ? (
                   <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-500">
                     <Crown className="w-2.5 h-2.5" />
-                    호스트
+                    {t("group.host")}
                   </span>
                 ) : hasStory ? (
-                  <span className="text-[10px] text-primary/70">스토리</span>
+                  <span className="text-[10px] text-primary/70">{t("group.story")}</span>
                 ) : (
-                  <span className="text-[10px] text-muted-foreground/40">멤버</span>
+                  <span className="text-[10px] text-muted-foreground/40">{t("group.member")}</span>
                 )}
               </button>
             );
@@ -302,13 +304,13 @@ export default function GroupDetailPage() {
         >
           <h3 className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-primary" />
-            그룹 지출
+            {t("group.expenses")}
             {allExpenses.length > 0 && (
               <span className="text-xs text-muted-foreground font-normal">· {allExpenses.length}건</span>
             )}
           </h3>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">전체 보기</span>
+            <span className="text-xs text-muted-foreground">{t("group.view_all")}</span>
             <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </div>
         </button>
@@ -320,7 +322,7 @@ export default function GroupDetailPage() {
             className="w-full flex items-center justify-center gap-1.5 rounded-md py-2 text-sm font-medium transition-all border border-dashed border-primary/40 text-primary hover:bg-primary/5"
           >
             <Plus className="w-4 h-4" />
-            지출 추가
+            {t("group.add_expense")}
           </button>
 
           {/* Recent 3 expenses — skeleton or cards */}
@@ -343,7 +345,7 @@ export default function GroupDetailPage() {
           ) : allExpenses.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <TrendingUp className="w-7 h-7 mx-auto mb-2 opacity-30" />
-              <p className="text-sm">아직 지출 내역이 없습니다</p>
+              <p className="text-sm">{t("group.no_expenses")}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -378,7 +380,7 @@ export default function GroupDetailPage() {
                   onClick={() => navigate(`/groups/${group.id}/expenses`, { state: { group, localExpenses } })}
                   className="w-full text-center text-xs text-muted-foreground hover:text-primary py-2 transition-colors"
                 >
-                  +{allExpenses.length - 3}건 더 보기
+                  +{allExpenses.length - 3}{t("expense.count_suffix")} 더 보기
                 </button>
               )}
             </div>
@@ -391,7 +393,7 @@ export default function GroupDetailPage() {
         <div className="px-5 pt-4 pb-3">
           <h3 className="flex items-center gap-2">
             <Swords className="w-4 h-4 text-primary" />
-            파티 캐릭터
+            {t("group.party")}
           </h3>
         </div>
 
@@ -491,13 +493,13 @@ export default function GroupDetailPage() {
                 <div className="w-20 h-20 rounded-full bg-white/10 ring-2 ring-white/20 flex items-center justify-center text-white font-bold text-3xl">
                   {member.name[0]}
                 </div>
-                <p className="text-white/50 text-sm">아직 올린 스토리가 없어요</p>
+                <p className="text-white/50 text-sm">{t("group.no_story")}</p>
                 {isOwn && (
                   <button
                     onClick={() => { closeStory(); navigate("/story/create", { state: { member, group } }); }}
                     className="mt-2 bg-white text-black rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-white/90 transition-colors"
                   >
-                    스토리 작성하기
+                    {t("group.write_story")}
                   </button>
                 )}
               </div>

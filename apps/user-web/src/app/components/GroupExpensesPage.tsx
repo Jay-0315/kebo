@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { ArrowLeft, Plus, X, TrendingUp } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
+import { useLang } from "../context/LangContext";
 import type { CurrencyCode } from "../types/domain";
 
 interface GroupMember {
@@ -45,6 +46,7 @@ export default function GroupExpensesPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { expenses, createExpense } = useAppData();
+  const { t } = useLang();
 
   const group: Group | undefined = location.state?.group;
   const initialLocal: LocalExpense[] = location.state?.localExpenses ?? [];
@@ -64,9 +66,9 @@ export default function GroupExpensesPage() {
   if (!group) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
-        <p className="mb-4">그룹 정보를 찾을 수 없습니다.</p>
+        <p className="mb-4">{t("expense.not_found")}</p>
         <button onClick={() => navigate("/groups")} className="bg-primary/80 text-primary-foreground rounded px-4 py-2 text-sm font-medium">
-          그룹 목록으로
+          {t("expense.back")}
         </button>
       </div>
     );
@@ -141,7 +143,7 @@ export default function GroupExpensesPage() {
         </button>
         <div className="flex-1 min-w-0">
           <h2 className="truncate">{group.name} 지출 내역</h2>
-          <p className="text-sm text-muted-foreground">{allExpenses.length}건</p>
+          <p className="text-sm text-muted-foreground">{allExpenses.length}{t("expense.count_suffix")}</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
@@ -158,7 +160,7 @@ export default function GroupExpensesPage() {
         <form onSubmit={handleSubmit} className="bg-card rounded-md border border-border p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-muted-foreground mb-1">날짜</label>
+              <label className="block text-xs text-muted-foreground mb-1">{t("expense.date")}</label>
               <input
                 type="date"
                 value={form.date}
@@ -167,7 +169,7 @@ export default function GroupExpensesPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-muted-foreground mb-1">카테고리</label>
+              <label className="block text-xs text-muted-foreground mb-1">{t("expense.category")}</label>
               <select
                 value={form.category}
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
@@ -179,7 +181,7 @@ export default function GroupExpensesPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-muted-foreground mb-1">금액</label>
+              <label className="block text-xs text-muted-foreground mb-1">{t("expense.amount")}</label>
               <input
                 type="number"
                 value={form.spentAmount}
@@ -191,7 +193,7 @@ export default function GroupExpensesPage() {
               />
             </div>
             <div>
-              <label className="block text-xs text-muted-foreground mb-1">통화</label>
+              <label className="block text-xs text-muted-foreground mb-1">{t("expense.currency")}</label>
               <select
                 value={form.spentCurrency}
                 onChange={(e) => setForm({ ...form, spentCurrency: e.target.value as CurrencyCode })}
@@ -203,23 +205,23 @@ export default function GroupExpensesPage() {
             </div>
           </div>
           <div>
-            <label className="block text-xs text-muted-foreground mb-1">메모</label>
+            <label className="block text-xs text-muted-foreground mb-1">{t("expense.memo")}</label>
             <input
               type="text"
               value={form.memo}
               onChange={(e) => setForm({ ...form, memo: e.target.value })}
-              placeholder="어디서 쓴 돈인지 입력하세요"
+              placeholder={t("expense.memo_placeholder")}
               required
               className="w-full px-3 py-2 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs text-muted-foreground mb-1">인원 수 (선택)</label>
+            <label className="block text-xs text-muted-foreground mb-1">{t("expense.participants")}</label>
             <input
               type="number"
               value={form.participants}
               onChange={(e) => setForm({ ...form, participants: e.target.value })}
-              placeholder="함께한 인원"
+              placeholder={t("expense.participants_placeholder")}
               min="1"
               className="w-full px-3 py-2 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
             />
@@ -229,7 +231,7 @@ export default function GroupExpensesPage() {
             disabled={submitting}
             className="w-full bg-primary/80 text-primary-foreground rounded py-2.5 text-sm font-medium hover:shadow-md transition-all disabled:opacity-50"
           >
-            {submitting ? "저장 중..." : "지출 추가"}
+            {submitting ? t("expense.saving") : t("expense.add")}
           </button>
         </form>
       )}
@@ -238,7 +240,7 @@ export default function GroupExpensesPage() {
       {allExpenses.length === 0 ? (
         <div className="bg-card rounded-md border border-border p-10 text-center text-muted-foreground">
           <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-30" />
-          <p className="text-sm">아직 지출 내역이 없습니다</p>
+          <p className="text-sm">{t("expense.no_expenses")}</p>
         </div>
       ) : (
         <div className="space-y-2">
