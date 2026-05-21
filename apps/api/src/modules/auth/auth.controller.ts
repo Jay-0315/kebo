@@ -1,6 +1,9 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
+import { CurrentUser } from "./current-user.decorator";
 import { AuthService } from "./auth.service";
+import { JwtAuthGuard } from "./jwt.guard";
 import { LoginDto } from "./dto/login.dto";
+import { SocialLoginDto } from "./dto/social-login.dto";
 import { SignupDto } from "./dto/signup.dto";
 
 @Controller("auth")
@@ -15,5 +18,27 @@ export class AuthController {
   @Post("login")
   login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Post("social")
+  socialLogin(@Body() dto: SocialLoginDto) {
+    return this.authService.socialLogin(dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get("providers")
+  getLinkedProviders(
+    @CurrentUser() user: { sub: string },
+  ) {
+    return this.authService.getLinkedProviders(user.sub);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post("social/link")
+  linkSocial(
+    @CurrentUser() user: { sub: string },
+    @Body() dto: SocialLoginDto,
+  ) {
+    return this.authService.linkSocialIdentity(user.sub, dto);
   }
 }

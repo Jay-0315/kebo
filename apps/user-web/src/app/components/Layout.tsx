@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { clearAuthSession } from "../lib/auth";
+import { CHARACTERS } from "../data/characters";
 import TitleBadge from "./TitleBadge";
 
 export default function Layout() {
@@ -116,7 +117,7 @@ export default function Layout() {
               {rewardSummary.equippedTitleId ? (
                 <TitleBadge titleId={rewardSummary.equippedTitleId} size="xs" />
               ) : (
-                <p className="text-xs text-muted-foreground">{rewardSummary.ownedCharacterIds.length}/100 수집</p>
+                <p className="text-xs text-muted-foreground">{rewardSummary.ownedCharacterIds.length}/{CHARACTERS.length} 수집</p>
               )}
             </div>
           </Link>
@@ -180,7 +181,7 @@ export default function Layout() {
                   {rewardSummary.equippedTitleId ? (
                     <TitleBadge titleId={rewardSummary.equippedTitleId} size="xs" />
                   ) : (
-                    <p className="text-xs text-muted-foreground">{rewardSummary.ownedCharacterIds.length}/100 수집</p>
+                    <p className="text-xs text-muted-foreground">{rewardSummary.ownedCharacterIds.length}/{CHARACTERS.length} 수집</p>
                   )}
                 </div>
               </Link>

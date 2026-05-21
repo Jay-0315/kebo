@@ -36,6 +36,7 @@ const LIKES_STORAGE_KEY = "kebo-liked-posts";
 const PROFILE_PHOTO_KEY = "kebo-profile-photo";
 
 interface AppDataContextValue {
+  hasInitialized: boolean;
   isLoading: boolean;
   profile: UserProfile;
   settings: AppSettings;
@@ -69,6 +70,20 @@ interface AppDataContextValue {
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null);
+
+function normalizeRewardSummary(summary: Partial<RewardSummary> | null | undefined): RewardSummary {
+  return {
+    attendanceDays: summary?.attendanceDays ?? 0,
+    missionPoints: summary?.missionPoints ?? 0,
+    streakDays: summary?.streakDays ?? 0,
+    equippedCharacterId: summary?.equippedCharacterId ?? null,
+    equippedTitleId: summary?.equippedTitleId ?? null,
+    ownedCharacterIds: summary?.ownedCharacterIds ?? [],
+    ownedTitleIds: summary?.ownedTitleIds ?? [],
+    gachaPityCount: summary?.gachaPityCount ?? 0,
+    legendaryPityCount: summary?.legendaryPityCount ?? 0,
+  };
+}
 
 function mapExpense(apiExpense: Record<string, unknown>): Expense {
   return {
@@ -144,6 +159,7 @@ function getMonthlyTotals(expenses: Expense[]) {
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const storedUser = getStoredUser();
+  const [hasInitialized, setHasInitialized] = useState(false);
   const [profile, setProfile] = useState<UserProfile>(storedUser ?? initialAppData.profile);
   const [settings, setSettings] = useState<AppSettings>(() => {
     const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
@@ -162,17 +178,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [posts, setPosts] = useState<CommunityPost[]>([]);
-  const [rewardSummary, setRewardSummary] = useState<RewardSummary>({
-    attendanceDays: 0,
-    missionPoints: 0,
-    streakDays: 0,
-    equippedCharacterId: null,
-    equippedTitleId: null,
-    ownedCharacterIds: [],
-    ownedTitleIds: [],
-    gachaPityCount: 0,
-    legendaryPityCount: 0,
-  });
+  const [rewardSummary, setRewardSummary] = useState<RewardSummary>(
+    normalizeRewardSummary(undefined),
+  );
   const [remoteExchangeRates, setRemoteExchangeRates] = useState<ExchangeRate[]>(exchangeRates);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(() => {
     return localStorage.getItem(PROFILE_PHOTO_KEY);
@@ -200,6 +208,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const refreshData = async () => {
     const currentUser = getStoredUser();
     if (!currentUser) {
+      setHasInitialized(true);
       return;
     }
 
@@ -239,19 +248,23 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setPosts(postsResult.value.map((post) => mapPost(post, likedPostIds)));
     }
     if (rewardsResult.status === "fulfilled") {
-      setRewardSummary(rewardsResult.value);
+      setRewardSummary(normalizeRewardSummary(rewardsResult.value));
     }
     if (ratesResult.status === "fulfilled") {
       setRemoteExchangeRates(ratesResult.value);
     }
     setIsLoading(false);
+    setHasInitialized(true);
   };
 
   useEffect(() => {
     if (storedUser) {
       refreshData().catch((error) => {
         console.error(error);
+        setHasInitialized(true);
       });
+    } else {
+      setHasInitialized(true);
     }
   }, []);
 
@@ -515,6 +528,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const monthlyTotals = useMemo(() => getMonthlyTotals(expenses), [expenses]);
 
   const value: AppDataContextValue = {
+    hasInitialized,
     isLoading,
     profile,
     settings,

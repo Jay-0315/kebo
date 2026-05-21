@@ -2,6 +2,7 @@ import { useNavigate, Link } from "react-router";
 import { Heart, Pencil, Users, ChevronRight, TrendingUp, MessageSquare } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
+import { CHARACTERS } from "../data/characters";
 import { formatRelativeTime } from "../lib/story-storage";
 import { loadPostCategories } from "../lib/post-categories";
 import TitleBadge from "./TitleBadge";
@@ -38,7 +39,7 @@ export default function HomePage() {
               <TitleBadge titleId={rewardSummary.equippedTitleId} size="xs" />
             </div>
           )}
-          <p className="text-sm text-muted-foreground">{rewardSummary.ownedCharacterIds.length}/100 수집 · {rewardSummary.missionPoints}P</p>
+          <p className="text-sm text-muted-foreground">{rewardSummary.ownedCharacterIds.length}/{CHARACTERS.length} 수집 · {rewardSummary.missionPoints}P</p>
         </div>
         <button
           onClick={() => navigate("/community")}

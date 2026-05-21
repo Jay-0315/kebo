@@ -12,6 +12,7 @@ services:
       - app-web-node-modules:/app/apps/user-web/node_modules
     environment:
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:4000}
+      VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
     depends_on:
       api:
         condition: service_started
@@ -31,6 +32,8 @@ services:
       API_PORT: ${API_PORT:-4000}
       JWT_SECRET: ${JWT_SECRET:-kebo-dev-secret}
       DATABASE_URL: mysql://${MYSQL_USER:-kebo}:${MYSQL_PASSWORD:-kebo1234}@mysql:3306/${MYSQL_DATABASE:-kebo}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_IDS: ${GOOGLE_CLIENT_IDS:-}
     depends_on:
       mysql:
         condition: service_healthy

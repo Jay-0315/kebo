@@ -148,7 +148,7 @@ return (
             {displayChar.korName}
           </p>
           <p className="text-xs text-muted-foreground">
-            {RARITY_LABEL[displayChar.rarity]} · {rewardSummary.ownedCharacterIds.length}/100 수집 · {rewardSummary.missionPoints}P
+            {RARITY_LABEL[displayChar.rarity]} · {rewardSummary.ownedCharacterIds.length}/{CHARACTERS.length} 수집 · {rewardSummary.missionPoints}P
           </p>
         </div>
         <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
@@ -237,7 +237,7 @@ return (
             </div>
             <div className="text-right">
               <p className="text-xs text-muted-foreground">수집</p>
-              <p className="text-lg font-bold">{rewardSummary.ownedCharacterIds.length}/100</p>
+              <p className="text-lg font-bold">{rewardSummary.ownedCharacterIds.length}/{CHARACTERS.length}</p>
             </div>
           </div>
         </div>

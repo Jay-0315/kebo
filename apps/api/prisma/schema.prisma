@@ -14,11 +14,18 @@ enum CurrencyCode {
   EUR
 }
 
+enum AuthProvider {
+  GOOGLE
+  KAKAO
+  LINE
+  APPLE
+}
+
 model User {
   id              String          @id @default(uuid())
   name            String
   email           String          @unique
-  passwordHash    String          @map("password_hash")
+  passwordHash    String?         @map("password_hash")
   role            String          @default("USER")
   baseCountryCode String          @map("base_country_code") @db.Char(2)
   baseCurrency    CurrencyCode    @map("base_currency")
@@ -30,8 +37,25 @@ model User {
   reward          UserReward?
   characters      UserCharacter[]
   titles          UserTitle[]
+  identities      UserIdentity[]
 
   @@map("users")
+}
+
+model UserIdentity {
+  id             BigInt       @id @default(autoincrement())
+  userId         String       @map("user_id")
+  provider       AuthProvider
+  providerUserId String       @map("provider_user_id")
+  providerEmail  String?      @map("provider_email")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@unique([userId, provider])
+  @@index([userId])
+  @@map("user_identities")
 }
 
 model UserReward {
