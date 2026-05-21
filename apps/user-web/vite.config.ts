@@ -34,6 +34,10 @@ export default defineConfig({
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
 
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router', 'lucide-react'],
+  },
+
   server: {
     host: '0.0.0.0',
     port: 5173,
@@ -45,6 +49,15 @@ export default defineConfig({
       host: 'localhost',
       port: 5173,
       protocol: 'ws',
+      clientPort: 5173,
+    },
+    warmup: {
+      clientFiles: ['./src/app/App.tsx', './src/app/components/*.tsx', './src/app/context/*.tsx'],
+    },
+    // Docker on Windows: inotify doesn't propagate → polling 필요
+    watch: {
+      usePolling: true,
+      interval: 800,
     },
   },
 })

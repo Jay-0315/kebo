@@ -43,6 +43,7 @@ model UserReward {
   equippedCharacterId Int?     @map("equipped_character_id")
   equippedTitleId     Int?     @map("equipped_title_id")
   gachaPityCount      Int      @default(0) @map("gacha_pity_count")
+  legendaryPityCount  Int      @default(0) @map("legendary_pity_count")
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @updatedAt @map("updated_at")
   user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)

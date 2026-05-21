@@ -84,6 +84,7 @@ export interface RewardSummary {
   ownedCharacterIds: number[];
   ownedTitleIds: number[];
   gachaPityCount: number;
+  legendaryPityCount: number;
 }
 
 export interface UserProfile {

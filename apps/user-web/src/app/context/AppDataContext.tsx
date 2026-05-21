@@ -171,6 +171,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     ownedCharacterIds: [],
     ownedTitleIds: [],
     gachaPityCount: 0,
+    legendaryPityCount: 0,
   });
   const [remoteExchangeRates, setRemoteExchangeRates] = useState<ExchangeRate[]>(exchangeRates);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(() => {

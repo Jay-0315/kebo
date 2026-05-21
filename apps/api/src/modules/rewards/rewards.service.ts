@@ -124,10 +124,12 @@ const ACHIEVEMENTS: { characterId: number; type: string; value: number }[] = [
   { characterId: 94, type: "streak",        value: 365 },
 ];
 
-function pickGachaRarity(forceRareOrAbove = false): string {
+function pickGachaRarity(forceRareOrAbove = false, forceLegendaryOrAbove = false): string {
+  if (forceLegendaryOrAbove) {
+    return weightedRandom({ legendary: 80, mythic: 20 });
+  }
   if (forceRareOrAbove) {
-    const rarePool = { rare: 75, epic: 15, legendary: 8, mythic: 2 };
-    return weightedRandom(rarePool);
+    return weightedRandom({ rare: 75, epic: 15, legendary: 8, mythic: 2 });
   }
   return weightedRandom(GACHA_RATES);
 }
@@ -199,6 +201,7 @@ export class RewardsService {
       ownedCharacterIds: ownedChars.map((c) => c.characterId),
       ownedTitleIds: ownedTitles.map((t) => t.titleId),
       gachaPityCount: reward.gachaPityCount,
+      legendaryPityCount: reward.legendaryPityCount,
     };
   }
 
@@ -262,17 +265,19 @@ export class RewardsService {
 
     const results: { characterId: number; rarity: string; isDuplicate: boolean; bonusPoints: number }[] = [];
     let totalBonusPoints = 0;
-    let pity = reward.gachaPityCount;
+    let pity = reward.gachaPityCount;         // rare+ 보장 카운터 (consecutive non-rare)
+    let legendaryPity = reward.legendaryPityCount; // 천장 카운터 (80연 레전더리+ 보장)
 
     for (let i = 0; i < count; i++) {
       const isLastInTen = count === 10 && i === 9;
-      // Force rare+ on 10th pull if no rare+ appeared yet
       const hasRarePlus = results.some((r) =>
         ["rare", "epic", "legendary", "mythic"].includes(r.rarity),
       );
       const forceRare = isLastInTen && !hasRarePlus;
+      // 천장: 79번 쌓이면 (0-indexed) 다음 = 80번째 → 레전더리+ 확정
+      const forceLegendary = legendaryPity >= 79;
 
-      const rarity = pickGachaRarity(forceRare);
+      const rarity = pickGachaRarity(forceRare, forceLegendary);
       const char = pickFromPool(rarity);
       const isDuplicate = ownedSet.has(char.id);
       const bonusPoints = isDuplicate ? (RARITY_DUPLICATE_POINTS[rarity] ?? 0) : 0;
@@ -281,10 +286,16 @@ export class RewardsService {
       totalBonusPoints += bonusPoints;
 
       if (!isDuplicate) ownedSet.add(char.id);
-      if (["rare", "epic", "legendary", "mythic"].includes(rarity)) {
+
+      if (["legendary", "mythic"].includes(rarity)) {
         pity = 0;
+        legendaryPity = 0; // 천장 리셋
+      } else if (["rare", "epic"].includes(rarity)) {
+        pity = 0;
+        legendaryPity += 1;
       } else {
         pity += 1;
+        legendaryPity += 1;
       }
     }
 
@@ -296,6 +307,7 @@ export class RewardsService {
         data: {
           missionPoints: reward.missionPoints - cost + totalBonusPoints,
           gachaPityCount: pity,
+          legendaryPityCount: legendaryPity,
         },
       }),
       ...newChars.map((r) =>

@@ -13,6 +13,18 @@ import {
 } from "../data/characters";
 import type { CharacterDef, CharacterRarity, AchievementType } from "../data/characters";
 
+const CAPSULE_MYSTERY_COLORS = [
+  "#7c3aed","#4f46e5","#2563eb","#0891b2",
+  "#059669","#d97706","#dc2626","#db2777","#9333ea","#c026d3",
+];
+
+// 에픽+ 레어리티 휘광: epic=보라, legendary=주황, mythic=노란
+const RARITY_REVEAL: Partial<Record<CharacterRarity, { glow: string; bg: string }>> = {
+  epic:      { glow: "#a855f7", bg: "radial-gradient(circle at 50% 45%, #a855f750 0%, transparent 68%)" },
+  legendary: { glow: "#f97316", bg: "radial-gradient(circle at 50% 45%, #f9731650 0%, transparent 68%)" },
+  mythic:    { glow: "#eab308", bg: "radial-gradient(circle at 50% 45%, #eab30850 0%, transparent 68%)" },
+};
+
 const RARITY_BG: Record<CharacterRarity, string> = {
   common:    "bg-gray-500/10",
   uncommon:  "bg-green-500/10",
@@ -42,58 +54,239 @@ const MISSIONS = [
 type Tab = "character" | "collection" | "gacha" | "achievement";
 type Filter = "all" | CharacterRarity;
 
-// ─── Gacha Result Modal ───────────────────────────────────────────────────
-function GachaResultModal({
+// ─── Pixel Gacha Ball SVG ─────────────────────────────────────────────────
+// viewBox 40×40 (정사각형) → 계단식 픽셀 원, 위 절반 컬러/아래 절반 흰색
+function PixelCapsuleSVG({ color, size = 80 }: { color: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40"
+      style={{ imageRendering: "pixelated", display: "block" }}>
+
+      {/* ── 위 절반 (컬러) ── */}
+      <rect x="14" y="0"  width="12" height="2"  fill={color} />
+      <rect x="10" y="2"  width="20" height="2"  fill={color} />
+      <rect x="6"  y="4"  width="28" height="2"  fill={color} />
+      <rect x="4"  y="6"  width="32" height="2"  fill={color} />
+      <rect x="2"  y="8"  width="36" height="2"  fill={color} />
+      <rect x="0"  y="10" width="40" height="9"  fill={color} />
+
+      {/* ── 아래 절반 (흰색/회색) ── */}
+      <rect x="0"  y="21" width="40" height="9"  fill="#f2f2f2" />
+      <rect x="2"  y="30" width="36" height="2"  fill="#ebebeb" />
+      <rect x="4"  y="32" width="32" height="2"  fill="#e2e2e2" />
+      <rect x="6"  y="34" width="28" height="2"  fill="#d8d8d8" />
+      <rect x="10" y="36" width="20" height="2"  fill="#cecece" />
+      <rect x="14" y="38" width="12" height="2"  fill="#c4c4c4" />
+
+      {/* ── 적도 심(seam) ── */}
+      <rect x="0"  y="19" width="40" height="2"  fill="#111" fillOpacity="0.28" />
+
+      {/* ── 왼쪽 상단 하이라이트 (구체 광택) ── */}
+      <rect x="12" y="2"  width="8"  height="2"  fill="#fff" fillOpacity="0.65" />
+      <rect x="8"  y="4"  width="10" height="2"  fill="#fff" fillOpacity="0.48" />
+      <rect x="6"  y="6"  width="10" height="2"  fill="#fff" fillOpacity="0.34" />
+      <rect x="4"  y="8"  width="8"  height="4"  fill="#fff" fillOpacity="0.24" />
+      <rect x="4"  y="12" width="6"  height="4"  fill="#fff" fillOpacity="0.14" />
+
+      {/* ── 아래쪽 오른편 반사광 ── */}
+      <rect x="24" y="28" width="8"  height="2"  fill="#fff" fillOpacity="0.22" />
+
+      {/* ── "?" 마크 ── */}
+      <rect x="15" y="4"  width="10" height="2"  fill="#fff" fillOpacity="0.88" />
+      <rect x="21" y="6"  width="4"  height="3"  fill="#fff" fillOpacity="0.88" />
+      <rect x="15" y="9"  width="10" height="2"  fill="#fff" fillOpacity="0.88" />
+      <rect x="17" y="11" width="4"  height="4"  fill="#fff" fillOpacity="0.88" />
+      <rect x="17" y="16" width="4"  height="2"  fill="#fff" fillOpacity="0.88" />
+    </svg>
+  );
+}
+
+// ─── Individual Capsule Slot ──────────────────────────────────────────────
+function CapsuleSlot({
+  idx, r, isOpen, isPopping, size, onOpen,
+}: {
+  idx: number;
+  r: GachaResult["results"][0];
+  isOpen: boolean;
+  isPopping: boolean;
+  size: number;
+  onOpen: (idx: number) => void;
+}) {
+  const char = CHARACTERS.find((c) => c.id === r.characterId);
+  const mColor = CAPSULE_MYSTERY_COLORS[idx % CAPSULE_MYSTERY_COLORS.length];
+  // 구체는 정사각형
+  const capW = size;
+  const spriteSize = Math.round(size * 0.6);
+  const reveal = char ? RARITY_REVEAL[char.rarity] : undefined;
+
+  return (
+    <div
+      style={{ width: capW, height: capW, flexShrink: 0, position: "relative" }}
+      className="flex items-center justify-center"
+    >
+      {isOpen && char ? (
+        /* ── 개봉 후: 캐릭터 등장 ── */
+        <div
+          className="flex flex-col items-center gap-0.5 w-full h-full justify-center relative"
+          style={{ animation: "charBurst 0.42s ease-out both" }}
+        >
+          {/* 에픽+ 휘광 레이어 */}
+          {reveal && !r.isDuplicate && (
+            <div
+              className="absolute inset-0 rounded-xl pointer-events-none"
+              style={{
+                background: reveal.bg,
+                animation: "revealGlow 1s ease-in-out 5 alternate",
+                animationDelay: "0.4s",
+              }}
+            />
+          )}
+          <div
+            className={`relative p-1 rounded-lg ${RARITY_BG[char.rarity]} ${r.isDuplicate ? "grayscale opacity-50" : ""}`}
+            style={
+              reveal && !r.isDuplicate
+                ? { boxShadow: `0 0 14px 4px ${reveal.glow}80, 0 0 5px 2px ${reveal.glow}50` }
+                : undefined
+            }
+          >
+            <PixelSprite type={char.type} colors={char.colors} size={spriteSize} />
+          </div>
+          <p className={`text-[8px] text-center font-semibold leading-tight max-w-full truncate px-0.5 ${
+            r.isDuplicate ? "text-white/50" : RARITY_COLOR[char.rarity]
+          }`}>
+            {r.isDuplicate ? `+${r.bonusPoints}P` : char.korName}
+          </p>
+        </div>
+      ) : (
+        /* ── 미개봉: 캡슐 표시 ── */
+        <div
+          className="cursor-pointer select-none"
+          onClick={() => !isOpen && onOpen(idx)}
+          style={{
+            animation: isPopping
+              ? "capsulePop 0.35s ease-in forwards"
+              : `capsuleFloat 2.2s ease-in-out ${idx * 0.13}s infinite`,
+          }}
+        >
+          <PixelCapsuleSVG color={mColor} size={size} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Gacha Capsule Modal ──────────────────────────────────────────────────
+function GachaCapsuleModal({
   result,
   onClose,
+  t,
 }: {
   result: GachaResult;
   onClose: () => void;
+  t: (key: string) => string;
 }) {
+  const [openedSet, setOpenedSet] = useState<Set<number>>(new Set());
+  const [poppingIdx, setPoppingIdx] = useState<number | null>(null);
+
+  const isSingle = result.results.length === 1;
+  const allOpened = openedSet.size === result.results.length;
+  const capsuleSize = isSingle ? 120 : 60;
+
+  const openCapsule = (idx: number) => {
+    if (openedSet.has(idx) || poppingIdx !== null) return;
+    setPoppingIdx(idx);
+    setTimeout(() => {
+      setOpenedSet((prev) => new Set([...prev, idx]));
+      setPoppingIdx(null);
+    }, 330);
+  };
+
+  const openNext = () => {
+    if (poppingIdx !== null) return;
+    for (let i = 0; i < result.results.length; i++) {
+      if (!openedSet.has(i)) { openCapsule(i); break; }
+    }
+  };
+
+  const openAll = () => {
+    setPoppingIdx(null);
+    setOpenedSet(new Set(result.results.map((_, i) => i)));
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4">
-      <div className="bg-card rounded-2xl border border-border w-full max-w-sm max-h-[80vh] flex flex-col">
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          <h3 className="font-bold">뽑기 결과</h3>
-          <div className="text-xs text-muted-foreground">
-            {result.bonusPoints > 0 && (
-              <span className="text-primary font-semibold">+{result.bonusPoints}P 환산</span>
-            )}
-          </div>
-        </div>
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 p-6 bg-gradient-to-b from-slate-900/96 to-black/98">
+      {/* Skip */}
+      {!allOpened && (
+        <button
+          onClick={openAll}
+          className="absolute top-5 right-5 text-white/60 hover:text-white text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors"
+        >
+          {t("kabemon.gacha_skip")} ⏭
+        </button>
+      )}
 
-        <div className="overflow-y-auto p-3 grid grid-cols-5 gap-2 flex-1">
-          {result.results.map((r, i) => {
-            const char = CHARACTERS.find((c) => c.id === r.characterId);
-            if (!char) return null;
-            return (
-              <div
-                key={i}
-                className={`flex flex-col items-center gap-1 p-2 rounded-xl border ${
-                  r.isDuplicate
-                    ? "border-border bg-muted/40 opacity-60"
-                    : `${RARITY_BORDER[char.rarity]} ${RARITY_BG[char.rarity]}`
-                }`}
-              >
-                <PixelSprite type={char.type} colors={char.colors} size={36} />
-                <p className={`text-[8px] text-center leading-tight font-medium ${
-                  r.isDuplicate ? "text-muted-foreground" : RARITY_COLOR[char.rarity]
-                }`}>
-                  {r.isDuplicate ? `+${r.bonusPoints}P` : char.korName}
-                </p>
-              </div>
-            );
-          })}
-        </div>
+      {/* Hint / title */}
+      <p className="text-white/80 text-sm font-semibold tracking-wide">
+        {allOpened ? t("kabemon.gacha_result_title") : t("kabemon.gacha_capsule_hint")}
+      </p>
 
-        <div className="p-4 border-t border-border">
+      {/* Capsules */}
+      {isSingle ? (
+        <div className="flex items-center justify-center min-h-[160px]">
+          <CapsuleSlot
+            idx={0} r={result.results[0]}
+            isOpen={openedSet.has(0)} isPopping={poppingIdx === 0}
+            size={capsuleSize} onOpen={openCapsule}
+          />
+        </div>
+      ) : (
+        <div className="grid grid-cols-5 gap-3">
+          {result.results.map((_, idx) => (
+            <CapsuleSlot
+              key={idx} idx={idx} r={result.results[idx]}
+              isOpen={openedSet.has(idx)} isPopping={poppingIdx === idx}
+              size={capsuleSize} onOpen={openCapsule}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Bonus points */}
+      {allOpened && result.bonusPoints > 0 && (
+        <p className="text-primary font-semibold text-sm">
+          +{result.bonusPoints}P {t("kabemon.gacha_dupe_note")}
+        </p>
+      )}
+
+      {/* Buttons */}
+      <div className="flex gap-2 w-full max-w-xs">
+        {allOpened ? (
           <button
             onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm"
+            className="w-full py-3 rounded-xl bg-primary/80 text-white font-bold hover:bg-primary transition-colors shadow-lg"
           >
-            확인
+            {t("kabemon.gacha_confirm")}
           </button>
-        </div>
+        ) : isSingle ? (
+          <p className="w-full text-center text-white/50 text-xs py-2">
+            {t("kabemon.gacha_tap_hint")}
+          </p>
+        ) : (
+          <>
+            <button
+              onClick={openNext}
+              disabled={poppingIdx !== null}
+              className="flex-1 py-3 rounded-xl bg-white/15 text-white font-semibold text-sm hover:bg-white/25 transition-colors disabled:opacity-40"
+            >
+              {t("kabemon.gacha_open_one")}
+            </button>
+            <button
+              onClick={openAll}
+              className="flex-1 py-3 rounded-xl bg-primary/70 text-white font-semibold text-sm hover:bg-primary/90 transition-colors shadow-md"
+            >
+              {t("kabemon.gacha_open_all")}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
@@ -112,7 +305,7 @@ export default function KabemonPage() {
   const [checkingAchievements, setCheckingAchievements] = useState(false);
   const [newAchievements, setNewAchievements] = useState<number[]>([]);
 
-  const { missionPoints, attendanceDays, streakDays, equippedCharacterId, ownedCharacterIds, gachaPityCount } = rewardSummary;
+  const { missionPoints, attendanceDays, streakDays, equippedCharacterId, ownedCharacterIds, gachaPityCount, legendaryPityCount } = rewardSummary;
 
   const ownedSet = new Set(ownedCharacterIds);
 
@@ -301,6 +494,7 @@ export default function KabemonPage() {
           <GachaTab
             missionPoints={missionPoints}
             gachaPityCount={gachaPityCount}
+            legendaryPityCount={legendaryPityCount}
             canAffordSingle={canAffordSingle}
             canAffordTen={canAffordTen}
             pulling={pulling}
@@ -317,16 +511,24 @@ export default function KabemonPage() {
             streakDays={streakDays}
             missionPoints={missionPoints}
             checking={checkingAchievements}
-            newlyUnlocked={newAchievements}
             onCheck={() => void handleCheckAchievements()}
             t={t}
           />
         )}
       </div>
 
+      {/* ── Achievement reveal modal ── */}
+      {newAchievements.length > 0 && (
+        <AchievementRevealModal
+          newlyUnlocked={newAchievements}
+          onClose={() => setNewAchievements([])}
+          t={t}
+        />
+      )}
+
       {/* ── Gacha result modal ── */}
       {gachaResult && (
-        <GachaResultModal result={gachaResult} onClose={() => setGachaResult(null)} />
+        <GachaCapsuleModal result={gachaResult} onClose={() => setGachaResult(null)} t={t} />
       )}
     </>
   );
@@ -511,10 +713,11 @@ function CharacterDetail({
 
 // ─── Gacha Tab ────────────────────────────────────────────────────────────
 function GachaTab({
-  missionPoints, gachaPityCount, canAffordSingle, canAffordTen, pulling, onPull, t,
+  missionPoints, gachaPityCount, legendaryPityCount, canAffordSingle, canAffordTen, pulling, onPull, t,
 }: {
   missionPoints: number;
   gachaPityCount: number;
+  legendaryPityCount: number;
   canAffordSingle: boolean;
   canAffordTen: boolean;
   pulling: boolean;
@@ -522,18 +725,43 @@ function GachaTab({
   t: (key: string) => string;
 }) {
   const pityLeft = Math.max(0, 10 - (gachaPityCount % 10));
+  const ceilingLeft = Math.max(0, 80 - legendaryPityCount);
 
   return (
     <div className="space-y-4">
-      {/* Points display */}
-      <div className="bg-card rounded-xl border border-border p-4 flex items-center justify-between">
+      {/* Points + pity display */}
+      <div className="bg-card rounded-xl border border-border p-4 grid grid-cols-3 gap-3">
         <div>
           <p className="text-xs text-muted-foreground">{t("kabemon.gacha_points_label")}</p>
-          <p className="text-2xl font-bold text-primary">{missionPoints}P</p>
+          <p className="text-xl font-bold text-primary">{missionPoints}P</p>
         </div>
-        <div className="text-right">
+        <div>
           <p className="text-xs text-muted-foreground">{t("kabemon.gacha_pity_label")}</p>
           <p className="text-lg font-bold">{pityLeft}{t("kabemon.days")}</p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">{t("kabemon.gacha_ceiling_label")}</p>
+          <p className={`text-lg font-bold ${ceilingLeft <= 10 ? "text-amber-500" : ""}`}>
+            {ceilingLeft}{t("kabemon.days")}
+          </p>
+        </div>
+      </div>
+      {/* 천장 진행바 */}
+      <div className="bg-card rounded-xl border border-border px-4 py-3">
+        <div className="flex items-center justify-between mb-1.5">
+          <p className="text-xs text-muted-foreground">{t("kabemon.gacha_ceiling_label")} ({t("kabemon.gacha_ceiling_desc")})</p>
+          <p className="text-xs font-bold text-amber-500">{legendaryPityCount}/80</p>
+        </div>
+        <div className="h-2 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all"
+            style={{
+              width: `${(legendaryPityCount / 80) * 100}%`,
+              background: legendaryPityCount >= 70
+                ? "linear-gradient(90deg, #f97316, #eab308)"
+                : "linear-gradient(90deg, #7c3aed, #4f46e5)",
+            }}
+          />
         </div>
       </div>
 
@@ -624,14 +852,13 @@ const CATEGORY_ICON: Record<AchievementType, { icon: React.ReactNode; color: str
 };
 
 function AchievementTab({
-  ownedSet, attendanceDays, streakDays, missionPoints, checking, newlyUnlocked, onCheck, t,
+  ownedSet, attendanceDays, streakDays, missionPoints, checking, onCheck, t,
 }: {
   ownedSet: Set<number>;
   attendanceDays: number;
   streakDays: number;
   missionPoints: number;
   checking: boolean;
-  newlyUnlocked: number[];
   onCheck: () => void;
   t: (key: string) => string;
 }) {
@@ -672,24 +899,6 @@ function AchievementTab({
           {checking ? t("kabemon.achievement_checking") : t("kabemon.achievement_claim")}
         </button>
       </div>
-
-      {/* Newly unlocked banner */}
-      {newlyUnlocked.length > 0 && (
-        <div className="bg-primary/10 border border-primary/30 rounded-xl p-3 space-y-1.5">
-          <p className="text-xs font-bold text-primary">{t("kabemon.achievement_new")}</p>
-          {newlyUnlocked.map((id) => {
-            const char = CHARACTERS.find((c) => c.id === id);
-            return char ? (
-              <div key={id} className="flex items-center gap-2">
-                <PixelSprite type={char.type} colors={char.colors} size={28} />
-                <p className={`text-xs font-medium ${RARITY_COLOR[char.rarity]}`}>
-                  {char.korName} <span className="text-muted-foreground font-normal">({RARITY_LABEL[char.rarity]})</span>
-                </p>
-              </div>
-            ) : null;
-          })}
-        </div>
-      )}
 
       {/* Category groups */}
       {categories.map((cat) => {
@@ -806,6 +1015,213 @@ function AchievementTab({
           })}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Achievement Reveal Modal ─────────────────────────────────────────────
+function AchievementRevealModal({
+  newlyUnlocked,
+  onClose,
+  t,
+}: {
+  newlyUnlocked: number[];
+  onClose: () => void;
+  t: (key: string) => string;
+}) {
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [phase, setPhase] = useState<"medal" | "busting" | "revealed">("medal");
+
+  const charId = newlyUnlocked[currentIdx];
+  const char = CHARACTERS.find((c) => c.id === charId);
+  const ach = char ? ACHIEVEMENT_BY_CHARACTER.get(char.id) : undefined;
+  const reveal = char ? RARITY_REVEAL[char.rarity] : undefined;
+  const isLast = currentIdx === newlyUnlocked.length - 1;
+
+  const bust = () => {
+    if (phase !== "medal") return;
+    setPhase("busting");
+    setTimeout(() => setPhase("revealed"), 380);
+  };
+
+  const next = () => {
+    if (!isLast) {
+      setCurrentIdx((i) => i + 1);
+      setPhase("medal");
+    } else {
+      onClose();
+    }
+  };
+
+  const skipAll = () => {
+    setCurrentIdx(newlyUnlocked.length - 1);
+    setPhase("revealed");
+  };
+
+  if (!char) return null;
+
+  const rayColor = phase === "revealed" && reveal ? reveal.glow : "#f59e0b";
+  const headerColor = phase === "revealed" && reveal ? reveal.glow : "#f59e0b";
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-slate-950/98">
+      {/* Skip */}
+      {phase === "medal" && (
+        <button
+          onClick={skipAll}
+          className="absolute top-5 right-5 text-white/50 hover:text-white text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition-colors z-20"
+        >
+          {t("kabemon.gacha_skip")} ⏭
+        </button>
+      )}
+
+      {/* Rotating light rays */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          width: "200vmax",
+          height: "200vmax",
+          top: "50%",
+          left: "50%",
+          background: `repeating-conic-gradient(from 0deg, ${rayColor}14 0deg, ${rayColor}22 11deg, transparent 11deg, transparent 22deg)`,
+          animation: "achRayRotate 14s linear infinite",
+        }}
+      />
+
+      {/* Progress dots (multiple achievements) */}
+      {newlyUnlocked.length > 1 && (
+        <div className="absolute top-6 flex gap-1.5 z-10">
+          {newlyUnlocked.map((_, i) => (
+            <div
+              key={i}
+              className="rounded-full transition-all duration-300"
+              style={{
+                width: i === currentIdx ? 12 : 6,
+                height: 6,
+                background:
+                  i < currentIdx ? "#f59e0b80"
+                  : i === currentIdx ? "#f59e0b"
+                  : "#ffffff25",
+              }}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Title */}
+      <p
+        className="absolute text-sm font-bold tracking-[0.22em] z-10"
+        style={{
+          top: newlyUnlocked.length > 1 ? 54 : 42,
+          color: headerColor,
+          textShadow: `0 0 16px ${headerColor}80, 0 0 4px ${headerColor}`,
+          transition: "color 0.5s, text-shadow 0.5s",
+        }}
+      >
+        {t("kabemon.ach_unlocked_title")}
+      </p>
+
+      {/* Medal / Busting phase */}
+      {(phase === "medal" || phase === "busting") && (
+        <div
+          className="relative flex flex-col items-center gap-5 z-10"
+          onClick={phase === "medal" ? bust : undefined}
+          style={{
+            cursor: phase === "medal" ? "pointer" : "default",
+            animation:
+              phase === "busting"
+                ? "achMedalBurst 0.38s ease-out forwards"
+                : "achMedalFloat 2.4s ease-in-out infinite",
+          }}
+        >
+          <div
+            className="w-36 h-36 rounded-full flex items-center justify-center select-none"
+            style={{
+              background:
+                "radial-gradient(circle at 38% 32%, #fde68a30 0%, #f59e0b15 60%, transparent 100%)",
+              border: "2px solid #f59e0b40",
+              boxShadow: "0 0 40px 14px #f59e0b28, 0 0 80px 28px #f59e0b14",
+            }}
+          >
+            <Trophy
+              className="w-20 h-20"
+              style={{ color: "#f59e0b", filter: "drop-shadow(0 0 10px #f59e0b90)" }}
+            />
+          </div>
+          {phase === "medal" && (
+            <p
+              className="text-white/45 text-xs select-none"
+              style={{ animation: "capsuleFloat 1.8s ease-in-out 0.3s infinite" }}
+            >
+              {t("kabemon.ach_tap_hint")}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Revealed phase */}
+      {phase === "revealed" && (
+        <div
+          className="relative flex flex-col items-center gap-5 z-10"
+          style={{ animation: "achContentReveal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both" }}
+        >
+          {/* Rarity ambient glow */}
+          {reveal && (
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                width: "100vw",
+                height: "100vh",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                background: reveal.bg,
+                animation: "revealGlow 1.2s ease-in-out 5 alternate",
+                animationDelay: "0.2s",
+              }}
+            />
+          )}
+
+          {/* Character */}
+          <div
+            className={`relative p-6 rounded-2xl ${RARITY_BG[char.rarity]}`}
+            style={
+              reveal
+                ? { boxShadow: `0 0 44px 14px ${reveal.glow}50, 0 0 14px 4px ${reveal.glow}40` }
+                : undefined
+            }
+          >
+            <PixelCharacter characterId={char.id} size={128} float />
+          </div>
+
+          {/* Info */}
+          <div className="flex flex-col items-center gap-2 text-center px-6">
+            <span
+              className={`text-xs font-bold px-3 py-0.5 rounded-full ${RARITY_BG[char.rarity]} ${RARITY_COLOR[char.rarity]}`}
+            >
+              {RARITY_LABEL[char.rarity]}
+            </span>
+            <p className={`text-3xl font-bold ${RARITY_COLOR[char.rarity]}`}>{char.korName}</p>
+            {ach && (
+              <p className="text-sm text-white/50 max-w-[240px] leading-snug">{ach.label}</p>
+            )}
+          </div>
+
+          {/* Action button */}
+          <button
+            onClick={next}
+            className="w-64 py-3.5 rounded-2xl font-bold text-white text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+            style={{
+              background: reveal
+                ? `linear-gradient(135deg, ${reveal.glow}cc, ${reveal.glow}88)`
+                : "linear-gradient(135deg, #7c3aed, #4f46e5)",
+              boxShadow: reveal ? `0 4px 24px ${reveal.glow}50` : "0 4px 24px #7c3aed40",
+            }}
+          >
+            {isLast ? t("kabemon.ach_confirm") : t("kabemon.ach_next")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
