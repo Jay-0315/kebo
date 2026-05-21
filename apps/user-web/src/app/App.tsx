@@ -12,11 +12,41 @@ import KabemonPage from "./components/KabemonPage";
 import StoryCreatePage from "./components/StoryCreatePage";
 import GroupExpensesPage from "./components/GroupExpensesPage";
 import SettingsPage from "./components/SettingsPage";
+import StarterSelectionPage from "./components/StarterSelectionPage";
+import { useAppData } from "./context/AppDataContext";
 import { isAuthenticated } from "./lib/auth";
 import { LangProvider } from "./context/LangContext";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return isAuthenticated() ? <>{children}</> : <Navigate to="/login" replace />;
+}
+
+function StarterRoute({ children }: { children: React.ReactNode }) {
+  const { hasInitialized, rewardSummary } = useAppData();
+
+  if (!hasInitialized) {
+    return null;
+  }
+
+  if (rewardSummary.ownedCharacterIds.length === 0) {
+    return <Navigate to="/starter" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+function StarterSelectionRoute() {
+  const { hasInitialized, rewardSummary } = useAppData();
+
+  if (!hasInitialized) {
+    return null;
+  }
+
+  if (rewardSummary.ownedCharacterIds.length > 0) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <StarterSelectionPage />;
 }
 
 export default function App() {
@@ -27,10 +57,20 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route
+          path="/starter"
+          element={
+            <ProtectedRoute>
+              <StarterSelectionRoute />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/"
           element={
             <ProtectedRoute>
-              <Layout />
+              <StarterRoute>
+                <Layout />
+              </StarterRoute>
             </ProtectedRoute>
           }
         >
