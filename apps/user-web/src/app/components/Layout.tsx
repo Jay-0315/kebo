@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { clearAuthSession } from "../lib/auth";
+import TitleBadge from "./TitleBadge";
 
 export default function Layout() {
   const location = useLocation();
@@ -112,7 +113,11 @@ export default function Layout() {
             )}
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm truncate">{profile.name}</p>
-              <p className="text-xs text-muted-foreground">Lv.{rewardSummary.level} {t("nav.explorer")}</p>
+              {rewardSummary.equippedTitleId ? (
+                <TitleBadge titleId={rewardSummary.equippedTitleId} size="xs" />
+              ) : (
+                <p className="text-xs text-muted-foreground">{rewardSummary.ownedCharacterIds.length}/100 수집</p>
+              )}
             </div>
           </Link>
           <button
@@ -172,7 +177,11 @@ export default function Layout() {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{profile.name}</p>
-                  <p className="text-xs text-muted-foreground">Lv.{rewardSummary.level} {t("nav.explorer")}</p>
+                  {rewardSummary.equippedTitleId ? (
+                    <TitleBadge titleId={rewardSummary.equippedTitleId} size="xs" />
+                  ) : (
+                    <p className="text-xs text-muted-foreground">{rewardSummary.ownedCharacterIds.length}/100 수집</p>
+                  )}
                 </div>
               </Link>
               <button

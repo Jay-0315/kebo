@@ -1,5 +1,5 @@
 import { useState, type ReactElement } from "react";
-import { CHARACTERS, getCurrentCharacter } from "../data/characters";
+import { CHARACTERS } from "../data/characters";
 import type { CharacterType } from "../data/characters";
 
 interface Colors { p: string; s: string; a: string }
@@ -1194,21 +1194,16 @@ const SPRITES: Record<CharacterType, Renderer> = {
 
 /* ─── Public component ─── */
 interface PixelCharacterProps {
-  level?: number;
   characterId?: number;
   size?: number;
   float?: boolean;
 }
 
-export default function PixelCharacter({ level, characterId, size = 128, float: doFloat = false }: PixelCharacterProps) {
+export default function PixelCharacter({ characterId, size = 128, float: doFloat = false }: PixelCharacterProps) {
   const [hovered, setHovered] = useState(false);
   const frame: Frame = hovered ? "react" : "idle";
 
-  let def = characterId !== undefined
-    ? CHARACTERS.find((c) => c.id === characterId)
-    : undefined;
-  if (!def && level !== undefined) def = getCurrentCharacter(level);
-  if (!def) def = CHARACTERS[0];
+  const def = (characterId !== undefined ? CHARACTERS.find((c) => c.id === characterId) : undefined) ?? CHARACTERS[0];
 
   const animStyle = doFloat && !hovered
     ? { animation: "pixel-float 2s ease-in-out infinite" }

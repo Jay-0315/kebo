@@ -78,10 +78,12 @@ export interface CommunityPostDraft {
 export interface RewardSummary {
   attendanceDays: number;
   missionPoints: number;
-  level: number;
-  nextLevelTarget: number;
   streakDays: number;
   equippedCharacterId: number | null;
+  equippedTitleId: number | null;
+  ownedCharacterIds: number[];
+  ownedTitleIds: number[];
+  gachaPityCount: number;
 }
 
 export interface UserProfile {

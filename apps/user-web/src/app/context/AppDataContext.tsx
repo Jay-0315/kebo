@@ -6,6 +6,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
+
+export interface GachaResult {
+  results: { characterId: number; rarity: string; isDuplicate: boolean; bonusPoints: number }[];
+  pointsSpent: number;
+  bonusPoints: number;
+  remainingPoints: number;
+}
 import { countries, exchangeRates, getCountryByCode, getExchangeRate } from "../data/currency";
 import { initialAppData } from "../data/seed";
 import { applyThemePreset } from "../lib/theme-presets";
@@ -48,6 +55,12 @@ interface AppDataContextValue {
   updateProfileCurrency: (countryCode: string) => Promise<void>;
   updateSettings: (settings: Partial<AppSettings>) => Promise<void>;
   equipCharacter: (characterId: number) => Promise<void>;
+  selectStarter: (characterId: number) => Promise<void>;
+  performGacha: (count: 1 | 10) => Promise<GachaResult>;
+  checkAchievements: () => Promise<number[]>;
+  equipTitle: (titleId: number) => Promise<void>;
+  unequipTitle: () => Promise<void>;
+  checkTitles: () => Promise<number[]>;
   getCountryName: (code: string) => string;
   refreshData: () => Promise<void>;
   profilePhoto: string | null;
@@ -152,10 +165,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const [rewardSummary, setRewardSummary] = useState<RewardSummary>({
     attendanceDays: 0,
     missionPoints: 0,
-    level: 1,
-    nextLevelTarget: 120,
     streakDays: 0,
     equippedCharacterId: null,
+    equippedTitleId: null,
+    ownedCharacterIds: [],
+    ownedTitleIds: [],
+    gachaPityCount: 0,
   });
   const [remoteExchangeRates, setRemoteExchangeRates] = useState<ExchangeRate[]>(exchangeRates);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(() => {
@@ -405,6 +420,85 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setRewardSummary((prev) => ({ ...prev, equippedCharacterId: characterId }));
   };
 
+  const selectStarter = async (characterId: number) => {
+    const currentUser = getStoredUser();
+    if (!currentUser) return;
+    await api.post("/rewards/starter", { userId: currentUser.id, characterId });
+    setRewardSummary((prev) => ({
+      ...prev,
+      equippedCharacterId: characterId,
+      ownedCharacterIds: [...prev.ownedCharacterIds, characterId],
+    }));
+  };
+
+  const performGacha = async (count: 1 | 10): Promise<GachaResult> => {
+    const currentUser = getStoredUser();
+    if (!currentUser) throw new Error("로그인이 필요합니다.");
+    const result = await api.post<GachaResult>("/rewards/gacha", {
+      userId: currentUser.id,
+      count,
+    });
+    setRewardSummary((prev) => ({
+      ...prev,
+      missionPoints: result.remainingPoints,
+      ownedCharacterIds: [
+        ...prev.ownedCharacterIds,
+        ...result.results.filter((r) => !r.isDuplicate).map((r) => r.characterId),
+      ],
+    }));
+    return result;
+  };
+
+  const equipTitle = async (titleId: number) => {
+    const currentUser = getStoredUser();
+    if (!currentUser) return;
+    await api.post("/rewards/titles/equip", { userId: currentUser.id, titleId });
+    setRewardSummary((prev) => ({ ...prev, equippedTitleId: titleId }));
+  };
+
+  const unequipTitle = async () => {
+    const currentUser = getStoredUser();
+    if (!currentUser) return;
+    await api.post("/rewards/titles/unequip", { userId: currentUser.id });
+    setRewardSummary((prev) => ({ ...prev, equippedTitleId: null }));
+  };
+
+  const checkTitles = async (): Promise<number[]> => {
+    const currentUser = getStoredUser();
+    if (!currentUser) return [];
+    const result = await api.post<{ newlyUnlocked: number[] }>("/rewards/titles/check", {
+      userId: currentUser.id,
+    });
+    if (result.newlyUnlocked.length > 0) {
+      setRewardSummary((prev) => ({
+        ...prev,
+        ownedTitleIds: [
+          ...prev.ownedTitleIds,
+          ...result.newlyUnlocked.filter((id) => !prev.ownedTitleIds.includes(id)),
+        ],
+      }));
+    }
+    return result.newlyUnlocked;
+  };
+
+  const checkAchievements = async (): Promise<number[]> => {
+    const currentUser = getStoredUser();
+    if (!currentUser) return [];
+    const result = await api.post<{ newlyUnlocked: number[] }>("/rewards/achievements/check", {
+      userId: currentUser.id,
+    });
+    if (result.newlyUnlocked.length > 0) {
+      setRewardSummary((prev) => ({
+        ...prev,
+        ownedCharacterIds: [
+          ...prev.ownedCharacterIds,
+          ...result.newlyUnlocked.filter((id) => !prev.ownedCharacterIds.includes(id)),
+        ],
+      }));
+    }
+    return result.newlyUnlocked;
+  };
+
   const updateSettings = async (nextSettings: Partial<AppSettings>) => {
     const currentUser = getStoredUser();
     setSettings((current) => ({ ...current, ...nextSettings }));
@@ -439,6 +533,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     updateProfileCurrency,
     updateSettings,
     equipCharacter,
+    selectStarter,
+    performGacha,
+    checkAchievements,
+    equipTitle,
+    unequipTitle,
+    checkTitles,
     getCountryName: (code: string) => getCountryByCode(code).name,
     refreshData,
     profilePhoto,

@@ -7,6 +7,7 @@ import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { formatCurrency, getCountryByCode } from "../data/currency";
 import { formatRelativeTime } from "../lib/story-storage";
+import TitleBadge from "./TitleBadge";
 import {
   loadPostCategories, savePostCategory,
   type PostCategory, POST_CATEGORY_OPTIONS,
@@ -20,7 +21,7 @@ const CAT_STYLE: Record<PostCategory, string> = {
 };
 
 export default function CommunityPage() {
-  const { expenses, posts, profile, createPost, updatePost, deletePost, togglePostLike } = useAppData();
+  const { expenses, posts, profile, rewardSummary, createPost, updatePost, deletePost, togglePostLike } = useAppData();
   const { t } = useLang();
 
   const [activeTab, setActiveTab] = useState<PostCategory | "전체">("전체");
@@ -162,6 +163,11 @@ export default function CommunityPage() {
                           {cat}
                         </span>
                       </div>
+                      {post.authorId === profile.id && rewardSummary.equippedTitleId && (
+                        <div className="mb-0.5">
+                          <TitleBadge titleId={rewardSummary.equippedTitleId} size="xs" />
+                        </div>
+                      )}
                       <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</p>
                     </div>
                   </div>

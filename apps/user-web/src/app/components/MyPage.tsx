@@ -1,16 +1,28 @@
 import { useRef, useState } from "react";
-import { Calendar, TrendingUp, Heart, Camera, X, Pencil, Check, Gamepad2, ChevronRight } from "lucide-react";
+import { Calendar, TrendingUp, Heart, Camera, X, Pencil, Check, Gamepad2, ChevronRight, Award } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useNavigate } from "react-router";
 import PixelCharacter from "./PixelCharacter";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { formatCurrency, getCountryByCode } from "../data/currency";
-import { CHARACTERS, getCurrentCharacter, RARITY_LABEL, RARITY_COLOR } from "../data/characters";
+import { CHARACTERS, RARITY_LABEL, RARITY_COLOR } from "../data/characters";
+import TitleBadge, { TitleSelector } from "./TitleBadge";
 
 export default function MyPage() {
   const navigate = useNavigate();
-  const { profile, rewardSummary, monthlyTotals, expenses, posts, profilePhoto, updateProfilePhoto, updateProfileName } = useAppData();
+  const { profile, rewardSummary, monthlyTotals, expenses, posts, profilePhoto, updateProfilePhoto, updateProfileName, equipTitle, unequipTitle } = useAppData();
+  const [titleLoading, setTitleLoading] = useState(false);
+  const [showTitleSelector, setShowTitleSelector] = useState(false);
+
+  const handleEquipTitle = async (id: number) => {
+    setTitleLoading(true);
+    try { await equipTitle(id); } finally { setTitleLoading(false); }
+  };
+  const handleUnequipTitle = async () => {
+    setTitleLoading(true);
+    try { await unequipTitle(); } finally { setTitleLoading(false); }
+  };
   const { t } = useLang();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editingName, setEditingName] = useState(false);
@@ -40,9 +52,10 @@ export default function MyPage() {
   const myPosts = posts.filter((post) => post.authorId === profile.id);
   const country = getCountryByCode(profile.baseCountryCode);
 
+  const ownedSet = new Set(rewardSummary.ownedCharacterIds);
   const displayChar = rewardSummary.equippedCharacterId
-    ? (CHARACTERS.find((c) => c.id === rewardSummary.equippedCharacterId) ?? getCurrentCharacter(rewardSummary.level))
-    : getCurrentCharacter(rewardSummary.level);
+    ? (CHARACTERS.find((c) => c.id === rewardSummary.equippedCharacterId) ?? CHARACTERS.find((c) => ownedSet.has(c.id)) ?? CHARACTERS[0])
+    : (CHARACTERS.find((c) => ownedSet.has(c.id)) ?? CHARACTERS[0]);
 
 return (
     <div className="space-y-6">
@@ -135,11 +148,42 @@ return (
             {displayChar.korName}
           </p>
           <p className="text-xs text-muted-foreground">
-            {RARITY_LABEL[displayChar.rarity]} · Lv.{rewardSummary.level} · {rewardSummary.missionPoints}P
+            {RARITY_LABEL[displayChar.rarity]} · {rewardSummary.ownedCharacterIds.length}/100 수집 · {rewardSummary.missionPoints}P
           </p>
         </div>
         <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
       </button>
+
+      {/* ── 칭호 ── */}
+      <div className="bg-card rounded-md p-4 shadow-sm border border-border">
+        <button
+          onClick={() => setShowTitleSelector((v) => !v)}
+          className="w-full flex items-center justify-between"
+        >
+          <div className="flex items-center gap-2">
+            <Award className="w-4 h-4 text-primary" />
+            <span className="text-sm font-semibold">{t("mypage.title_section")}</span>
+            {rewardSummary.equippedTitleId && (
+              <TitleBadge titleId={rewardSummary.equippedTitleId} size="xs" />
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span>{rewardSummary.ownedTitleIds.length}{t("mypage.title_owned")}</span>
+            <ChevronRight className={`w-4 h-4 transition-transform ${showTitleSelector ? "rotate-90" : ""}`} />
+          </div>
+        </button>
+        {showTitleSelector && (
+          <div className="mt-3 pt-3 border-t border-border">
+            <TitleSelector
+              ownedTitleIds={rewardSummary.ownedTitleIds}
+              equippedTitleId={rewardSummary.equippedTitleId}
+              onEquip={handleEquipTitle}
+              onUnequip={handleUnequipTitle}
+              loading={titleLoading}
+            />
+          </div>
+        )}
+      </div>
 
       {/* ── 월별 지출 합계 ── */}
       <div className="bg-card rounded-md p-5 shadow-sm border border-border">
@@ -186,24 +230,14 @@ return (
               </p>
             </div>
           </div>
-          <div className="mt-4 bg-muted rounded p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <p className="text-xs text-muted-foreground">{t("mypage.current_points")}</p>
-                <p className="text-2xl font-bold text-primary mt-0.5">{rewardSummary.missionPoints}P</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">Lv.{rewardSummary.level}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  다음까지 {Math.max(rewardSummary.nextLevelTarget - rewardSummary.missionPoints, 0)}P
-                </p>
-              </div>
+          <div className="mt-4 bg-muted rounded p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground">{t("mypage.current_points")}</p>
+              <p className="text-2xl font-bold text-primary mt-0.5">{rewardSummary.missionPoints}P</p>
             </div>
-            <div className="h-1.5 bg-card rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary/80 rounded-full transition-all"
-                style={{ width: `${Math.min((rewardSummary.missionPoints / rewardSummary.nextLevelTarget) * 100, 100)}%` }}
-              />
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">수집</p>
+              <p className="text-lg font-bold">{rewardSummary.ownedCharacterIds.length}/100</p>
             </div>
           </div>
         </div>

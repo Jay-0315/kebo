@@ -8,27 +8,25 @@ services:
       - "${FRONTEND_PORT:-5173}:5173"
     volumes:
       - .:/app
-      - /app/node_modules
-      - /app/apps/user-web/node_modules
+      - app-node-modules:/app/node_modules
+      - app-web-node-modules:/app/apps/user-web/node_modules
     environment:
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:4000}
     depends_on:
       api:
         condition: service_started
-      mysql:
-        condition: service_healthy
 
   api:
-    image: node:20-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.api
     container_name: kebo-api
-    working_dir: /app
-    command: sh -c "npm install && npm run prisma:generate --workspace @kebo/api && npm run dev:api"
     ports:
       - "${API_PORT:-4000}:4000"
     volumes:
       - .:/app
-      - /app/node_modules
-      - /app/apps/api/node_modules
+      - api-node-modules:/app/node_modules
+      - api-app-node-modules:/app/apps/api/node_modules
     environment:
       API_PORT: ${API_PORT:-4000}
       JWT_SECRET: ${JWT_SECRET:-kebo-dev-secret}
@@ -53,10 +51,14 @@ services:
       - ./docs/mysql-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD"]
-      interval: 10s
-      timeout: 5s
+      interval: 5s
+      timeout: 3s
       retries: 10
-      start_period: 20s
+      start_period: 10s
 
 volumes:
   mysql-data:
+  app-node-modules:
+  app-web-node-modules:
+  api-node-modules:
+  api-app-node-modules:

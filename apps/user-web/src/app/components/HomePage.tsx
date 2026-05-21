@@ -4,6 +4,7 @@ import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { formatRelativeTime } from "../lib/story-storage";
 import { loadPostCategories } from "../lib/post-categories";
+import TitleBadge from "./TitleBadge";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -32,7 +33,12 @@ export default function HomePage() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-semibold truncate">{profile.name}</p>
-          <p className="text-sm text-muted-foreground">Lv.{rewardSummary.level} · {rewardSummary.missionPoints}P</p>
+          {rewardSummary.equippedTitleId && (
+            <div className="mt-0.5 mb-0.5">
+              <TitleBadge titleId={rewardSummary.equippedTitleId} size="xs" />
+            </div>
+          )}
+          <p className="text-sm text-muted-foreground">{rewardSummary.ownedCharacterIds.length}/100 수집 · {rewardSummary.missionPoints}P</p>
         </div>
         <button
           onClick={() => navigate("/community")}

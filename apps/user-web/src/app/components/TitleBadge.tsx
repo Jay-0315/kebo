@@ -1,0 +1,181 @@
+import { TITLES, TITLE_BY_ID, TITLE_GLOW, TITLE_GRADE_BG, TITLE_GRADE_COLOR, TITLE_GRADE_LABEL } from "../data/titles";
+import type { TitleGrade } from "../data/titles";
+import { useLang } from "../context/LangContext";
+
+interface TitleBadgeProps {
+  titleId: number;
+  size?: "xs" | "sm" | "md";
+  showGrade?: boolean;
+}
+
+const MYTHIC_COLORS = ["#FF80AB", "#CE93D8", "#80DEEA", "#FFD54F", "#FF80AB"];
+
+export default function TitleBadge({ titleId, size = "sm", showGrade = false }: TitleBadgeProps) {
+  const title = TITLE_BY_ID.get(titleId);
+  if (!title) return null;
+
+  const { grade, name } = title;
+  const isMythic = grade === "mythic";
+
+  const fontSizeClass = size === "xs" ? "text-[10px]" : size === "sm" ? "text-xs" : "text-sm";
+  const paddingClass = size === "xs" ? "px-1 py-px" : size === "sm" ? "px-1.5 py-0.5" : "px-2 py-1";
+
+  const baseStyle: React.CSSProperties = {
+    backgroundColor: TITLE_GRADE_BG[grade],
+    borderRadius: "4px",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: size === "xs" ? "2px" : "4px",
+    fontWeight: 700,
+    letterSpacing: "0.02em",
+    whiteSpace: "nowrap" as const,
+  };
+
+  const textStyle: React.CSSProperties = isMythic
+    ? {
+        background: `linear-gradient(90deg, ${MYTHIC_COLORS.join(", ")})`,
+        WebkitBackgroundClip: "text",
+        backgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        color: "transparent",
+        filter: "drop-shadow(0 0 6px rgba(255,128,171,0.9)) drop-shadow(0 0 12px rgba(206,147,216,0.6))",
+      }
+    : {
+        color: TITLE_GRADE_COLOR[grade],
+        textShadow: TITLE_GLOW[grade],
+      };
+
+  return (
+    <span style={baseStyle} className={`${fontSizeClass} ${paddingClass}`}>
+      {isMythic ? (
+        <MythicAnimatedText text={name} size={size} />
+      ) : (
+        <span style={textStyle}>{name}</span>
+      )}
+      {showGrade && (
+        <span style={{ color: TITLE_GRADE_COLOR[grade], opacity: 0.7, fontSize: "0.75em" }}>
+          [{TITLE_GRADE_LABEL[grade]}]
+        </span>
+      )}
+    </span>
+  );
+}
+
+// 신화 등급: CSS 애니메이션 shimmer 효과
+function MythicAnimatedText({ text, size }: { text: string; size: "xs" | "sm" | "md" }) {
+  const fontSize = size === "xs" ? "10px" : size === "sm" ? "12px" : "14px";
+  return (
+    <span
+      style={{
+        fontSize,
+        fontWeight: 700,
+        background: "linear-gradient(90deg, #FF80AB 0%, #CE93D8 25%, #80DEEA 50%, #FFD54F 75%, #FF80AB 100%)",
+        backgroundSize: "200% auto",
+        WebkitBackgroundClip: "text",
+        backgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        color: "transparent",
+        animation: "titleShimmer 3s linear infinite",
+        filter: "drop-shadow(0 0 4px rgba(255,128,171,0.8))",
+      }}
+    >
+      {text}
+    </span>
+  );
+}
+
+// 인라인 keyframes는 global CSS에서 정의 필요 - index.css에 추가 필요
+// @keyframes titleShimmer { to { background-position: 200% center; } }
+
+// 칭호 선택 그리드 - MyPage / KabemonPage 내에서 사용
+export function TitleSelector({
+  ownedTitleIds,
+  equippedTitleId,
+  onEquip,
+  onUnequip,
+  loading,
+}: {
+  ownedTitleIds: number[];
+  equippedTitleId: number | null;
+  onEquip: (id: number) => void;
+  onUnequip: () => void;
+  loading?: boolean;
+}) {
+  const { t } = useLang();
+  const ownedSet = new Set(ownedTitleIds);
+
+  const gradeOrder: TitleGrade[] = ["common", "rare", "epic", "legendary", "mythic"];
+  const byGrade = gradeOrder.map((grade) => ({
+    grade,
+    titles: TITLES.filter((t) => t.grade === grade),
+  }));
+
+  return (
+    <div className="space-y-3">
+      {equippedTitleId && (
+        <div className="flex items-center justify-between p-3 bg-primary/5 rounded-xl border border-primary/20">
+          <div>
+            <p className="text-xs text-muted-foreground mb-0.5">{t("mypage.title_equipped_label")}</p>
+            <TitleBadge titleId={equippedTitleId} size="md" />
+          </div>
+          <button
+            onClick={onUnequip}
+            disabled={loading}
+            className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+          >
+            {t("mypage.title_unequip")}
+          </button>
+        </div>
+      )}
+
+      {byGrade.map(({ grade, titles }) => (
+        <div key={grade}>
+          <p className="text-xs font-semibold mb-1.5" style={{ color: TITLE_GRADE_COLOR[grade] }}>
+            {TITLE_GRADE_LABEL[grade]} {t("mypage.title_section")}
+          </p>
+          <div className="space-y-1">
+            {titles.map((title) => {
+              const isOwned = ownedSet.has(title.id);
+              const isEquipped = title.id === equippedTitleId;
+              return (
+                <div
+                  key={title.id}
+                  className={`flex items-center justify-between p-2.5 rounded-lg border transition-all ${
+                    isEquipped
+                      ? "border-primary/40 bg-primary/5"
+                      : isOwned
+                      ? "border-border bg-card hover:bg-muted/50"
+                      : "border-border/30 bg-muted/30 opacity-50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    {isOwned ? (
+                      <TitleBadge titleId={title.id} size="sm" />
+                    ) : (
+                      <span className="text-xs text-muted-foreground font-medium px-1.5 py-0.5 bg-muted rounded">
+                        ???
+                      </span>
+                    )}
+                    <p className="text-[10px] text-muted-foreground truncate">{title.description}</p>
+                  </div>
+                  {isOwned && !isEquipped && (
+                    <button
+                      onClick={() => onEquip(title.id)}
+                      disabled={loading}
+                      className="shrink-0 text-[10px] font-semibold text-primary bg-primary/10 px-2 py-1 rounded hover:bg-primary/20 transition-colors disabled:opacity-50"
+                    >
+                      {t("mypage.title_equip")}
+                    </button>
+                  )}
+                  {isEquipped && (
+                    <span className="shrink-0 text-[10px] font-semibold text-primary">✓ {t("kabemon.equipped")}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
