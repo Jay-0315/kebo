@@ -10,6 +10,7 @@ import {
   CHARACTERS, ACHIEVEMENTS, ACHIEVEMENT_BY_CHARACTER,
   GACHA_COST_SINGLE, GACHA_COST_TEN, RARITY_DUPLICATE_POINTS,
   RARITY_LABEL, RARITY_COLOR, RARITY_BORDER,
+  getCharName, getRarityLabel,
 } from "../data/characters";
 import type { CharacterDef, CharacterRarity, AchievementType } from "../data/characters";
 
@@ -111,6 +112,7 @@ function CapsuleSlot({
   size: number;
   onOpen: (idx: number) => void;
 }) {
+  const { lang } = useLang();
   const char = CHARACTERS.find((c) => c.id === r.characterId);
   const mColor = CAPSULE_MYSTERY_COLORS[idx % CAPSULE_MYSTERY_COLORS.length];
   // 구체는 정사각형
@@ -153,7 +155,7 @@ function CapsuleSlot({
           <p className={`text-[8px] text-center font-semibold leading-tight max-w-full truncate px-0.5 ${
             r.isDuplicate ? "text-white/50" : RARITY_COLOR[char.rarity]
           }`}>
-            {r.isDuplicate ? `+${r.bonusPoints}P` : char.korName}
+            {r.isDuplicate ? `+${r.bonusPoints}P` : getCharName(char, lang)}
           </p>
         </div>
       ) : (
@@ -295,7 +297,7 @@ function GachaCapsuleModal({
 // ─── Main Page ────────────────────────────────────────────────────────────
 export default function KabemonPage() {
   const { rewardSummary, equipCharacter, checkAchievements, performGacha } = useAppData();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [tab, setTab] = useState<Tab>("character");
   const [filter, setFilter] = useState<Filter>("all");
   const [selected, setSelected] = useState<number | null>(null);
@@ -361,7 +363,7 @@ export default function KabemonPage() {
               {t("kabemon.title")}
             </h2>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {ownedCharacterIds.length}/100 수집 · {missionPoints}P
+              {ownedCharacterIds.length}/{CHARACTERS.length} 수집 · {missionPoints}P
             </p>
           </div>
           <div className="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-semibold">
@@ -410,11 +412,11 @@ export default function KabemonPage() {
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-2 mb-1">
                       <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${RARITY_BG[equippedChar.rarity]} ${RARITY_COLOR[equippedChar.rarity]}`}>
-                        {RARITY_LABEL[equippedChar.rarity]}
+                        {getRarityLabel(equippedChar.rarity, lang)}
                       </span>
                       <span className="text-xs text-muted-foreground">#{equippedChar.id}</span>
                     </div>
-                    <p className={`text-2xl font-bold ${RARITY_COLOR[equippedChar.rarity]}`}>{equippedChar.korName}</p>
+                    <p className={`text-2xl font-bold ${RARITY_COLOR[equippedChar.rarity]}`}>{getCharName(equippedChar, lang)}</p>
                     <p className="text-sm text-muted-foreground mt-1">{equippedChar.description}</p>
                     <p className="text-[11px] text-muted-foreground/60 mt-2">{t("kabemon.mouse_hint")}</p>
                   </div>
@@ -552,6 +554,7 @@ function CollectionTab({
   onEquip: (id: number) => void;
   t: (key: string) => string;
 }) {
+  const { lang } = useLang();
   return (
     <div className="space-y-4">
       {/* Selected char detail */}
@@ -578,7 +581,7 @@ function CollectionTab({
                 : "bg-muted text-muted-foreground hover:bg-muted/70"
             }`}
           >
-            {r === "all" ? "전체" : RARITY_LABEL[r as CharacterRarity]}
+            {r === "all" ? (lang === "ja" ? "全て" : "전체") : getRarityLabel(r as CharacterRarity, lang)}
           </button>
         ))}
       </div>
@@ -630,7 +633,7 @@ function CollectionTab({
               <p className={`text-[9px] leading-tight text-center truncate w-full ${
                 isOwned ? RARITY_COLOR[char.rarity] : "text-muted-foreground/60"
               }`}>
-                {isHidden ? "???" : char.korName}
+                {isHidden ? "???" : getCharName(char, lang)}
               </p>
             </button>
           );
@@ -651,6 +654,7 @@ function CharacterDetail({
   onEquip: (id: number) => void;
   t: (key: string) => string;
 }) {
+  const { lang } = useLang();
   const ach = ACHIEVEMENT_BY_CHARACTER.get(char.id);
   const isHidden = char.hiddenAchievement && !isOwned;
 
@@ -669,11 +673,11 @@ function CharacterDetail({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${RARITY_BG[char.rarity]} ${RARITY_COLOR[char.rarity]}`}>
-              {RARITY_LABEL[char.rarity]}
+              {getRarityLabel(char.rarity, lang)}
             </span>
             <span className="text-xs text-muted-foreground">#{char.id}</span>
           </div>
-          <p className="font-bold">{isHidden ? "???" : char.korName}</p>
+          <p className="font-bold">{isHidden ? "???" : getCharName(char, lang)}</p>
           <p className="text-xs text-muted-foreground">
             {isHidden
               ? "히든 업적을 달성하면 공개됩니다"
@@ -724,6 +728,7 @@ function GachaTab({
   onPull: (count: 1 | 10) => void;
   t: (key: string) => string;
 }) {
+  const { lang } = useLang();
   const pityLeft = Math.max(0, 10 - (gachaPityCount % 10));
   const ceilingLeft = Math.max(0, 80 - legendaryPityCount);
 
@@ -817,7 +822,7 @@ function GachaTab({
             };
             return (
               <div key={r} className="flex items-center gap-2">
-                <span className={`text-xs font-medium w-16 ${RARITY_COLOR[r]}`}>{RARITY_LABEL[r]}</span>
+                <span className={`text-xs font-medium w-16 ${RARITY_COLOR[r]}`}>{getRarityLabel(r, lang)}</span>
                 <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full bg-current opacity-60"
@@ -832,7 +837,7 @@ function GachaTab({
         <div className="mt-3 pt-3 border-t border-border space-y-1">
           <p className="text-[11px] text-muted-foreground">· {t("kabemon.gacha_dupe_note")}</p>
           <p className="text-[11px] text-muted-foreground">
-            · {t("kabemon.gacha_dupe_rate")} {(["common", "uncommon", "rare", "epic", "legendary", "mythic"] as CharacterRarity[]).map((r) => `${RARITY_LABEL[r]} ${RARITY_DUPLICATE_POINTS[r]}P`).join(" / ")}
+            · {t("kabemon.gacha_dupe_rate")} {(["common", "uncommon", "rare", "epic", "legendary", "mythic"] as CharacterRarity[]).map((r) => `${getRarityLabel(r, lang)} ${RARITY_DUPLICATE_POINTS[r]}P`).join(" / ")}
           </p>
         </div>
       </div>
@@ -862,6 +867,7 @@ function AchievementTab({
   onCheck: () => void;
   t: (key: string) => string;
 }) {
+  const { lang } = useLang();
   const visibleAchs = ACHIEVEMENTS.filter((a) => !a.hidden);
   const hiddenAchs  = ACHIEVEMENTS.filter((a) => a.hidden);
   const totalDone   = ACHIEVEMENTS.filter((a) => ownedSet.has(a.characterId)).length;
@@ -935,7 +941,7 @@ function AchievementTab({
                       <p className={`text-sm font-semibold leading-tight ${
                         isOwned ? RARITY_COLOR[char.rarity] : "text-foreground"
                       }`}>
-                        {char.korName}
+                        {getCharName(char, lang)}
                       </p>
                       <p className="text-[11px] text-muted-foreground mt-0.5">{ach.label}</p>
                       {pct !== null && !isOwned && (
@@ -993,7 +999,7 @@ function AchievementTab({
                   <p className={`text-sm font-semibold ${
                     isOwned && char ? RARITY_COLOR[char.rarity] : "text-muted-foreground/40"
                   }`}>
-                    {isOwned && char ? char.korName : "???"}
+                    {isOwned && char ? getCharName(char, lang) : "???"}
                   </p>
                   <p className="text-[11px] text-muted-foreground/50">
                     {isOwned ? ach.label : t("kabemon.achievement_condition_hidden")}
@@ -1029,6 +1035,7 @@ function AchievementRevealModal({
   onClose: () => void;
   t: (key: string) => string;
 }) {
+  const { lang } = useLang();
   const [currentIdx, setCurrentIdx] = useState(0);
   const [phase, setPhase] = useState<"medal" | "busting" | "revealed">("medal");
 
@@ -1199,9 +1206,9 @@ function AchievementRevealModal({
             <span
               className={`text-xs font-bold px-3 py-0.5 rounded-full ${RARITY_BG[char.rarity]} ${RARITY_COLOR[char.rarity]}`}
             >
-              {RARITY_LABEL[char.rarity]}
+              {getRarityLabel(char.rarity, lang)}
             </span>
-            <p className={`text-3xl font-bold ${RARITY_COLOR[char.rarity]}`}>{char.korName}</p>
+            <p className={`text-3xl font-bold ${RARITY_COLOR[char.rarity]}`}>{getCharName(char, lang)}</p>
             {ach && (
               <p className="text-sm text-white/50 max-w-[240px] leading-snug">{ach.label}</p>
             )}
