@@ -1186,10 +1186,464 @@ const unicorn: Renderer = ({ p, s, a }, sz, f) => f === "react" ? (
   </svg>
 );
 
+/* ─── HORSE ─── */
+const horse: Renderer = ({ p, s, a }, sz, f) => f === "react" ? (
+  <svg width={sz} height={sz} viewBox="0 0 64 64" style={{ imageRendering: "pixelated" }}>
+    {/* ears */}
+    <rect x="10" y="4" width="6" height="10" fill={p} />
+    <rect x="20" y="4" width="6" height="10" fill={p} />
+    <rect x="12" y="6" width="2" height="4" fill={a} />
+    <rect x="22" y="6" width="2" height="4" fill={a} />
+    {/* mane back */}
+    <rect x="4" y="10" width="8" height="22" fill={a} />
+    <rect x="2" y="14" width="6" height="18" fill={a} />
+    <rect x="6" y="32" width="8" height="14" fill={a} />
+    {/* head */}
+    <rect x="8" y="12" width="22" height="22" fill={p} />
+    <rect x="10" y="10" width="18" height="2" fill={p} />
+    <rect x="6" y="16" width="26" height="14" fill={p} />
+    <rect x="12" y="14" width="14" height="6" fill={W} fillOpacity={0.2} />
+    {/* eye - reacting (wide) */}
+    <rect x="12" y="18" width="8" height="8" fill={B} />
+    <rect x="13" y="19" width="4" height="4" fill={W} />
+    <rect x="14" y="20" width="2" height="2" fill={B} />
+    {/* muzzle */}
+    <rect x="22" y="22" width="12" height="10" fill={s} />
+    <rect x="24" y="26" width="6" height="3" fill={a} />
+    <rect x="32" y="20" width="4" height="4" fill={W} fillOpacity={0.5} />
+    {/* body */}
+    <rect x="14" y="34" width="40" height="16" fill={p} />
+    <rect x="10" y="38" width="48" height="10" fill={p} />
+    <rect x="18" y="34" width="24" height="8" fill={W} fillOpacity={0.18} />
+    {/* mane top of body */}
+    <rect x="20" y="32" width="8" height="6" fill={a} />
+    <rect x="14" y="32" width="6" height="4" fill={a} />
+    {/* legs galloping */}
+    <rect x="18" y="50" width="6" height="10" fill={p} />
+    <rect x="26" y="50" width="6" height="14" fill={p} />
+    <rect x="38" y="50" width="6" height="14" fill={p} />
+    <rect x="46" y="50" width="6" height="10" fill={p} />
+    <rect x="18" y="60" width="6" height="3" fill={B} />
+    <rect x="46" y="60" width="6" height="3" fill={B} />
+    {/* tail */}
+    <rect x="54" y="36" width="8" height="6" fill={a} />
+    <rect x="56" y="42" width="6" height="14" fill={a} />
+    {/* dust */}
+    <rect x="14" y="60" width="4" height="4" fill={W} fillOpacity={0.6} />
+    <rect x="50" y="60" width="4" height="4" fill={W} fillOpacity={0.6} />
+  </svg>
+) : (
+  <svg width={sz} height={sz} viewBox="0 0 64 64" style={{ imageRendering: "pixelated" }}>
+    {/* ears */}
+    <rect x="10" y="6" width="6" height="10" fill={p} />
+    <rect x="20" y="6" width="6" height="10" fill={p} />
+    <rect x="12" y="8" width="2" height="4" fill={a} />
+    <rect x="22" y="8" width="2" height="4" fill={a} />
+    {/* mane */}
+    <rect x="4" y="12" width="8" height="22" fill={a} />
+    <rect x="2" y="16" width="6" height="18" fill={a} />
+    <rect x="6" y="34" width="8" height="14" fill={a} />
+    {/* head */}
+    <rect x="8" y="14" width="22" height="22" fill={p} />
+    <rect x="6" y="18" width="26" height="14" fill={p} />
+    <rect x="12" y="16" width="14" height="6" fill={W} fillOpacity={0.2} />
+    {/* eye */}
+    <rect x="14" y="20" width="6" height="6" fill={B} />
+    <rect x="14" y="20" width="3" height="3" fill={W} />
+    <rect x="15" y="21" width="2" height="2" fill={B} />
+    {/* muzzle */}
+    <rect x="22" y="24" width="12" height="10" fill={s} />
+    <rect x="24" y="28" width="6" height="3" fill={a} />
+    {/* body */}
+    <rect x="14" y="36" width="40" height="16" fill={p} />
+    <rect x="10" y="40" width="48" height="10" fill={p} />
+    <rect x="18" y="36" width="24" height="8" fill={W} fillOpacity={0.18} />
+    {/* mane on body */}
+    <rect x="20" y="34" width="8" height="4" fill={a} />
+    {/* legs */}
+    <rect x="18" y="52" width="6" height="12" fill={p} />
+    <rect x="28" y="52" width="6" height="12" fill={p} />
+    <rect x="38" y="52" width="6" height="12" fill={p} />
+    <rect x="46" y="52" width="6" height="12" fill={p} />
+    <rect x="18" y="62" width="6" height="2" fill={B} />
+    <rect x="28" y="62" width="6" height="2" fill={B} />
+    <rect x="38" y="62" width="6" height="2" fill={B} />
+    <rect x="46" y="62" width="6" height="2" fill={B} />
+    {/* tail */}
+    <rect x="54" y="38" width="8" height="6" fill={a} />
+    <rect x="56" y="44" width="6" height="14" fill={a} />
+  </svg>
+);
+
+/* ─── TIGER ─── */
+const tiger: Renderer = ({ p, s, a }, sz, f) => f === "react" ? (
+  <svg width={sz} height={sz} viewBox="0 0 64 64" style={{ imageRendering: "pixelated" }}>
+    {/* ears */}
+    <rect x="6" y="6" width="10" height="10" fill={p} />
+    <rect x="48" y="6" width="10" height="10" fill={p} />
+    <rect x="9" y="9" width="4" height="4" fill={a} />
+    <rect x="51" y="9" width="4" height="4" fill={a} />
+    {/* head */}
+    <rect x="10" y="12" width="44" height="28" fill={p} />
+    <rect x="6" y="16" width="52" height="20" fill={p} />
+    {/* stripes */}
+    <rect x="10" y="14" width="4" height="14" fill={B} />
+    <rect x="20" y="14" width="4" height="10" fill={B} />
+    <rect x="40" y="14" width="4" height="10" fill={B} />
+    <rect x="50" y="14" width="4" height="14" fill={B} />
+    <rect x="6" y="28" width="6" height="3" fill={B} />
+    <rect x="52" y="28" width="6" height="3" fill={B} />
+    {/* face cream */}
+    <rect x="22" y="22" width="20" height="12" fill={W} fillOpacity={0.85} />
+    {/* fierce eyes */}
+    <rect x="18" y="22" width="10" height="10" fill={a} />
+    <rect x="36" y="22" width="10" height="10" fill={a} />
+    <rect x="20" y="24" width="6" height="6" fill={B} />
+    <rect x="38" y="24" width="6" height="6" fill={B} />
+    <rect x="20" y="24" width="3" height="3" fill={W} />
+    <rect x="38" y="24" width="3" height="3" fill={W} />
+    {/* nose */}
+    <rect x="28" y="32" width="8" height="4" fill={B} />
+    {/* roar mouth */}
+    <rect x="22" y="36" width="20" height="6" fill={B} />
+    <rect x="24" y="38" width="4" height="4" fill={W} />
+    <rect x="36" y="38" width="4" height="4" fill={W} />
+    {/* body w/ stripes */}
+    <rect x="14" y="42" width="36" height="16" fill={p} />
+    <rect x="14" y="44" width="3" height="14" fill={B} />
+    <rect x="22" y="44" width="3" height="14" fill={B} />
+    <rect x="30" y="44" width="3" height="14" fill={B} />
+    <rect x="38" y="44" width="3" height="14" fill={B} />
+    <rect x="46" y="44" width="3" height="14" fill={B} />
+    {/* paws raised */}
+    <rect x="10" y="44" width="6" height="10" fill={p} />
+    <rect x="48" y="44" width="6" height="10" fill={p} />
+    {/* claws */}
+    <rect x="10" y="42" width="2" height="4" fill={W} />
+    <rect x="13" y="42" width="2" height="4" fill={W} />
+    <rect x="49" y="42" width="2" height="4" fill={W} />
+    <rect x="52" y="42" width="2" height="4" fill={W} />
+    {/* tail */}
+    <rect x="50" y="56" width="12" height="4" fill={p} />
+    <rect x="58" y="50" width="4" height="10" fill={p} />
+    <rect x="56" y="58" width="4" height="2" fill={B} />
+  </svg>
+) : (
+  <svg width={sz} height={sz} viewBox="0 0 64 64" style={{ imageRendering: "pixelated" }}>
+    {/* ears */}
+    <rect x="6" y="8" width="10" height="10" fill={p} />
+    <rect x="48" y="8" width="10" height="10" fill={p} />
+    <rect x="9" y="11" width="4" height="4" fill={a} />
+    <rect x="51" y="11" width="4" height="4" fill={a} />
+    {/* head */}
+    <rect x="10" y="14" width="44" height="26" fill={p} />
+    <rect x="6" y="18" width="52" height="18" fill={p} />
+    {/* stripes */}
+    <rect x="10" y="16" width="4" height="12" fill={B} />
+    <rect x="20" y="16" width="4" height="8" fill={B} />
+    <rect x="40" y="16" width="4" height="8" fill={B} />
+    <rect x="50" y="16" width="4" height="12" fill={B} />
+    {/* face cream */}
+    <rect x="22" y="24" width="20" height="12" fill={W} fillOpacity={0.85} />
+    {/* eyes */}
+    <rect x="18" y="24" width="8" height="8" fill={B} />
+    <rect x="38" y="24" width="8" height="8" fill={B} />
+    <rect x="18" y="24" width="4" height="4" fill={W} />
+    <rect x="38" y="24" width="4" height="4" fill={W} />
+    <rect x="20" y="26" width="3" height="3" fill={a} />
+    <rect x="40" y="26" width="3" height="3" fill={a} />
+    {/* nose */}
+    <rect x="28" y="32" width="8" height="4" fill={B} />
+    {/* mouth */}
+    <rect x="26" y="36" width="12" height="2" fill={B} />
+    {/* body */}
+    <rect x="14" y="42" width="36" height="18" fill={p} />
+    <rect x="10" y="46" width="44" height="12" fill={p} />
+    <rect x="14" y="44" width="3" height="14" fill={B} />
+    <rect x="22" y="44" width="3" height="14" fill={B} />
+    <rect x="30" y="44" width="3" height="14" fill={B} />
+    <rect x="38" y="44" width="3" height="14" fill={B} />
+    <rect x="46" y="44" width="3" height="14" fill={B} />
+    {/* paws */}
+    <rect x="14" y="58" width="10" height="6" fill={p} />
+    <rect x="40" y="58" width="10" height="6" fill={p} />
+    {/* tail */}
+    <rect x="50" y="50" width="12" height="4" fill={p} />
+    <rect x="56" y="46" width="4" height="6" fill={p} />
+  </svg>
+);
+
+/* ─── LION ─── */
+const lion: Renderer = ({ p, s, a }, sz, f) => f === "react" ? (
+  <svg width={sz} height={sz} viewBox="0 0 64 64" style={{ imageRendering: "pixelated" }}>
+    {/* mane - full halo, spiky */}
+    <rect x="6" y="6" width="52" height="40" fill={s} />
+    <rect x="2" y="10" width="60" height="32" fill={s} />
+    <rect x="4" y="14" width="56" height="28" fill={a} />
+    {/* mane spikes */}
+    <rect x="0" y="14" width="4" height="6" fill={a} />
+    <rect x="60" y="14" width="4" height="6" fill={a} />
+    <rect x="0" y="24" width="4" height="6" fill={a} />
+    <rect x="60" y="24" width="4" height="6" fill={a} />
+    <rect x="0" y="34" width="4" height="6" fill={a} />
+    <rect x="60" y="34" width="4" height="6" fill={a} />
+    <rect x="14" y="2" width="6" height="8" fill={a} />
+    <rect x="26" y="0" width="6" height="8" fill={a} />
+    <rect x="36" y="0" width="6" height="8" fill={a} />
+    <rect x="44" y="2" width="6" height="8" fill={a} />
+    {/* head */}
+    <rect x="16" y="16" width="32" height="26" fill={p} />
+    <rect x="12" y="20" width="40" height="18" fill={p} />
+    <rect x="16" y="18" width="20" height="6" fill={W} fillOpacity={0.2} />
+    {/* fierce eyes */}
+    <rect x="20" y="22" width="9" height="9" fill={B} />
+    <rect x="35" y="22" width="9" height="9" fill={B} />
+    <rect x="20" y="22" width="4" height="4" fill={a} />
+    <rect x="35" y="22" width="4" height="4" fill={a} />
+    <rect x="22" y="24" width="2" height="3" fill={W} />
+    <rect x="37" y="24" width="2" height="3" fill={W} />
+    {/* muzzle pale */}
+    <rect x="24" y="32" width="16" height="8" fill={W} fillOpacity={0.7} />
+    {/* nose */}
+    <rect x="28" y="32" width="8" height="4" fill={B} />
+    {/* roar mouth open */}
+    <rect x="24" y="38" width="16" height="6" fill={B} />
+    <rect x="26" y="40" width="3" height="4" fill={W} />
+    <rect x="35" y="40" width="3" height="4" fill={W} />
+    {/* body */}
+    <rect x="18" y="44" width="28" height="14" fill={p} />
+    <rect x="14" y="48" width="36" height="10" fill={p} />
+    {/* legs */}
+    <rect x="16" y="56" width="8" height="8" fill={p} />
+    <rect x="40" y="56" width="8" height="8" fill={p} />
+    <rect x="26" y="58" width="6" height="6" fill={p} />
+    <rect x="32" y="58" width="6" height="6" fill={p} />
+    {/* tail w/ tuft */}
+    <rect x="48" y="50" width="10" height="4" fill={p} />
+    <rect x="54" y="44" width="4" height="10" fill={p} />
+    <rect x="52" y="40" width="8" height="6" fill={a} />
+  </svg>
+) : (
+  <svg width={sz} height={sz} viewBox="0 0 64 64" style={{ imageRendering: "pixelated" }}>
+    {/* mane */}
+    <rect x="6" y="8" width="52" height="38" fill={s} />
+    <rect x="2" y="12" width="60" height="30" fill={s} />
+    <rect x="4" y="16" width="56" height="26" fill={a} />
+    <rect x="0" y="18" width="4" height="20" fill={a} />
+    <rect x="60" y="18" width="4" height="20" fill={a} />
+    <rect x="14" y="4" width="6" height="6" fill={a} />
+    <rect x="28" y="2" width="8" height="6" fill={a} />
+    <rect x="44" y="4" width="6" height="6" fill={a} />
+    {/* head */}
+    <rect x="16" y="18" width="32" height="24" fill={p} />
+    <rect x="12" y="22" width="40" height="16" fill={p} />
+    <rect x="16" y="20" width="20" height="6" fill={W} fillOpacity={0.2} />
+    {/* eyes */}
+    <rect x="20" y="24" width="8" height="8" fill={B} />
+    <rect x="36" y="24" width="8" height="8" fill={B} />
+    <rect x="20" y="24" width="4" height="4" fill={W} />
+    <rect x="36" y="24" width="4" height="4" fill={W} />
+    <rect x="22" y="26" width="2" height="2" fill={a} />
+    <rect x="38" y="26" width="2" height="2" fill={a} />
+    {/* muzzle */}
+    <rect x="24" y="32" width="16" height="8" fill={W} fillOpacity={0.7} />
+    <rect x="28" y="32" width="8" height="4" fill={B} />
+    <rect x="26" y="36" width="12" height="2" fill={B} />
+    {/* body */}
+    <rect x="18" y="44" width="28" height="14" fill={p} />
+    <rect x="14" y="48" width="36" height="10" fill={p} />
+    {/* legs */}
+    <rect x="16" y="58" width="10" height="6" fill={p} />
+    <rect x="38" y="58" width="10" height="6" fill={p} />
+    {/* tail */}
+    <rect x="48" y="50" width="10" height="4" fill={p} />
+    <rect x="54" y="46" width="4" height="6" fill={p} />
+    <rect x="52" y="42" width="8" height="4" fill={a} />
+  </svg>
+);
+
+/* ─── SNAKE ─── */
+const snake: Renderer = ({ p, s, a }, sz, f) => f === "react" ? (
+  <svg width={sz} height={sz} viewBox="0 0 64 64" style={{ imageRendering: "pixelated" }}>
+    {/* tail coil bottom */}
+    <rect x="8" y="52" width="48" height="8" fill={p} />
+    <rect x="4" y="48" width="6" height="14" fill={p} />
+    <rect x="54" y="48" width="6" height="14" fill={p} />
+    <rect x="12" y="46" width="40" height="8" fill={s} fillOpacity={0.6} />
+    {/* coil middle */}
+    <rect x="10" y="38" width="44" height="10" fill={p} />
+    <rect x="14" y="36" width="36" height="6" fill={s} fillOpacity={0.5} />
+    {/* coil upper */}
+    <rect x="14" y="28" width="36" height="10" fill={p} />
+    <rect x="18" y="26" width="28" height="6" fill={s} fillOpacity={0.5} />
+    {/* head rearing up */}
+    <rect x="22" y="6" width="20" height="22" fill={p} />
+    <rect x="18" y="10" width="28" height="14" fill={p} />
+    <rect x="24" y="8" width="14" height="6" fill={W} fillOpacity={0.25} />
+    {/* hood/frill (cobra) */}
+    <rect x="14" y="12" width="6" height="12" fill={s} />
+    <rect x="44" y="12" width="6" height="12" fill={s} />
+    <rect x="12" y="16" width="4" height="6" fill={s} fillOpacity={0.8} />
+    <rect x="48" y="16" width="4" height="6" fill={s} fillOpacity={0.8} />
+    {/* angry eyes (react) */}
+    <rect x="24" y="14" width="6" height="6" fill={a} />
+    <rect x="34" y="14" width="6" height="6" fill={a} />
+    <rect x="25" y="15" width="2" height="4" fill={B} />
+    <rect x="37" y="15" width="2" height="4" fill={B} />
+    {/* fangs */}
+    <rect x="26" y="24" width="3" height="6" fill={W} />
+    <rect x="35" y="24" width="3" height="6" fill={W} />
+    {/* forked tongue */}
+    <rect x="30" y="22" width="4" height="4" fill={a} />
+    <rect x="28" y="26" width="3" height="3" fill={a} />
+    <rect x="33" y="26" width="3" height="3" fill={a} />
+    {/* scales pattern */}
+    <rect x="20" y="40" width="4" height="4" fill={a} fillOpacity={0.6} />
+    <rect x="28" y="40" width="4" height="4" fill={a} fillOpacity={0.6} />
+    <rect x="36" y="40" width="4" height="4" fill={a} fillOpacity={0.6} />
+    <rect x="44" y="40" width="4" height="4" fill={a} fillOpacity={0.6} />
+  </svg>
+) : (
+  <svg width={sz} height={sz} viewBox="0 0 64 64" style={{ imageRendering: "pixelated" }}>
+    {/* bottom coil */}
+    <rect x="6" y="52" width="52" height="8" fill={p} />
+    <rect x="2" y="48" width="6" height="14" fill={p} />
+    <rect x="56" y="48" width="6" height="14" fill={p} />
+    <rect x="10" y="46" width="44" height="8" fill={s} fillOpacity={0.6} />
+    {/* middle coil */}
+    <rect x="8" y="38" width="48" height="10" fill={p} />
+    <rect x="12" y="36" width="40" height="6" fill={s} fillOpacity={0.5} />
+    {/* upper coil */}
+    <rect x="14" y="28" width="36" height="10" fill={p} />
+    <rect x="18" y="26" width="28" height="6" fill={s} fillOpacity={0.5} />
+    {/* head */}
+    <rect x="22" y="10" width="20" height="20" fill={p} />
+    <rect x="18" y="14" width="28" height="12" fill={p} />
+    <rect x="24" y="12" width="14" height="6" fill={W} fillOpacity={0.25} />
+    {/* hood */}
+    <rect x="14" y="16" width="6" height="10" fill={s} />
+    <rect x="44" y="16" width="6" height="10" fill={s} />
+    {/* eyes */}
+    <rect x="24" y="18" width="6" height="6" fill={B} />
+    <rect x="34" y="18" width="6" height="6" fill={B} />
+    <rect x="24" y="18" width="3" height="3" fill={a} />
+    <rect x="34" y="18" width="3" height="3" fill={a} />
+    {/* tongue */}
+    <rect x="30" y="26" width="4" height="4" fill={a} />
+    {/* scales */}
+    <rect x="20" y="40" width="4" height="4" fill={a} fillOpacity={0.6} />
+    <rect x="28" y="40" width="4" height="4" fill={a} fillOpacity={0.6} />
+    <rect x="36" y="40" width="4" height="4" fill={a} fillOpacity={0.6} />
+    <rect x="44" y="40" width="4" height="4" fill={a} fillOpacity={0.6} />
+  </svg>
+);
+
+/* ─── DEER ─── */
+const deer: Renderer = ({ p, s, a }, sz, f) => f === "react" ? (
+  <svg width={sz} height={sz} viewBox="0 0 64 64" style={{ imageRendering: "pixelated" }}>
+    {/* antlers - large branching */}
+    <rect x="8" y="0" width="4" height="14" fill={a} />
+    <rect x="4" y="4" width="4" height="6" fill={a} />
+    <rect x="0" y="0" width="4" height="6" fill={a} />
+    <rect x="12" y="2" width="4" height="4" fill={a} />
+    <rect x="52" y="0" width="4" height="14" fill={a} />
+    <rect x="56" y="4" width="4" height="6" fill={a} />
+    <rect x="60" y="0" width="4" height="6" fill={a} />
+    <rect x="48" y="2" width="4" height="4" fill={a} />
+    {/* sparkle on antler */}
+    <rect x="0" y="0" width="2" height="2" fill={W} />
+    <rect x="62" y="0" width="2" height="2" fill={W} />
+    {/* ears */}
+    <rect x="16" y="8" width="6" height="10" fill={p} />
+    <rect x="42" y="8" width="6" height="10" fill={p} />
+    <rect x="18" y="10" width="2" height="6" fill={a} fillOpacity={0.5} />
+    <rect x="44" y="10" width="2" height="6" fill={a} fillOpacity={0.5} />
+    {/* head */}
+    <rect x="18" y="14" width="28" height="22" fill={p} />
+    <rect x="14" y="18" width="36" height="14" fill={p} />
+    <rect x="20" y="16" width="14" height="6" fill={W} fillOpacity={0.2} />
+    {/* eyes wide */}
+    <rect x="20" y="20" width="8" height="8" fill={B} />
+    <rect x="36" y="20" width="8" height="8" fill={B} />
+    <rect x="22" y="22" width="4" height="4" fill={W} />
+    <rect x="38" y="22" width="4" height="4" fill={W} />
+    <rect x="22" y="22" width="2" height="2" fill={B} />
+    <rect x="38" y="22" width="2" height="2" fill={B} />
+    {/* muzzle */}
+    <rect x="26" y="28" width="12" height="8" fill={s} />
+    <rect x="28" y="32" width="8" height="3" fill={B} />
+    {/* spots on head */}
+    <rect x="14" y="22" width="3" height="3" fill={W} />
+    <rect x="48" y="22" width="3" height="3" fill={W} />
+    {/* body */}
+    <rect x="14" y="36" width="36" height="16" fill={p} />
+    <rect x="10" y="40" width="44" height="10" fill={p} />
+    {/* spots on body */}
+    <rect x="18" y="40" width="3" height="3" fill={W} />
+    <rect x="26" y="42" width="3" height="3" fill={W} />
+    <rect x="34" y="40" width="3" height="3" fill={W} />
+    <rect x="42" y="42" width="3" height="3" fill={W} />
+    {/* legs leaping */}
+    <rect x="14" y="52" width="6" height="12" fill={p} />
+    <rect x="22" y="52" width="6" height="10" fill={p} />
+    <rect x="34" y="52" width="6" height="10" fill={p} />
+    <rect x="44" y="52" width="6" height="12" fill={p} />
+    <rect x="14" y="60" width="6" height="3" fill={B} />
+    <rect x="44" y="60" width="6" height="3" fill={B} />
+    {/* tail */}
+    <rect x="50" y="40" width="6" height="4" fill={W} />
+  </svg>
+) : (
+  <svg width={sz} height={sz} viewBox="0 0 64 64" style={{ imageRendering: "pixelated" }}>
+    {/* antlers */}
+    <rect x="8" y="2" width="4" height="12" fill={a} />
+    <rect x="4" y="6" width="4" height="6" fill={a} />
+    <rect x="0" y="2" width="4" height="6" fill={a} />
+    <rect x="52" y="2" width="4" height="12" fill={a} />
+    <rect x="56" y="6" width="4" height="6" fill={a} />
+    <rect x="60" y="2" width="4" height="6" fill={a} />
+    {/* ears */}
+    <rect x="16" y="10" width="6" height="10" fill={p} />
+    <rect x="42" y="10" width="6" height="10" fill={p} />
+    {/* head */}
+    <rect x="18" y="14" width="28" height="22" fill={p} />
+    <rect x="14" y="18" width="36" height="14" fill={p} />
+    <rect x="20" y="16" width="14" height="6" fill={W} fillOpacity={0.2} />
+    {/* eyes */}
+    <rect x="20" y="22" width="7" height="7" fill={B} />
+    <rect x="37" y="22" width="7" height="7" fill={B} />
+    <rect x="21" y="23" width="3" height="3" fill={W} />
+    <rect x="38" y="23" width="3" height="3" fill={W} />
+    {/* muzzle */}
+    <rect x="26" y="28" width="12" height="8" fill={s} />
+    <rect x="28" y="32" width="8" height="3" fill={B} />
+    {/* body */}
+    <rect x="14" y="36" width="36" height="18" fill={p} />
+    <rect x="10" y="40" width="44" height="12" fill={p} />
+    {/* spots */}
+    <rect x="18" y="42" width="3" height="3" fill={W} />
+    <rect x="26" y="44" width="3" height="3" fill={W} />
+    <rect x="34" y="42" width="3" height="3" fill={W} />
+    <rect x="42" y="44" width="3" height="3" fill={W} />
+    {/* legs */}
+    <rect x="16" y="54" width="6" height="10" fill={p} />
+    <rect x="24" y="54" width="6" height="10" fill={p} />
+    <rect x="34" y="54" width="6" height="10" fill={p} />
+    <rect x="42" y="54" width="6" height="10" fill={p} />
+    <rect x="16" y="62" width="6" height="2" fill={B} />
+    <rect x="24" y="62" width="6" height="2" fill={B} />
+    <rect x="34" y="62" width="6" height="2" fill={B} />
+    <rect x="42" y="62" width="6" height="2" fill={B} />
+    {/* tail */}
+    <rect x="50" y="40" width="6" height="4" fill={W} />
+  </svg>
+);
+
 /* ─── Sprite map ─── */
 const SPRITES: Record<CharacterType, Renderer> = {
   slime, cat, rabbit, ghost, plant, fish, owl, bear,
   turtle, fox, wolf, robot, dragon, phoenix, unicorn,
+  horse, tiger, lion, snake, deer,
 };
 
 /* ─── Public component ─── */
