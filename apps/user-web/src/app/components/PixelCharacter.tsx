@@ -1276,7 +1276,7 @@ const horse: Renderer = ({ p, s, a }, sz, f) => f === "react" ? (
 );
 
 /* ─── TIGER ─── */
-const tiger: Renderer = ({ p, s, a }, sz, f) => f === "react" ? (
+const tiger: Renderer = ({ p, a }, sz, f) => f === "react" ? (
   <svg width={sz} height={sz} viewBox="0 0 64 64" style={{ imageRendering: "pixelated" }}>
     {/* ears */}
     <rect x="6" y="6" width="10" height="10" fill={p} />
@@ -2041,7 +2041,7 @@ const elephant: Renderer = ({ p, s, a }, sz, f) => f === "react" ? (
 );
 
 /* ─── MONKEY ─── */
-const monkey: Renderer = ({ p, s, a }, sz, f) => f === "react" ? (
+const monkey: Renderer = ({ p, s }, sz, f) => f === "react" ? (
   <svg width={sz} height={sz} viewBox="0 0 64 64" style={{ imageRendering: "pixelated" }}>
     {/* round ears side */}
     <rect x="4" y="14" width="10" height="12" fill={p} />

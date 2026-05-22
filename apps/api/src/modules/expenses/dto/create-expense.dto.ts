@@ -39,6 +39,10 @@ export class CreateExpenseDto {
   groupName?: string;
 
   @IsOptional()
+  @IsString()
+  groupId?: string;
+
+  @IsOptional()
   @IsInt()
   @Min(1)
   participants?: number;

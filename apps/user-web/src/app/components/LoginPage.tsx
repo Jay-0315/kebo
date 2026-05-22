@@ -4,6 +4,7 @@ import { Wallet, Mail, Lock } from "lucide-react";
 import { api } from "../lib/api";
 import { setAuthSession } from "../lib/auth";
 import { useLang } from "../context/LangContext";
+import { type CurrencyCode } from "../types/domain";
 
 const SOCIAL_PROVIDERS = [
   { id: "google", label: "Google", className: "bg-white text-[#1f1f1f] border border-border" },
@@ -19,7 +20,7 @@ type AuthResponse = {
     name: string;
     email: string;
     baseCountryCode: string;
-    baseCurrency: "KRW" | "JPY" | "USD" | "EUR";
+    baseCurrency: CurrencyCode;
   };
   needsStarter: boolean;
 };

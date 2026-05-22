@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { CurrencyCode } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { convertCurrency, getExchangeRate } from "../shared/exchange-rate.util";
 import { UpdateUserProfileDto } from "./dto/update-user-profile.dto";
@@ -49,7 +50,7 @@ export class UsersService {
       data: {
         ...(dto.name ? { name: dto.name } : {}),
         ...(dto.baseCountryCode ? { baseCountryCode: dto.baseCountryCode } : {}),
-        ...(dto.baseCurrency ? { baseCurrency: dto.baseCurrency } : {}),
+        ...(dto.baseCurrency ? { baseCurrency: dto.baseCurrency as CurrencyCode } : {}),
       },
     });
 
@@ -63,8 +64,8 @@ export class UsersService {
           this.prisma.expense.update({
             where: { id: expense.id },
             data: {
-              baseCurrency: nextBaseCurrency,
-              exchangeRate: getExchangeRate(String(expense.spentCurrency), nextBaseCurrency),
+              baseCurrency: nextBaseCurrency as CurrencyCode,
+              exchangeRate: getExchangeRate(String(expense.spentCurrency), String(nextBaseCurrency)),
               baseAmount: convertCurrency(
                 Number(expense.spentAmount),
                 String(expense.spentCurrency),

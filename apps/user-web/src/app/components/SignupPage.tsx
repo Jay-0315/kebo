@@ -4,6 +4,7 @@ import { Wallet, Mail, Lock, User } from "lucide-react";
 import { api } from "../lib/api";
 import { setAuthSession } from "../lib/auth";
 import { useLang } from "../context/LangContext";
+import { type CurrencyCode } from "../types/domain";
 
 type AuthResponse = {
   accessToken: string;
@@ -12,7 +13,7 @@ type AuthResponse = {
     name: string;
     email: string;
     baseCountryCode: string;
-    baseCurrency: "KRW" | "JPY" | "USD" | "EUR";
+    baseCurrency: CurrencyCode;
   };
   needsStarter: boolean;
 };

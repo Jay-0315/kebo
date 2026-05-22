@@ -273,8 +273,9 @@ export class RewardsService {
       const hasRarePlus = results.some((r) =>
         ["rare", "epic", "legendary", "mythic"].includes(r.rarity),
       );
-      const forceRare = isLastInTen && !hasRarePlus;
-      // 천장: 79번 쌓이면 (0-indexed) 다음 = 80번째 → 레전더리+ 확정
+      // 10연: 마지막 자리에서 레어+ 없으면 강제 / 단일: 누적 pity 9 이상이면 다음 뽑기에서 강제
+      const forceRare = (isLastInTen && !hasRarePlus) || (count === 1 && pity >= 9);
+      // 천장: 79회 누적 시 다음(80번째) 레전더리+ 확정
       const forceLegendary = legendaryPity >= 79;
 
       const rarity = pickGachaRarity(forceRare, forceLegendary);
@@ -322,6 +323,8 @@ export class RewardsService {
       pointsSpent: cost,
       bonusPoints: totalBonusPoints,
       remainingPoints: reward.missionPoints - cost + totalBonusPoints,
+      gachaPityCount: pity,
+      legendaryPityCount: legendaryPity,
     };
   }
 

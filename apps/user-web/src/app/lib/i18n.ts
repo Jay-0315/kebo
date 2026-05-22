@@ -57,6 +57,9 @@ const dict = {
     "groups.search_placeholder": "그룹 이름 검색",
     "groups.search_hint": "그룹을 선택하면 호스트에게 가입 신청이 전송됩니다.",
     "groups.no_results": "검색 결과가 없습니다",
+    "groups.no_groups": "참가/생성 된 그룹이 없습니다.",
+    "groups.loading": "로딩 중...",
+    "groups.public": "공개 그룹으로 설정",
     "groups.request": "신청",
     "groups.member_suffix": "명",
     // Group Detail
@@ -302,6 +305,9 @@ const dict = {
     "groups.search_placeholder": "グループ名を検索",
     "groups.search_hint": "グループを選択するとホストに参加申請が送信されます。",
     "groups.no_results": "検索結果がありません",
+    "groups.no_groups": "参加・作成したグループがありません。",
+    "groups.loading": "読み込み中...",
+    "groups.public": "公開グループとして設定",
     "groups.request": "申請",
     "groups.member_suffix": "人",
     // Group Detail

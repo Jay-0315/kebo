@@ -1,21 +1,153 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { Bell, Moon, Sun, Shield, Database, Trash2, ChevronRight, Globe, Check, Palette, AlertTriangle, X } from "lucide-react";
+import {
+  Bell,
+  Moon,
+  Sun,
+  Shield,
+  Database,
+  Trash2,
+  ChevronRight,
+  Globe,
+  Check,
+  Palette,
+  AlertTriangle,
+  X,
+  Link2,
+  Mail,
+} from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { clearAuthSession } from "../lib/auth";
 import { THEME_PRESETS } from "../lib/theme-presets";
+import { api } from "../lib/api";
 
 const LANGUAGES = [
   { code: "ko" as const, nativeName: "한국어", name: "Korean" },
   { code: "ja" as const, nativeName: "日本語", name: "Japanese" },
 ];
 
+type SocialProvider = "GOOGLE" | "KAKAO" | "LINE" | "APPLE";
+
+type LinkedProvider = {
+  provider: SocialProvider;
+  linked: boolean;
+  providerEmail: string | null;
+  linkedAt: string | null;
+};
+
+const SOCIAL_PROVIDER_META: Record<
+  SocialProvider,
+  { label: string; buttonClassName: string }
+> = {
+  GOOGLE: {
+    label: "Google",
+    buttonClassName: "bg-white text-[#1f1f1f] border border-border",
+  },
+  KAKAO: {
+    label: "Kakao",
+    buttonClassName: "bg-[#FEE500] text-[#191600]",
+  },
+  LINE: {
+    label: "LINE",
+    buttonClassName: "bg-[#06C755] text-white",
+  },
+  APPLE: {
+    label: "Apple",
+    buttonClassName: "bg-black text-white",
+  },
+};
+
 export default function SettingsPage() {
-  const { settings, countries, profile, updateProfileCurrency, updateSettings } = useAppData();
+  const {
+    settings,
+    countries,
+    profile,
+    updateProfileCurrency,
+    updateSettings,
+  } = useAppData();
   const { t } = useLang();
   const navigate = useNavigate();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [linkedProviders, setLinkedProviders] = useState<LinkedProvider[]>([]);
+  const [socialLoading, setSocialLoading] = useState(true);
+  const [socialSubmitting, setSocialSubmitting] = useState(false);
+  const [socialMessage, setSocialMessage] = useState("");
+  const googleLinkButtonRef = useRef<HTMLDivElement | null>(null);
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+  const linkedGoogle = linkedProviders.find(
+    (provider) => provider.provider === "GOOGLE",
+  );
+
+  const loadLinkedProviders = useCallback(async () => {
+    setSocialLoading(true);
+
+    try {
+      const response = await api.get<{ providers: LinkedProvider[] }>(
+        "/auth/providers",
+      );
+      setLinkedProviders(response.providers);
+    } catch {
+      setSocialMessage("소셜 연동 상태를 불러오지 못했습니다.");
+    } finally {
+      setSocialLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadLinkedProviders();
+  }, [loadLinkedProviders]);
+
+  useEffect(() => {
+    if (
+      !googleClientId ||
+      !googleLinkButtonRef.current ||
+      !window.google?.accounts?.id ||
+      linkedGoogle?.linked
+    ) {
+      return;
+    }
+
+    window.google.accounts.id.initialize({
+      client_id: googleClientId,
+      callback: async (response) => {
+        if (!response.credential) {
+          setSocialMessage("Google 연동 토큰을 받지 못했습니다.");
+          return;
+        }
+
+        setSocialSubmitting(true);
+        setSocialMessage("");
+
+        try {
+          await api.post("/auth/social/link", {
+            provider: "GOOGLE",
+            identityToken: response.credential,
+          });
+          setSocialMessage("Google 계정이 연결되었습니다.");
+          await loadLinkedProviders();
+        } catch (error) {
+          setSocialMessage(
+            error instanceof Error && error.message
+              ? error.message
+              : "Google 계정 연동에 실패했습니다.",
+          );
+        } finally {
+          setSocialSubmitting(false);
+        }
+      },
+    });
+
+    googleLinkButtonRef.current.innerHTML = "";
+    window.google.accounts.id.renderButton(googleLinkButtonRef.current, {
+      theme: "outline",
+      size: "large",
+      shape: "pill",
+      width: 280,
+      text: "continue_with",
+    });
+  }, [googleClientId, linkedGoogle?.linked, loadLinkedProviders]);
 
   const handleAccountDelete = () => {
     clearAuthSession();
@@ -39,10 +171,16 @@ export default function SettingsPage() {
           {/* Dark mode toggle */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {settings.darkMode ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-primary" />}
+              {settings.darkMode ? (
+                <Moon className="w-5 h-5 text-primary" />
+              ) : (
+                <Sun className="w-5 h-5 text-primary" />
+              )}
               <div>
                 <p className="font-medium">{t("settings.dark_mode")}</p>
-                <p className="text-sm text-muted-foreground">{t("settings.dark_mode_desc")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("settings.dark_mode_desc")}
+                </p>
               </div>
             </div>
             <button
@@ -65,12 +203,15 @@ export default function SettingsPage() {
               <Palette className="w-5 h-5 text-primary" />
               <div>
                 <p className="font-medium">{t("settings.theme_color")}</p>
-                <p className="text-sm text-muted-foreground">{t("settings.theme_color_desc")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("settings.theme_color_desc")}
+                </p>
               </div>
             </div>
             <div className="grid grid-cols-5 gap-2">
               {THEME_PRESETS.map((preset) => {
-                const isActive = (settings.themeColor ?? "emerald") === preset.id;
+                const isActive =
+                  (settings.themeColor ?? "emerald") === preset.id;
                 return (
                   <button
                     key={preset.id}
@@ -92,7 +233,9 @@ export default function SettingsPage() {
                         </div>
                       )}
                     </div>
-                    <span className={`text-[10px] leading-tight text-center transition-colors ${isActive ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
+                    <span
+                      className={`text-[10px] leading-tight text-center transition-colors ${isActive ? "text-foreground font-semibold" : "text-muted-foreground"}`}
+                    >
                       {preset.name}
                     </span>
                   </button>
@@ -111,12 +254,18 @@ export default function SettingsPage() {
             <div className="flex items-center gap-3">
               <Bell className="w-5 h-5 text-primary" />
               <div>
-                <p className="font-medium">{t("settings.push_notifications")}</p>
-                <p className="text-sm text-muted-foreground">{t("settings.push_notifications_desc")}</p>
+                <p className="font-medium">
+                  {t("settings.push_notifications")}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {t("settings.push_notifications_desc")}
+                </p>
               </div>
             </div>
             <button
-              onClick={() => updateSettings({ notifications: !settings.notifications })}
+              onClick={() =>
+                updateSettings({ notifications: !settings.notifications })
+              }
               className={`relative w-12 h-6 rounded-full transition-colors ${
                 settings.notifications ? "bg-primary" : "bg-muted"
               }`}
@@ -140,11 +289,15 @@ export default function SettingsPage() {
               <Database className="w-5 h-5 text-primary" />
               <div>
                 <p className="font-medium">{t("settings.auto_backup")}</p>
-                <p className="text-sm text-muted-foreground">{t("settings.auto_backup_desc")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("settings.auto_backup_desc")}
+                </p>
               </div>
             </div>
             <button
-              onClick={() => updateSettings({ autoBackup: !settings.autoBackup })}
+              onClick={() =>
+                updateSettings({ autoBackup: !settings.autoBackup })
+              }
               className={`relative w-12 h-6 rounded-full transition-colors ${
                 settings.autoBackup ? "bg-primary" : "bg-muted"
               }`}
@@ -180,7 +333,9 @@ export default function SettingsPage() {
               <Shield className="w-5 h-5 text-primary" />
               <div className="text-left">
                 <p className="font-medium">{t("settings.privacy")}</p>
-                <p className="text-sm text-muted-foreground">{t("settings.privacy_desc")}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("settings.privacy_desc")}
+                </p>
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -194,11 +349,115 @@ export default function SettingsPage() {
               <Trash2 className="w-5 h-5" />
               <div className="text-left">
                 <p className="font-medium">{t("settings.account_delete")}</p>
-                <p className="text-sm text-destructive/80">{t("settings.account_delete_desc")}</p>
+                <p className="text-sm text-destructive/80">
+                  {t("settings.account_delete_desc")}
+                </p>
               </div>
             </div>
             <ChevronRight className="w-5 h-5" />
           </button>
+        </div>
+      </div>
+
+      <div className="bg-card rounded-md p-5 border border-border">
+        <h3 className="mb-4">소셜 연동</h3>
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 rounded bg-muted p-3">
+            <Link2 className="mt-0.5 h-5 w-5 text-primary" />
+            <div>
+              <p className="font-medium">로그인 계정 연결</p>
+              <p className="text-sm text-muted-foreground">
+                현재 계정에 Google, Kakao, LINE, Apple 로그인을 연결할 수
+                있습니다.
+              </p>
+            </div>
+          </div>
+
+          {socialLoading ? (
+            <p className="text-sm text-muted-foreground">
+              연동 상태를 불러오는 중입니다.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {(["GOOGLE", "KAKAO", "LINE", "APPLE"] as SocialProvider[]).map(
+                (provider) => {
+                  const status = linkedProviders.find(
+                    (item) => item.provider === provider,
+                  ) ?? {
+                    provider,
+                    linked: false,
+                    providerEmail: null,
+                    linkedAt: null,
+                  };
+                  const meta = SOCIAL_PROVIDER_META[provider];
+
+                  return (
+                    <div
+                      key={provider}
+                      className="rounded border border-border bg-background/50 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-medium">{meta.label}</p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {status.linked
+                              ? "연결됨"
+                              : provider === "GOOGLE"
+                                ? "현재 계정에 연결할 수 있습니다."
+                                : "준비 중입니다."}
+                          </p>
+                          {status.providerEmail && (
+                            <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                              <Mail className="h-4 w-4" />
+                              <span>{status.providerEmail}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {status.linked ? (
+                          <button
+                            type="button"
+                            disabled
+                            className="rounded bg-primary/10 px-4 py-2 text-sm font-medium text-primary opacity-80"
+                          >
+                            연동중
+                          </button>
+                        ) : provider === "GOOGLE" ? (
+                          <div className="min-h-10 min-w-[280px]">
+                            <div
+                              ref={googleLinkButtonRef}
+                              className={
+                                socialSubmitting
+                                  ? "pointer-events-none opacity-70"
+                                  : ""
+                              }
+                            />
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled
+                            className={`rounded px-4 py-2 text-sm font-medium opacity-60 ${meta.buttonClassName}`}
+                          >
+                            Coming Soon
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                },
+              )}
+            </div>
+          )}
+
+          {!googleClientId && (
+            <p className="text-sm text-muted-foreground">
+              `VITE_GOOGLE_CLIENT_ID` 설정 후 Google 연동 버튼이 표시됩니다.
+            </p>
+          )}
+          {socialMessage && (
+            <p className="text-sm text-muted-foreground">{socialMessage}</p>
+          )}
         </div>
       </div>
 
@@ -217,10 +476,14 @@ export default function SettingsPage() {
               }`}
             >
               <div className="flex items-center gap-3">
-                <Globe className={`w-5 h-5 ${currentLang === language.code ? "text-primary" : "text-muted-foreground"}`} />
+                <Globe
+                  className={`w-5 h-5 ${currentLang === language.code ? "text-primary" : "text-muted-foreground"}`}
+                />
                 <div className="text-left">
                   <p className="font-medium">{language.nativeName}</p>
-                  <p className="text-sm text-muted-foreground">{language.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {language.name}
+                  </p>
                 </div>
               </div>
               {currentLang === language.code && (
@@ -236,7 +499,9 @@ export default function SettingsPage() {
         <h3 className="mb-4">{t("settings.app_info")}</h3>
         <div className="space-y-2">
           <div className="flex justify-between py-2">
-            <span className="text-muted-foreground">{t("settings.version")}</span>
+            <span className="text-muted-foreground">
+              {t("settings.version")}
+            </span>
             <span className="font-medium">1.0.0</span>
           </div>
           <div className="flex justify-between py-2">
@@ -261,9 +526,14 @@ export default function SettingsPage() {
                 <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
                   <AlertTriangle className="w-5 h-5 text-destructive" />
                 </div>
-                <h3 className="text-destructive">{t("settings.delete_modal_title")}</h3>
+                <h3 className="text-destructive">
+                  {t("settings.delete_modal_title")}
+                </h3>
               </div>
-              <button onClick={() => setShowDeleteModal(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>

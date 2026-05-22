@@ -6,15 +6,17 @@ import { useLang } from "../context/LangContext";
 import type { CurrencyCode } from "../types/domain";
 
 interface GroupMember {
-  id: number;
+  id: string;
   name: string;
   isHost: boolean;
 }
 
 interface Group {
-  id: number;
+  id: string;
   name: string;
   code: string;
+  isPublic: boolean;
+  codeExpiresAt: string | null;
   members: GroupMember[];
   isHost: boolean;
 }
@@ -95,22 +97,6 @@ export default function GroupExpensesPage() {
     if (!form.spentAmount || !form.memo.trim()) return;
 
     const amount = Number(form.spentAmount);
-    const baseAmount = Math.round(amount * (form.spentCurrency === "JPY" ? 9.1 : 1));
-
-    const newLocal: LocalExpense = {
-      id: `local-${Date.now()}`,
-      date: form.date,
-      category: form.category,
-      spentAmount: amount,
-      spentCurrency: form.spentCurrency,
-      baseAmount,
-      memo: form.memo,
-      participants: form.participants ? Number(form.participants) : undefined,
-    };
-
-    setLocalExpenses((prev) => [newLocal, ...prev]);
-    setShowForm(false);
-    setForm({ date: new Date().toISOString().slice(0, 10), category: "식비", spentAmount: "", spentCurrency: "JPY", memo: "", participants: "" });
 
     setSubmitting(true);
     try {
@@ -122,10 +108,14 @@ export default function GroupExpensesPage() {
         countryCode: form.spentCurrency === "JPY" ? "JP" : "KR",
         memo: form.memo,
         group: group.name,
+        groupId: group.id,
         participants: form.participants ? Number(form.participants) : undefined,
       });
+      setLocalExpenses([]);
+      setShowForm(false);
+      setForm({ date: new Date().toISOString().slice(0, 10), category: "식비", spentAmount: "", spentCurrency: "JPY", memo: "", participants: "" });
     } catch {
-      /* offline */
+      alert("지출 저장에 실패했습니다.");
     } finally {
       setSubmitting(false);
     }

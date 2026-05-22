@@ -41,6 +41,7 @@ export interface ExpenseDraft {
   countryCode: string;
   memo: string;
   group?: string;
+  groupId?: string;
   participants?: number;
   receipt?: string;
 }

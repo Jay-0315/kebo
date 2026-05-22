@@ -5,14 +5,17 @@ import {
 } from "lucide-react";
 import { useAppData, type GachaResult } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
+import { type TranslationKey } from "../lib/i18n";
 import PixelCharacter, { PixelSprite } from "./PixelCharacter";
 import {
   CHARACTERS, ACHIEVEMENTS, ACHIEVEMENT_BY_CHARACTER,
   GACHA_COST_SINGLE, GACHA_COST_TEN, RARITY_DUPLICATE_POINTS,
-  RARITY_LABEL, RARITY_COLOR, RARITY_BORDER,
+  RARITY_COLOR, RARITY_BORDER,
   getCharName, getRarityLabel,
 } from "../data/characters";
 import type { CharacterDef, CharacterRarity, AchievementType } from "../data/characters";
+
+type TFunc = (key: TranslationKey) => string;
 
 const CAPSULE_MYSTERY_COLORS = [
   "#7c3aed","#4f46e5","#2563eb","#0891b2",
@@ -184,7 +187,7 @@ function GachaCapsuleModal({
 }: {
   result: GachaResult;
   onClose: () => void;
-  t: (key: string) => string;
+  t: TFunc;
 }) {
   const [openedSet, setOpenedSet] = useState<Set<number>>(new Set());
   const [poppingIdx, setPoppingIdx] = useState<number | null>(null);
@@ -552,7 +555,7 @@ function CollectionTab({
   onSelectFilter: (f: Filter) => void;
   onSelectChar: (id: number) => void;
   onEquip: (id: number) => void;
-  t: (key: string) => string;
+  t: TFunc;
 }) {
   const { lang } = useLang();
   return (
@@ -596,7 +599,6 @@ function CollectionTab({
           const isOwned = ownedSet.has(char.id);
           const isEquipped = char.id === equippedCharacterId;
           const isSelected = char.id === selected;
-          const ach = ACHIEVEMENT_BY_CHARACTER.get(char.id);
           const isHidden = char.hiddenAchievement && !isOwned;
 
           return (
@@ -652,7 +654,7 @@ function CharacterDetail({
   isEquipped: boolean;
   equipping: boolean;
   onEquip: (id: number) => void;
-  t: (key: string) => string;
+  t: TFunc;
 }) {
   const { lang } = useLang();
   const ach = ACHIEVEMENT_BY_CHARACTER.get(char.id);
@@ -726,7 +728,7 @@ function GachaTab({
   canAffordTen: boolean;
   pulling: boolean;
   onPull: (count: 1 | 10) => void;
-  t: (key: string) => string;
+  t: TFunc;
 }) {
   const { lang } = useLang();
   const pityLeft = Math.max(0, 10 - (gachaPityCount % 10));
@@ -847,7 +849,7 @@ function GachaTab({
 }
 
 // ─── Achievement Tab ──────────────────────────────────────────────────────
-const CATEGORY_ICON: Record<AchievementType, { icon: React.ReactNode; color: string; labelKey: string }> = {
+const CATEGORY_ICON: Record<AchievementType, { icon: React.ReactNode; color: string; labelKey: TranslationKey }> = {
   attendance:    { icon: <CheckCircle2 className="w-4 h-4" />, color: "text-blue-400",   labelKey: "kabemon.cat_attendance" },
   streak:        { icon: <Flame        className="w-4 h-4" />, color: "text-orange-400", labelKey: "kabemon.cat_streak" },
   expense_count: { icon: <Zap          className="w-4 h-4" />, color: "text-yellow-400", labelKey: "kabemon.cat_expense" },
@@ -865,7 +867,7 @@ function AchievementTab({
   missionPoints: number;
   checking: boolean;
   onCheck: () => void;
-  t: (key: string) => string;
+  t: TFunc;
 }) {
   const { lang } = useLang();
   const visibleAchs = ACHIEVEMENTS.filter((a) => !a.hidden);
@@ -1033,7 +1035,7 @@ function AchievementRevealModal({
 }: {
   newlyUnlocked: number[];
   onClose: () => void;
-  t: (key: string) => string;
+  t: TFunc;
 }) {
   const { lang } = useLang();
   const [currentIdx, setCurrentIdx] = useState(0);

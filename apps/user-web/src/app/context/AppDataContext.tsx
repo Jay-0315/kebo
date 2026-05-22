@@ -12,6 +12,8 @@ export interface GachaResult {
   pointsSpent: number;
   bonusPoints: number;
   remainingPoints: number;
+  gachaPityCount: number;
+  legendaryPityCount: number;
 }
 import { countries, exchangeRates, getCountryByCode, getExchangeRate } from "../data/currency";
 import { initialAppData } from "../data/seed";
@@ -289,6 +291,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       countryCode: draft.countryCode,
       memo: draft.memo,
       groupName: draft.group || undefined,
+      groupId: draft.groupId || undefined,
       participants: draft.participants,
       receiptUrl: draft.receipt,
       sharedToCommunity: false,
@@ -455,6 +458,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     setRewardSummary((prev) => ({
       ...prev,
       missionPoints: result.remainingPoints,
+      gachaPityCount: result.gachaPityCount,
+      legendaryPityCount: result.legendaryPityCount,
       ownedCharacterIds: [
         ...prev.ownedCharacterIds,
         ...result.results.filter((r) => !r.isDuplicate).map((r) => r.characterId),
@@ -521,7 +526,8 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    await api.patch(`/users/${currentUser.id}/settings`, nextSettings);
+    const { language: _lang, ...serverSettings } = nextSettings as AppSettings;
+    await api.patch(`/users/${currentUser.id}/settings`, serverSettings);
     await refreshData();
   };
 

@@ -1,32 +1,44 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router";
-import { Plus, X, Users, Crown, Bell, Search, TrendingUp, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  X,
+  Users,
+  Crown,
+  Bell,
+  Search,
+  TrendingUp,
+  ChevronRight,
+} from "lucide-react";
 import { useLang } from "../context/LangContext";
+import { api } from "../lib/api";
 
 interface GroupMember {
-  id: number;
+  id: string;
   name: string;
   isHost: boolean;
 }
 
 interface Group {
-  id: number;
+  id: string;
   name: string;
   code: string;
-  members: GroupMember[];
+  isPublic: boolean;
+  codeExpiresAt: string | null;
   isHost: boolean;
+  members: GroupMember[];
 }
 
 interface JoinRequest {
   id: number;
-  groupId: number;
+  groupId: string;
   groupName: string;
   userName: string;
-  date: string;
+  createdAt: string;
 }
 
 interface AvailableGroup {
-  id: number;
+  id: string;
   name: string;
   memberCount: number;
   hostName: string;
@@ -36,113 +48,144 @@ export default function GroupsPage() {
   const navigate = useNavigate();
   const { t } = useLang();
 
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [availableGroups, setAvailableGroups] = useState<AvailableGroup[]>([]);
+  const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showJoinForm, setShowJoinForm] = useState(false);
   const [joinMethod, setJoinMethod] = useState<"code" | "request">("code");
   const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupIsPublic, setNewGroupIsPublic] = useState(false);
   const [joinCode, setJoinCode] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [groups, setGroups] = useState<Group[]>([
-    {
-      id: 1,
-      name: "가족",
-      code: "FAM2024",
-      members: [
-        { id: 1, name: "나", isHost: true },
-        { id: 2, name: "엄마", isHost: false },
-        { id: 3, name: "아빠", isHost: false },
-      ],
-      isHost: true,
-    },
-    {
-      id: 2,
-      name: "친구들",
-      code: "FRD2024",
-      members: [
-        { id: 1, name: "철수", isHost: true },
-        { id: 2, name: "나", isHost: false },
-        { id: 3, name: "영희", isHost: false },
-      ],
-      isHost: false,
-    },
-  ]);
+  const loadGroups = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await api.get<Group[]>("/groups");
+      setGroups(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const [availableGroups] = useState<AvailableGroup[]>([
-    { id: 3, name: "운동 모임", memberCount: 5, hostName: "김운동" },
-    { id: 4, name: "독서 클럽", memberCount: 8, hostName: "이책" },
-    { id: 5, name: "요리 연구회", memberCount: 12, hostName: "박요리" },
-  ]);
+  const loadJoinRequests = useCallback(async () => {
+    const hostGroups = groups.filter((g: Group) => g.isHost);
+    const allRequests: JoinRequest[] = [];
+    for (const group of hostGroups) {
+      try {
+        const requests = await api.get<any[]>(`/groups/${group.id}/requests`);
+        allRequests.push(
+          ...requests.map((r) => ({
+            id: r.id,
+            groupId: group.id,
+            groupName: group.name,
+            userName: r.user.name,
+            createdAt: r.createdAt,
+          })),
+        );
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    setJoinRequests(allRequests);
+  }, [groups]);
 
-  const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([
-    { id: 1, groupId: 1, groupName: "가족", userName: "동생", date: "2026-05-14" },
-  ]);
+  useEffect(() => {
+    loadGroups();
+  }, [loadGroups]);
 
-  const generateGroupCode = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let code = "";
-    for (let i = 0; i < 8; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
-    return code;
-  };
+  useEffect(() => {
+    if (showNotifications) {
+      loadJoinRequests();
+    }
+  }, [showNotifications, loadJoinRequests]);
 
-  const handleCreateGroup = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (joinMethod !== "request") return;
+    const timer = setTimeout(() => {
+      api
+        .get<AvailableGroup[]>(
+          `/groups/search?q=${encodeURIComponent(searchQuery)}`,
+        )
+        .then(setAvailableGroups)
+        .catch(console.error);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, joinMethod]);
+
+  async function handleCreateGroup(e: React.FormEvent) {
     e.preventDefault();
     if (!newGroupName.trim()) return;
-    const newGroup: Group = {
-      id: Date.now(),
-      name: newGroupName,
-      code: generateGroupCode(),
-      members: [{ id: 1, name: "나", isHost: true }],
-      isHost: true,
-    };
-    setGroups([...groups, newGroup]);
-    setNewGroupName("");
-    setShowCreateForm(false);
-    alert(`그룹이 생성되었습니다! 코드: ${newGroup.code}`);
-  };
+    try {
+      const group = await api.post<Group>("/groups", {
+        name: newGroupName,
+        isPublic: newGroupIsPublic,
+      });
+      setGroups((prev) => [...prev, group]);
+      setNewGroupName("");
+      setNewGroupIsPublic(false);
+      setShowCreateForm(false);
+    } catch (e: any) {
+      alert(e.message || "그룹 생성에 실패했습니다.");
+    }
+  }
 
-  const handleJoinWithCode = (e: React.FormEvent) => {
+  async function handleJoinWithCode(e: React.FormEvent) {
     e.preventDefault();
     if (!joinCode.trim()) return;
-    const mockGroup: Group = {
-      id: Date.now(),
-      name: "새 그룹",
-      code: joinCode,
-      members: [
-        { id: 1, name: "호스트", isHost: true },
-        { id: 2, name: "나", isHost: false },
-      ],
-      isHost: false,
-    };
-    setGroups([...groups, mockGroup]);
-    setJoinCode("");
-    setShowJoinForm(false);
-    alert("그룹에 참가했습니다!");
-  };
+    try {
+      const group = await api.post<Group>("/groups/join", { code: joinCode });
+      setGroups((prev) => [...prev, group]);
+      setJoinCode("");
+      setShowJoinForm(false);
+    } catch (e: any) {
+      alert(e.message || "그룹 참가에 실패했습니다.");
+    }
+  }
 
-  const handleRequestJoin = (group: AvailableGroup) => {
-    alert(`${group.name}에 가입 요청을 보냈습니다. 호스트의 승인을 기다려주세요.`);
-    setShowJoinForm(false);
-  };
+  async function handleRequestJoin(group: AvailableGroup) {
+    try {
+      await api.post(`/groups/${group.id}/requests`);
+      alert(
+        `${group.name}에 가입 요청을 보냈습니다. 호스트의 승인을 기다려주세요.`,
+      );
+      setShowJoinForm(false);
+    } catch (e: any) {
+      alert(e.message || "가입 요청에 실패했습니다.");
+    }
+  }
 
-  const handleApproveRequest = (request: JoinRequest) => {
-    setGroups(groups.map((g) =>
-      g.id === request.groupId
-        ? { ...g, members: [...g.members, { id: Date.now(), name: request.userName, isHost: false }] }
-        : g
-    ));
-    setJoinRequests(joinRequests.filter((r) => r.id !== request.id));
-    alert(`${request.userName}님의 가입을 승인했습니다!`);
-  };
+  async function handleApproveRequest(request: JoinRequest) {
+    try {
+      await api.patch(`/groups/${request.groupId}/requests/${request.id}`, {
+        action: "APPROVED",
+      });
+      setJoinRequests((prev) => prev.filter((r) => r.id !== request.id));
+      await loadGroups();
+    } catch (e: any) {
+      alert(e.message || "승인에 실패했습니다.");
+    }
+  }
 
-  const handleRejectRequest = (request: JoinRequest) => {
-    setJoinRequests(joinRequests.filter((r) => r.id !== request.id));
-    alert("가입 요청을 거절했습니다.");
-  };
+  async function handleRejectRequest(request: JoinRequest) {
+    try {
+      await api.patch(`/groups/${request.groupId}/requests/${request.id}`, {
+        action: "REJECTED",
+      });
+      setJoinRequests((prev) => prev.filter((r) => r.id !== request.id));
+    } catch (e: any) {
+      alert(e.message || "거절에 실패했습니다.");
+    }
+  }
 
   const filteredGroups = availableGroups.filter((g) =>
-    g.name.toLowerCase().includes(searchQuery.toLowerCase())
+    g.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const MAX_VISIBLE_AVATARS = 4;
@@ -190,15 +233,21 @@ export default function GroupsPage() {
             {t("groups.join_requests")}
           </h3>
           {joinRequests.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">{t("groups.no_requests")}</p>
+            <p className="text-center text-muted-foreground py-4">
+              {t("groups.no_requests")}
+            </p>
           ) : (
             <div className="space-y-3">
               {joinRequests.map((request) => (
                 <div key={request.id} className="bg-muted rounded p-4">
                   <div className="mb-3">
-                    <p className="font-medium">{request.userName}{t("groups.member_suffix")}이 가입을 요청했습니다</p>
+                    <p className="font-medium">
+                      {request.userName}
+                      {t("groups.member_suffix")}이 가입을 요청했습니다
+                    </p>
                     <p className="text-sm text-muted-foreground">
-                      그룹: {request.groupName} · {request.date}
+                      그룹: {request.groupName} ·{" "}
+                      {new Date(request.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -223,56 +272,75 @@ export default function GroupsPage() {
       )}
 
       {/* Group Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {groups.map((group) => {
-          const visibleMembers = group.members.slice(0, MAX_VISIBLE_AVATARS);
-          const extraCount = group.members.length - MAX_VISIBLE_AVATARS;
+      {loading ? (
+        <p className="text-center text-muted-foreground py-12">
+          {t("groups.loading") || "로딩 중..."}
+        </p>
+      ) : groups.length === 0 ? (
+        <p className="text-center text-muted-foreground py-12">
+          {t("groups.no_groups") || "참가한 그룹이 없습니다."}
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {groups.map((group) => {
+            const visibleMembers = group.members.slice(0, MAX_VISIBLE_AVATARS);
+            const extraCount = group.members.length - MAX_VISIBLE_AVATARS;
 
-          return (
-            <button
-              key={group.id}
-              onClick={() => navigate(`/groups/${group.id}`, { state: { group } })}
-              className="bg-card rounded-md p-5 border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-left group"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="group-hover:text-primary transition-colors">{group.name}</h3>
-                    {group.isHost && <Crown className="w-4 h-4 text-yellow-500" />}
-                  </div>
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Users className="w-4 h-4" />
-                    <span>{t("group.member")} {group.members.length}{t("groups.member_suffix")}</span>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-              </div>
-
-              <div className="flex items-center gap-1.5">
-                {visibleMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className="relative w-9 h-9 rounded-full bg-primary/80 flex items-center justify-center text-white text-sm font-medium ring-2 ring-card"
-                    title={member.name}
-                  >
-                    {member.name[0]}
-                    {member.isHost && (
-                      <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-yellow-500 rounded-full flex items-center justify-center">
-                        <Crown className="w-2 h-2 text-white" />
+            return (
+              <button
+                key={group.id}
+                onClick={() =>
+                  navigate(`/groups/${group.id}`, { state: { group } })
+                }
+                className="bg-card rounded-md p-5 border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-left group"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="group-hover:text-primary transition-colors">
+                        {group.name}
+                      </h3>
+                      {group.isHost && (
+                        <Crown className="w-4 h-4 text-yellow-500" />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <Users className="w-4 h-4" />
+                      <span>
+                        {t("group.member")} {group.members.length}
+                        {t("groups.member_suffix")}
                       </span>
-                    )}
+                    </div>
                   </div>
-                ))}
-                {extraCount > 0 && (
-                  <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground font-medium ring-2 ring-card">
-                    +{extraCount}
-                  </div>
-                )}
-              </div>
-            </button>
-          );
-        })}
-      </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  {visibleMembers.map((member) => (
+                    <div
+                      key={member.id}
+                      className="relative w-9 h-9 rounded-full bg-primary/80 flex items-center justify-center text-white text-sm font-medium ring-2 ring-card"
+                      title={member.name}
+                    >
+                      {member.name[0]}
+                      {member.isHost && (
+                        <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-yellow-500 rounded-full flex items-center justify-center">
+                          <Crown className="w-2 h-2 text-white" />
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                  {extraCount > 0 && (
+                    <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground font-medium ring-2 ring-card">
+                      +{extraCount}
+                    </div>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Create Group Modal */}
       {showCreateForm && (
@@ -286,13 +354,18 @@ export default function GroupsPage() {
           >
             <div className="flex items-center justify-between mb-4">
               <h3>{t("groups.create")}</h3>
-              <button onClick={() => setShowCreateForm(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+              <button
+                onClick={() => setShowCreateForm(false)}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 <X className="w-6 h-6" />
               </button>
             </div>
             <form onSubmit={handleCreateGroup} className="space-y-4">
               <div>
-                <label className="block mb-2 text-sm">{t("groups.group_name")}</label>
+                <label className="block mb-2 text-sm">
+                  {t("groups.group_name")}
+                </label>
                 <input
                   type="text"
                   value={newGroupName}
@@ -302,6 +375,17 @@ export default function GroupsPage() {
                   required
                 />
               </div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={newGroupIsPublic}
+                  onChange={(e) => setNewGroupIsPublic(e.target.checked)}
+                  className="w-4 h-4 accent-primary"
+                />
+                <span className="text-sm">
+                  {t("groups.public") || "공개 그룹으로 설정"}
+                </span>
+              </label>
               <div className="bg-muted rounded p-4 flex gap-3">
                 <TrendingUp className="w-5 h-5 text-primary/80 shrink-0" />
                 <p className="text-sm text-muted-foreground">
@@ -331,7 +415,10 @@ export default function GroupsPage() {
           >
             <div className="flex items-center justify-between mb-4">
               <h3>{t("groups.join")}</h3>
-              <button onClick={() => setShowJoinForm(false)} className="text-muted-foreground hover:text-foreground transition-colors">
+              <button
+                onClick={() => setShowJoinForm(false)}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -339,7 +426,9 @@ export default function GroupsPage() {
               <button
                 onClick={() => setJoinMethod("code")}
                 className={`flex-1 py-2 px-4 rounded font-medium transition-all ${
-                  joinMethod === "code" ? "bg-primary/80 text-primary-foreground shadow-md" : "bg-muted text-muted-foreground hover:bg-accent/30"
+                  joinMethod === "code"
+                    ? "bg-primary/80 text-primary-foreground shadow-md"
+                    : "bg-muted text-muted-foreground hover:bg-accent/30"
                 }`}
               >
                 {t("groups.join_code")}
@@ -347,7 +436,9 @@ export default function GroupsPage() {
               <button
                 onClick={() => setJoinMethod("request")}
                 className={`flex-1 py-2 px-4 rounded font-medium transition-all ${
-                  joinMethod === "request" ? "bg-primary/80 text-primary-foreground shadow-md" : "bg-muted text-muted-foreground hover:bg-accent/30"
+                  joinMethod === "request"
+                    ? "bg-primary/80 text-primary-foreground shadow-md"
+                    : "bg-muted text-muted-foreground hover:bg-accent/30"
                 }`}
               >
                 {t("groups.request_join")}
@@ -357,7 +448,9 @@ export default function GroupsPage() {
             {joinMethod === "code" && (
               <form onSubmit={handleJoinWithCode} className="space-y-4">
                 <div>
-                  <label className="block mb-2 text-sm">{t("groups.group_code")}</label>
+                  <label className="block mb-2 text-sm">
+                    {t("groups.group_code")}
+                  </label>
                   <input
                     type="text"
                     value={joinCode}
@@ -386,7 +479,9 @@ export default function GroupsPage() {
             {joinMethod === "request" && (
               <div className="space-y-4">
                 <div>
-                  <label className="block mb-2 text-sm">{t("groups.search_groups")}</label>
+                  <label className="block mb-2 text-sm">
+                    {t("groups.search_groups")}
+                  </label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                     <input
@@ -406,7 +501,9 @@ export default function GroupsPage() {
                 </div>
                 <div className="space-y-2 max-h-[300px] overflow-y-auto">
                   {filteredGroups.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">{t("groups.no_results")}</p>
+                    <p className="text-center text-muted-foreground py-8">
+                      {t("groups.no_results")}
+                    </p>
                   ) : (
                     filteredGroups.map((group) => (
                       <div key={group.id} className="bg-muted rounded p-4">
@@ -416,7 +513,8 @@ export default function GroupsPage() {
                             <div className="flex items-center gap-3 text-sm text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <Users className="w-4 h-4" />
-                                {group.memberCount}{t("groups.member_suffix")}
+                                {group.memberCount}
+                                {t("groups.member_suffix")}
                               </span>
                               <span className="flex items-center gap-1">
                                 <Crown className="w-4 h-4" />

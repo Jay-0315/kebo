@@ -10,8 +10,6 @@ datasource db {
 enum CurrencyCode {
   KRW
   JPY
-  USD
-  EUR
 }
 
 enum AuthProvider {
@@ -19,6 +17,12 @@ enum AuthProvider {
   KAKAO
   LINE
   APPLE
+}
+
+enum GroupJoinStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model User {
@@ -31,13 +35,16 @@ model User {
   baseCurrency    CurrencyCode    @map("base_currency")
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
-  settings        AppSetting?
-  expenses        Expense[]
-  posts           CommunityPost[]
-  reward          UserReward?
-  characters      UserCharacter[]
-  titles          UserTitle[]
-  identities      UserIdentity[]
+  settings         AppSetting?
+  expenses         Expense[]
+  posts            CommunityPost[]
+  reward           UserReward?
+  characters       UserCharacter[]
+  titles           UserTitle[]
+  identities       UserIdentity[]
+  hostedGroups     Group[]            @relation("GroupHost")
+  groupMemberships GroupMember[]
+  groupJoinRequests GroupJoinRequest[]
 
   @@map("users")
 }
@@ -125,14 +132,17 @@ model Expense {
   countryCode       String              @map("country_code") @db.Char(2)
   memo              String
   groupName         String?             @map("group_name")
+  groupId           String?             @map("group_id")
   participants      Int?
   receiptUrl        String?             @map("receipt_url") @db.Text
   sharedToCommunity Boolean             @default(false) @map("shared_to_community")
   createdAt         DateTime            @default(now()) @map("created_at")
   updatedAt         DateTime            @updatedAt @map("updated_at")
   user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group             Group?              @relation(fields: [groupId], references: [id], onDelete: SetNull)
   sharedPosts       CommunityPostExpense[]
 
+  @@index([groupId])
   @@map("expenses")
 }
 
@@ -147,6 +157,52 @@ model CommunityPost {
   sharedExpenses CommunityPostExpense[]
 
   @@map("community_posts")
+}
+
+model Group {
+  id            String             @id @default(uuid())
+  name          String
+  inviteCode    String             @unique @map("invite_code") @db.VarChar(8)
+  hostUserId    String             @map("host_user_id")
+  isPublic      Boolean            @default(false) @map("is_public")
+  codeExpiresAt DateTime?          @map("code_expires_at")
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+  host          User               @relation("GroupHost", fields: [hostUserId], references: [id], onDelete: Cascade)
+  members       GroupMember[]
+  joinRequests  GroupJoinRequest[]
+  expenses      Expense[]
+
+  @@index([hostUserId])
+  @@map("groups")
+}
+
+model GroupMember {
+  id       BigInt   @id @default(autoincrement())
+  groupId  String   @map("group_id")
+  userId   String   @map("user_id")
+  joinedAt DateTime @default(now()) @map("joined_at")
+  group    Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+  @@map("group_members")
+}
+
+model GroupJoinRequest {
+  id        BigInt          @id @default(autoincrement())
+  groupId   String          @map("group_id")
+  userId    String          @map("user_id")
+  status    GroupJoinStatus @default(PENDING)
+  createdAt DateTime        @default(now()) @map("created_at")
+  group     Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([userId])
+  @@map("group_join_requests")
 }
 
 model CommunityPostExpense {

@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { CurrencyCode } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateCommunityPostDto } from "./dto/create-community-post.dto";
 import { UpdateCommunityPostDto } from "./dto/update-community-post.dto";
@@ -26,14 +27,14 @@ export class CommunityService {
         sharedExpenses: dto.sharedExpenses
           ? {
               create: dto.sharedExpenses.map((expense) => ({
-                expenseId: expense.expenseId,
+                expense: { connect: { id: expense.expenseId } },
                 category: expense.category,
                 memo: expense.memo,
                 expenseDate: new Date(expense.expenseDate),
                 spentAmount: expense.spentAmount,
-                spentCurrency: expense.spentCurrency,
+                spentCurrency: expense.spentCurrency as CurrencyCode,
                 baseAmount: expense.baseAmount,
-                baseCurrency: expense.baseCurrency,
+                baseCurrency: expense.baseCurrency as CurrencyCode,
                 exchangeRate: expense.exchangeRate,
                 countryCode: expense.countryCode,
               })),
@@ -57,20 +58,19 @@ export class CommunityService {
     return this.prisma.communityPost.update({
       where: { id },
       data: {
-        ...(dto.userId ? { userId: dto.userId } : {}),
         ...(dto.content ? { content: dto.content } : {}),
         ...(dto.sharedExpenses
           ? {
               sharedExpenses: {
                 create: dto.sharedExpenses.map((expense) => ({
-                  expenseId: expense.expenseId,
+                  expense: { connect: { id: expense.expenseId } },
                   category: expense.category,
                   memo: expense.memo,
                   expenseDate: new Date(expense.expenseDate),
                   spentAmount: expense.spentAmount,
-                  spentCurrency: expense.spentCurrency,
+                  spentCurrency: expense.spentCurrency as CurrencyCode,
                   baseAmount: expense.baseAmount,
-                  baseCurrency: expense.baseCurrency,
+                  baseCurrency: expense.baseCurrency as CurrencyCode,
                   exchangeRate: expense.exchangeRate,
                   countryCode: expense.countryCode,
                 })),
