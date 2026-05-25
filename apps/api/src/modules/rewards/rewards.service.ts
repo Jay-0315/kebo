@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 
-// Title definitions (mirrors frontend data/titles.ts)
 const TITLE_ACHIEVEMENTS: { titleId: number; type: string; value: number }[] = [
   { titleId: 1,  type: "expense_count", value: 1 },
   { titleId: 2,  type: "attendance",    value: 3 },
