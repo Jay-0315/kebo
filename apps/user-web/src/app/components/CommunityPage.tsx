@@ -19,7 +19,7 @@ const CAT_STYLE: Record<PostCategory, string> = {
 export default function CommunityPage() {
   const navigate = useNavigate();
   const { posts, profile, rewardSummary, createPost, updatePost, deletePost, togglePostLike } = useAppData();
-  const { t } = useLang();
+  const { t, lang } = useLang();
 
   const [activeTab, setActiveTab] = useState<PostCategory | "all">("all");
   const [showForm, setShowForm] = useState(false);
@@ -138,7 +138,7 @@ export default function CommunityPage() {
                     {post.authorId === profile.id && rewardSummary.equippedTitleId && (
                       <TitleBadge titleId={rewardSummary.equippedTitleId} size="xs" />
                     )}
-                    <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</p>
+                    <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt, lang)}</p>
                   </div>
                 </div>
                 {post.authorId === profile.id && (

@@ -6,7 +6,7 @@ import PixelCharacter from "./PixelCharacter";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { formatCurrency, getCountryByCode } from "../data/currency";
-import { CHARACTERS, RARITY_LABEL, RARITY_COLOR } from "../data/characters";
+import { CHARACTERS, RARITY_COLOR, getCharName, getRarityLabel } from "../data/characters";
 import TitleBadge, { TitleSelector } from "./TitleBadge";
 
 export default function MyPage() {
@@ -23,7 +23,7 @@ export default function MyPage() {
     setTitleLoading(true);
     try { await unequipTitle(); } finally { setTitleLoading(false); }
   };
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState(profile.name);
@@ -145,10 +145,10 @@ return (
             <span className="text-sm font-semibold">{t("mypage.kabemon_link")}</span>
           </div>
           <p className={`text-sm font-medium ${RARITY_COLOR[displayChar.rarity]}`}>
-            {displayChar.korName}
+            {getCharName(displayChar, lang)}
           </p>
           <p className="text-xs text-muted-foreground">
-            {RARITY_LABEL[displayChar.rarity]} · {rewardSummary.ownedCharacterIds.length}/{CHARACTERS.length} {t("kabemon.collection_count")} · {rewardSummary.missionPoints}P
+            {getRarityLabel(displayChar.rarity, lang)} · {rewardSummary.ownedCharacterIds.length}/{CHARACTERS.length} {t("kabemon.collection_count")} · {rewardSummary.missionPoints}P
           </p>
         </div>
         <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />

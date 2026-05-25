@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
+import type { TranslationKey } from "../lib/i18n";
 import { clearAuthSession } from "../lib/auth";
 import { THEME_PRESETS } from "../lib/theme-presets";
 import { api } from "../lib/api";
@@ -215,7 +216,7 @@ export default function SettingsPage() {
                 return (
                   <button
                     key={preset.id}
-                    title={preset.name}
+                    title={t(`theme.${preset.id}` as TranslationKey)}
                     onClick={() => updateSettings({ themeColor: preset.id })}
                     className="flex flex-col items-center gap-1.5 group"
                   >
@@ -236,7 +237,7 @@ export default function SettingsPage() {
                     <span
                       className={`text-[10px] leading-tight text-center transition-colors ${isActive ? "text-foreground font-semibold" : "text-muted-foreground"}`}
                     >
-                      {preset.name}
+                      {t(`theme.${preset.id}` as TranslationKey)}
                     </span>
                   </button>
                 );
@@ -360,22 +361,21 @@ export default function SettingsPage() {
       </div>
 
       <div className="bg-card rounded-md p-5 border border-border">
-        <h3 className="mb-4">소셜 연동</h3>
+        <h3 className="mb-4">{t("settings.social")}</h3>
         <div className="space-y-4">
           <div className="flex items-start gap-3 rounded bg-muted p-3">
             <Link2 className="mt-0.5 h-5 w-5 text-primary" />
             <div>
-              <p className="font-medium">로그인 계정 연결</p>
+              <p className="font-medium">{t("settings.social_link")}</p>
               <p className="text-sm text-muted-foreground">
-                현재 계정에 Google, Kakao, LINE, Apple 로그인을 연결할 수
-                있습니다.
+                {t("settings.social_link_desc")}
               </p>
             </div>
           </div>
 
           {socialLoading ? (
             <p className="text-sm text-muted-foreground">
-              연동 상태를 불러오는 중입니다.
+              {t("settings.social_loading")}
             </p>
           ) : (
             <div className="space-y-3">
@@ -401,10 +401,10 @@ export default function SettingsPage() {
                           <p className="font-medium">{meta.label}</p>
                           <p className="mt-1 text-sm text-muted-foreground">
                             {status.linked
-                              ? "연결됨"
+                              ? t("settings.social_linked")
                               : provider === "GOOGLE"
-                                ? "현재 계정에 연결할 수 있습니다."
-                                : "준비 중입니다."}
+                                ? t("settings.social_available")
+                                : t("settings.social_coming_soon")}
                           </p>
                           {status.providerEmail && (
                             <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">

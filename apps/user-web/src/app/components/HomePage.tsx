@@ -9,7 +9,7 @@ import TitleBadge from "./TitleBadge";
 export default function HomePage() {
   const navigate = useNavigate();
   const { posts, profile, rewardSummary, profilePhoto, togglePostLike } = useAppData();
-  const { t } = useLang();
+  const { t, lang } = useLang();
 
   const recentPosts = posts.slice(0, 5);
 
@@ -127,7 +127,7 @@ export default function HomePage() {
                           {t(`community.${post.category}` as Parameters<typeof t>[0])}
                         </span>
                       </div>
-                      <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</p>
+                      <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt, lang)}</p>
                     </div>
                   </div>
 

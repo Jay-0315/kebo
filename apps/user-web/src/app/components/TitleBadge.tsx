@@ -1,6 +1,7 @@
-import { TITLES, TITLE_BY_ID, TITLE_GLOW, TITLE_GRADE_BG, TITLE_GRADE_COLOR, TITLE_GRADE_LABEL } from "../data/titles";
+import { TITLES, TITLE_BY_ID, TITLE_GLOW, TITLE_GRADE_BG, TITLE_GRADE_COLOR } from "../data/titles";
 import type { TitleGrade } from "../data/titles";
 import { useLang } from "../context/LangContext";
+import type { TranslationKey } from "../lib/i18n";
 
 interface TitleBadgeProps {
   titleId: number;
@@ -11,10 +12,12 @@ interface TitleBadgeProps {
 const MYTHIC_COLORS = ["#FF80AB", "#CE93D8", "#80DEEA", "#FFD54F", "#FF80AB"];
 
 export default function TitleBadge({ titleId, size = "sm", showGrade = false }: TitleBadgeProps) {
+  const { t } = useLang();
   const title = TITLE_BY_ID.get(titleId);
   if (!title) return null;
 
-  const { grade, name } = title;
+  const { grade } = title;
+  const name = t(`title.${titleId}.name` as TranslationKey);
   const isMythic = grade === "mythic";
 
   const fontSizeClass = size === "xs" ? "text-[10px]" : size === "sm" ? "text-xs" : "text-sm";
@@ -54,7 +57,7 @@ export default function TitleBadge({ titleId, size = "sm", showGrade = false }: 
       )}
       {showGrade && (
         <span style={{ color: TITLE_GRADE_COLOR[grade], opacity: 0.7, fontSize: "0.75em" }}>
-          [{TITLE_GRADE_LABEL[grade]}]
+          [{t(`title.grade.${grade}` as TranslationKey)}]
         </span>
       )}
     </span>
@@ -131,7 +134,7 @@ export function TitleSelector({
       {byGrade.map(({ grade, titles }) => (
         <div key={grade}>
           <p className="text-xs font-semibold mb-1.5" style={{ color: TITLE_GRADE_COLOR[grade] }}>
-            {TITLE_GRADE_LABEL[grade]} {t("mypage.title_section")}
+            {t(`title.grade.${grade}` as TranslationKey)} {t("mypage.title_section")}
           </p>
           <div className="space-y-1">
             {titles.map((title) => {
@@ -156,7 +159,7 @@ export function TitleSelector({
                         ???
                       </span>
                     )}
-                    <p className="text-[10px] text-muted-foreground truncate">{title.description}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{t(`title.${title.id}.desc` as TranslationKey)}</p>
                   </div>
                   {isOwned && !isEquipped && (
                     <button

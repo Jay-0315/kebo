@@ -7,12 +7,12 @@ const TITLE_ACHIEVEMENTS: { titleId: number; type: string; value: number }[] = [
   { titleId: 3,  type: "points",        value: 100 },
   { titleId: 4,  type: "expense_count", value: 30 },
   { titleId: 5,  type: "attendance",    value: 30 },
-  { titleId: 6,  type: "share_count",   value: 10 },
+  { titleId: 6,  type: "post_count",    value: 5 },
   { titleId: 7,  type: "post_count",    value: 10 },
   { titleId: 8,  type: "expense_count", value: 100 },
   { titleId: 9,  type: "streak",        value: 30 },
   { titleId: 10, type: "points",        value: 2000 },
-  { titleId: 11, type: "share_count",   value: 50 },
+  { titleId: 11, type: "streak",        value: 50 },
   { titleId: 12, type: "expense_count", value: 500 },
   { titleId: 13, type: "attendance",    value: 180 },
   { titleId: 14, type: "points",        value: 10000 },
@@ -34,9 +34,10 @@ const RARITY_DUPLICATE_POINTS: Record<string, number> = {
   mythic: 120,
 };
 
-// Gacha pool: characterId → rarity (50 gacha characters)
+// Gacha pool: characterId → rarity (53 gacha characters)
 const GACHA_POOL: { id: number; rarity: string }[] = [
   // Common
+  { id: 1,  rarity: "common" }, { id: 2,  rarity: "common" }, { id: 3,  rarity: "common" },
   { id: 10, rarity: "common" }, { id: 11, rarity: "common" }, { id: 12, rarity: "common" },
   { id: 13, rarity: "common" }, { id: 14, rarity: "common" }, { id: 15, rarity: "common" },
   // Uncommon
@@ -65,7 +66,7 @@ const GACHA_POOL: { id: number; rarity: string }[] = [
 
 // Gacha rates (sum = 100)
 const GACHA_RATES: Record<string, number> = {
-  common: 45, uncommon: 30, rare: 15, epic: 6, legendary: 3, mythic: 1,
+  common: 35, uncommon: 26, rare: 20, epic: 10, legendary: 6, mythic: 3,
 };
 
 const GACHA_COST_SINGLE = 120;
@@ -76,7 +77,7 @@ const STARTER_IDS = [1, 2, 3];
 const ACHIEVEMENTS: { characterId: number; type: string; value: number }[] = [
   { characterId: 4,  type: "expense_count", value: 1 },
   { characterId: 5,  type: "attendance",    value: 3 },
-  { characterId: 6,  type: "share_count",   value: 1 },
+  { characterId: 6,  type: "post_count",    value: 2 },
   { characterId: 7,  type: "expense_count", value: 5 },
   { characterId: 8,  type: "attendance",    value: 7 },
   { characterId: 9,  type: "post_count",    value: 1 },
@@ -84,11 +85,11 @@ const ACHIEVEMENTS: { characterId: number; type: string; value: number }[] = [
   { characterId: 17, type: "streak",        value: 3 },
   { characterId: 18, type: "points",        value: 100 },
   { characterId: 19, type: "post_count",    value: 3 },
-  { characterId: 20, type: "share_count",   value: 3 },
+  { characterId: 20, type: "expense_count", value: 2 },
   { characterId: 21, type: "attendance",    value: 14 },
   { characterId: 22, type: "expense_count", value: 20 },
   { characterId: 31, type: "expense_count", value: 30 },
-  { characterId: 32, type: "share_count",   value: 10 },
+  { characterId: 32, type: "attendance",    value: 21 },
   { characterId: 33, type: "points",        value: 200 },
   { characterId: 34, type: "attendance",    value: 30 },
   { characterId: 35, type: "streak",        value: 7 },
@@ -96,39 +97,39 @@ const ACHIEVEMENTS: { characterId: number; type: string; value: number }[] = [
   { characterId: 37, type: "expense_count", value: 50 },
   { characterId: 38, type: "points",        value: 500 },
   { characterId: 39, type: "streak",        value: 14 },
-  { characterId: 40, type: "share_count",   value: 20 },
+  { characterId: 40, type: "streak",        value: 21 },
   { characterId: 51, type: "points",        value: 1000 },
   { characterId: 52, type: "expense_count", value: 100 },
   { characterId: 53, type: "attendance",    value: 50 },
-  { characterId: 54, type: "share_count",   value: 30 },
+  { characterId: 54, type: "post_count",    value: 20 },
   { characterId: 55, type: "post_count",    value: 30 },
   { characterId: 56, type: "streak",        value: 30 },
   { characterId: 57, type: "points",        value: 2000 },
   { characterId: 58, type: "expense_count", value: 200 },
   { characterId: 59, type: "attendance",    value: 90 },
-  { characterId: 60, type: "share_count",   value: 50 },
+  { characterId: 60, type: "expense_count", value: 150 },
   { characterId: 71, type: "points",        value: 5000 },
   { characterId: 72, type: "expense_count", value: 500 },
   { characterId: 73, type: "attendance",    value: 180 },
   { characterId: 74, type: "streak",        value: 60 },
-  { characterId: 75, type: "share_count",   value: 100 },
+  { characterId: 75, type: "post_count",    value: 50 },
   { characterId: 76, type: "post_count",    value: 100 },
   { characterId: 77, type: "points",        value: 10000 },
   { characterId: 78, type: "expense_count", value: 1000 },
   { characterId: 79, type: "attendance",    value: 365 },
   { characterId: 80, type: "streak",        value: 100 },
   { characterId: 91, type: "points",        value: 50000 },
-  { characterId: 92, type: "share_count",   value: 500 },
+  { characterId: 92, type: "expense_count", value: 2000 },
   { characterId: 93, type: "expense_count", value: 5000 },
   { characterId: 94, type: "streak",        value: 365 },
 ];
 
 function pickGachaRarity(forceRareOrAbove = false, forceLegendaryOrAbove = false): string {
   if (forceLegendaryOrAbove) {
-    return weightedRandom({ legendary: 80, mythic: 20 });
+    return weightedRandom({ legendary: 70, mythic: 30 });
   }
   if (forceRareOrAbove) {
-    return weightedRandom({ rare: 75, epic: 15, legendary: 8, mythic: 2 });
+    return weightedRandom({ rare: 65, epic: 20, legendary: 10, mythic: 5 });
   }
   return weightedRandom(GACHA_RATES);
 }
@@ -201,6 +202,7 @@ export class RewardsService {
       ownedTitleIds: ownedTitles.map((t) => t.titleId),
       gachaPityCount: reward.gachaPityCount,
       legendaryPityCount: reward.legendaryPityCount,
+      totalPointsUsed: reward.totalPointsUsed,
     };
   }
 
@@ -309,6 +311,7 @@ export class RewardsService {
           missionPoints: reward.missionPoints - cost + totalBonusPoints,
           gachaPityCount: pity,
           legendaryPityCount: legendaryPity,
+          totalPointsUsed: { increment: cost },
         },
       }),
       ...newChars.map((r) =>
@@ -352,19 +355,17 @@ export class RewardsService {
 
   async checkAndGrantTitles(userId: string) {
     const reward = await this.getOrCreateReward(userId);
-    const [expenseCount, shareCount, postCount] = await Promise.all([
+    const [expenseCount, postCount] = await Promise.all([
       this.prisma.expense.count({ where: { userId } }),
-      this.prisma.expense.count({ where: { userId, sharedToCommunity: true } }),
       this.prisma.communityPost.count({ where: { userId } }),
     ]);
 
     const stats: Record<string, number> = {
       expense_count: expenseCount,
-      share_count: shareCount,
       post_count: postCount,
       attendance: reward.attendanceDays,
       streak: reward.streakDays,
-      points: reward.missionPoints,
+      points: reward.totalPointsUsed,
     };
 
     const ownedTitles = await this.prisma.userTitle.findMany({
@@ -464,19 +465,17 @@ export class RewardsService {
   async checkAndGrantAchievements(userId: string) {
     const reward = await this.getOrCreateReward(userId);
 
-    const [expenseCount, shareCount, postCount] = await Promise.all([
+    const [expenseCount, postCount] = await Promise.all([
       this.prisma.expense.count({ where: { userId } }),
-      this.prisma.expense.count({ where: { userId, sharedToCommunity: true } }),
       this.prisma.communityPost.count({ where: { userId } }),
     ]);
 
     const stats: Record<string, number> = {
       expense_count: expenseCount,
-      share_count: shareCount,
       post_count: postCount,
       attendance: reward.attendanceDays,
       streak: reward.streakDays,
-      points: reward.missionPoints,
+      points: reward.totalPointsUsed,
     };
 
     const owned = await this.prisma.userCharacter.findMany({

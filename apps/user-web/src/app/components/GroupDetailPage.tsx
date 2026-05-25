@@ -68,7 +68,7 @@ export default function GroupDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { expenses, profile, profilePhoto, isLoading } = useAppData();
-  const { t } = useLang();
+  const { t, lang } = useLang();
 
   const [group, setGroup] = useState<Group | undefined>(location.state?.group);
 
@@ -675,7 +675,7 @@ export default function GroupDetailPage() {
                   <p className="text-white font-semibold text-sm leading-tight">{member.name}</p>
                   {story && (
                     <p className="text-white/55 text-xs">
-                      {formatRelativeTime(story.createdAt)}
+                      {formatRelativeTime(story.createdAt, lang)}
                       {frameCount > 1 && ` · ${storyFrameIdx + 1}/${frameCount}`}
                     </p>
                   )}

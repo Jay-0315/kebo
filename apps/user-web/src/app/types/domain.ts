@@ -113,6 +113,7 @@ export interface RewardSummary {
   ownedTitleIds: number[];
   gachaPityCount: number;
   legendaryPityCount: number;
+  totalPointsUsed: number;
 }
 
 export interface UserProfile {

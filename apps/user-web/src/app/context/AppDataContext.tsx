@@ -84,6 +84,7 @@ function normalizeRewardSummary(summary: Partial<RewardSummary> | null | undefin
     ownedTitleIds: summary?.ownedTitleIds ?? [],
     gachaPityCount: summary?.gachaPityCount ?? 0,
     legendaryPityCount: summary?.legendaryPityCount ?? 0,
+    totalPointsUsed: summary?.totalPointsUsed ?? 0,
   };
 }
 
@@ -239,7 +240,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         baseCountryCode: p.baseCountryCode,
         baseCurrency: p.baseCurrency,
       });
-      if (p.settings) setSettings(p.settings);
+      if (p.settings) setSettings((prev) => ({ ...(p.settings as AppSettings), language: prev.language }));
     }
     if (expensesResult.status === "fulfilled") {
       setExpenses(expensesResult.value.map(mapExpense));

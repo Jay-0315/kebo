@@ -24,7 +24,7 @@ export const TITLE_GRADE_COLOR: Record<TitleGrade, string> = {
   rare:      "#60A5FA",
   epic:      "#C084FC",
   legendary: "#FBBF24",
-  mythic:    "gradient", // handled specially
+  mythic:    "#f472b6",
 };
 
 // CSS text-shadow glow per grade (used as inline style)

@@ -46,7 +46,7 @@ interface CommentCardProps {
 }
 
 function CommentCard({ comment, currentUserId, onReply, onDelete, onEdit, isReply }: CommentCardProps) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   return (
     <div className={`flex gap-3 ${isReply ? "ml-8 mt-2" : ""}`}>
       {isReply && <CornerDownRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />}
@@ -57,7 +57,7 @@ function CommentCard({ comment, currentUserId, onReply, onDelete, onEdit, isRepl
               {comment.authorName[0]}
             </div>
             <span className="text-xs font-medium">{comment.authorName}</span>
-            <span className="text-[10px] text-muted-foreground">{formatRelativeTime(comment.createdAt)}</span>
+            <span className="text-[10px] text-muted-foreground">{formatRelativeTime(comment.createdAt, lang)}</span>
           </div>
           <div className="flex gap-1 shrink-0">
             {!isReply && (
@@ -106,7 +106,7 @@ export default function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { togglePostLike, deletePost } = useAppData();
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const currentUser = getStoredUser();
 
   const [post, setPost] = useState<CommunityPost | null>(null);
@@ -280,7 +280,7 @@ export default function PostDetailPage() {
                   {catLabel(post.category)}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</p>
+              <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt, lang)}</p>
             </div>
           </div>
           {post.authorId === currentUser?.id && (

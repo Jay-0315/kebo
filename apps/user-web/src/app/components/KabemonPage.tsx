@@ -9,9 +9,9 @@ import { type TranslationKey } from "../lib/i18n";
 import PixelCharacter, { PixelSprite } from "./PixelCharacter";
 import {
   CHARACTERS, ACHIEVEMENTS, ACHIEVEMENT_BY_CHARACTER,
-  GACHA_COST_SINGLE, GACHA_COST_TEN, RARITY_DUPLICATE_POINTS,
+  GACHA_COST_SINGLE, GACHA_COST_TEN, RARITY_DUPLICATE_POINTS, GACHA_RATES,
   RARITY_COLOR, RARITY_BORDER,
-  getCharName, getRarityLabel,
+  getCharName, getCharDesc, getRarityLabel, getAchLabel,
 } from "../data/characters";
 import type { CharacterDef, CharacterRarity, AchievementType } from "../data/characters";
 
@@ -21,6 +21,11 @@ const CAPSULE_MYSTERY_COLORS = [
   "#7c3aed","#4f46e5","#2563eb","#0891b2",
   "#059669","#d97706","#dc2626","#db2777","#9333ea","#c026d3",
 ];
+
+const RARITY_HEX: Record<CharacterRarity, string> = {
+  common: "#9ca3af", uncommon: "#4ade80", rare: "#60a5fa",
+  epic: "#c084fc", legendary: "#fbbf24", mythic: "#f472b6",
+};
 
 // 에픽+ 레어리티 휘광: epic=보라, legendary=주황, mythic=노란
 const RARITY_REVEAL: Partial<Record<CharacterRarity, { glow: string; bg: string }>> = {
@@ -421,7 +426,7 @@ export default function KabemonPage() {
                       <span className="text-xs text-muted-foreground">#{equippedChar.id}</span>
                     </div>
                     <p className={`text-2xl font-bold ${RARITY_COLOR[equippedChar.rarity]}`}>{getCharName(equippedChar, lang)}</p>
-                    <p className="text-sm text-muted-foreground mt-1">{equippedChar.description}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{getCharDesc(equippedChar, lang)}</p>
                     <p className="text-[11px] text-muted-foreground/60 mt-2">{t("kabemon.mouse_hint")}</p>
                   </div>
                 </div>
@@ -515,7 +520,7 @@ export default function KabemonPage() {
             ownedSet={ownedSet}
             attendanceDays={attendanceDays}
             streakDays={streakDays}
-            missionPoints={missionPoints}
+            totalPointsUsed={rewardSummary.totalPointsUsed}
             checking={checkingAchievements}
             onCheck={() => void handleCheckAchievements()}
             t={t}
@@ -684,14 +689,14 @@ function CharacterDetail({
           <p className="text-xs text-muted-foreground">
             {isHidden
               ? t("kabemon.obtain_hidden")
-              : char.obtainMethod === "achievement" && ach
-              ? ach.label
+              : ach
+              ? getAchLabel(ach, lang)
               : char.obtainMethod === "starter"
               ? t("kabemon.obtain_starter")
               : t("kabemon.obtain_gacha")}
           </p>
           {isOwned && (
-            <p className="text-xs text-muted-foreground mt-0.5">{char.description}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{getCharDesc(char, lang)}</p>
           )}
         </div>
         <div className="shrink-0">
@@ -819,23 +824,18 @@ function GachaTab({
       <div className="bg-card rounded-xl border border-border p-4">
         <h3 className="text-sm font-semibold mb-3">{t("kabemon.gacha_rates_title")}</h3>
         <div className="space-y-1.5">
-          {(["common", "uncommon", "rare", "epic", "legendary", "mythic"] as CharacterRarity[]).map((r) => {
-            const rates: Record<CharacterRarity, number> = {
-              common: 45, uncommon: 30, rare: 15, epic: 6, legendary: 3, mythic: 1,
-            };
-            return (
-              <div key={r} className="flex items-center gap-2">
-                <span className={`text-xs font-medium w-16 ${RARITY_COLOR[r]}`}>{getRarityLabel(r, lang)}</span>
-                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-current opacity-60"
-                    style={{ width: `${rates[r]}%`, color: "currentColor" }}
-                  />
-                </div>
-                <span className="text-xs text-muted-foreground w-8 text-right">{rates[r]}%</span>
+          {(["common", "uncommon", "rare", "epic", "legendary", "mythic"] as CharacterRarity[]).map((r) => (
+            <div key={r} className="flex items-center gap-2">
+              <span className={`text-xs font-medium w-16 ${RARITY_COLOR[r]}`}>{getRarityLabel(r, lang)}</span>
+              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${GACHA_RATES[r]}%`, backgroundColor: RARITY_HEX[r] }}
+                />
               </div>
-            );
-          })}
+              <span className="text-xs text-muted-foreground w-8 text-right">{GACHA_RATES[r]}%</span>
+            </div>
+          ))}
         </div>
         <div className="mt-3 pt-3 border-t border-border space-y-1">
           <p className="text-[11px] text-muted-foreground">· {t("kabemon.gacha_dupe_note")}</p>
@@ -860,12 +860,12 @@ const CATEGORY_ICON: Record<AchievementType, { icon: React.ReactNode; color: str
 };
 
 function AchievementTab({
-  ownedSet, attendanceDays, streakDays, missionPoints, checking, onCheck, t,
+  ownedSet, attendanceDays, streakDays, totalPointsUsed, checking, onCheck, t,
 }: {
   ownedSet: Set<number>;
   attendanceDays: number;
   streakDays: number;
-  missionPoints: number;
+  totalPointsUsed: number;
   checking: boolean;
   onCheck: () => void;
   t: TFunc;
@@ -879,7 +879,7 @@ function AchievementTab({
     switch (type) {
       case "attendance": return Math.min(attendanceDays, value);
       case "streak":     return Math.min(streakDays, value);
-      case "points":     return Math.min(missionPoints, value);
+      case "points":     return Math.min(totalPointsUsed, value);
       default:           return null;
     }
   };
@@ -946,7 +946,7 @@ function AchievementTab({
                       }`}>
                         {getCharName(char, lang)}
                       </p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{ach.label}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{getAchLabel(ach, lang)}</p>
                       {pct !== null && !isOwned && (
                         <div className="flex items-center gap-1.5 mt-1.5">
                           <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
@@ -1005,7 +1005,7 @@ function AchievementTab({
                     {isOwned && char ? getCharName(char, lang) : "???"}
                   </p>
                   <p className="text-[11px] text-muted-foreground/50">
-                    {isOwned ? ach.label : t("kabemon.achievement_condition_hidden")}
+                    {isOwned ? getAchLabel(ach, lang) : t("kabemon.achievement_condition_hidden")}
                   </p>
                 </div>
                 <div className="shrink-0">
@@ -1213,7 +1213,7 @@ function AchievementRevealModal({
             </span>
             <p className={`text-3xl font-bold ${RARITY_COLOR[char.rarity]}`}>{getCharName(char, lang)}</p>
             {ach && (
-              <p className="text-sm text-white/50 max-w-[240px] leading-snug">{ach.label}</p>
+              <p className="text-sm text-white/50 max-w-[240px] leading-snug">{getAchLabel(ach, lang)}</p>
             )}
           </div>
 
