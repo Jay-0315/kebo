@@ -10,7 +10,7 @@ import { CommunityService } from "./community.service";
 export class CommunityController {
   constructor(private readonly communityService: CommunityService) {}
 
-  // ── 게시글 ──────────────────────────────────────────────────
+  //게시글
 
   @Get()
   findAll(
@@ -51,7 +51,7 @@ export class CommunityController {
     return this.communityService.remove(id);
   }
 
-  // ── 댓글 ────────────────────────────────────────────────────
+  //댓글
 
   @Get(":id/comments")
   getComments(@Param("id") id: string, @Query("page") page?: string) {
