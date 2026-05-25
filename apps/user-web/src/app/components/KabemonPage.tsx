@@ -49,8 +49,7 @@ const RARITY_GLOW: Record<CharacterRarity, string> = {
 
 const MISSIONS = [
   { icon: <CheckCircle2 className="w-4 h-4 text-green-400" />,  label: "출석 기록", reward: "+5P",  desc: "앱 접속 시 매일" },
-  { icon: <Flame        className="w-4 h-4 text-orange-400" />, label: "지출 기록", reward: "+3P",  desc: "지출 1건당 (최대 30건)" },
-  { icon: <Star         className="w-4 h-4 text-yellow-400" />, label: "지출 공유", reward: "+8P",  desc: "커뮤니티 공유 시" },
+  { icon: <Flame        className="w-4 h-4 text-orange-400" />, label: "지출 기록", reward: "+5P",  desc: "그룹 지출 1건당 (하루 최대 3회)" },
   { icon: <Zap          className="w-4 h-4 text-blue-400"   />, label: "글 작성",   reward: "+5P",  desc: "커뮤니티 글 작성 시" },
   { icon: <Sparkles     className="w-4 h-4 text-pink-400"   />, label: "연속 출석", reward: "+2P",  desc: "연속 출석 1일당" },
 ];

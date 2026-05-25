@@ -20,6 +20,7 @@ interface GroupMember {
   id: string;
   name: string;
   isHost: boolean;
+  equippedCharacterId: number | null;
 }
 
 interface Group {
@@ -42,14 +43,9 @@ interface LocalExpense {
   participants?: number;
 }
 
-function hashId(id: string): number {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return h;
-}
-
-function getMemberCharacter(memberId: string): CharacterDef {
-  return CHARACTERS[(hashId(memberId) * 17 + 3) % CHARACTERS.length];
+function getMemberCharacter(equippedCharacterId: number | null): CharacterDef {
+  if (equippedCharacterId == null) return CHARACTERS[0];
+  return CHARACTERS.find((c) => c.id === equippedCharacterId) ?? CHARACTERS[0];
 }
 
 const STORY_GRADIENTS = [
@@ -466,7 +462,7 @@ export default function GroupDetailPage() {
           </div>
           <div className="mx-4 mb-4 rounded-md bg-background flex items-end justify-around pb-3 px-2" style={{ height: 120 }}>
             {group.members.map((member) => {
-              const char = getMemberCharacter(member.id);
+              const char = getMemberCharacter(member.equippedCharacterId);
               return (
                 <div key={member.id} className="flex flex-col items-center">
                   {member.isHost && <Crown className="w-3 h-3 text-amber-400 mb-0.5" />}

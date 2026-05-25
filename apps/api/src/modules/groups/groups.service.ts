@@ -27,14 +27,24 @@ function generateCode(): string {
 export class GroupsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private get memberInclude() {
+    return {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          reward: { select: { equippedCharacterId: true } },
+        },
+      },
+    };
+  }
+
   async getMyGroups(userId: string) {
     const memberships = await this.prisma.groupMember.findMany({
       where: { userId },
       include: {
         group: {
-          include: {
-            members: { include: { user: { select: { id: true, name: true } } } },
-          },
+          include: { members: { include: this.memberInclude } },
         },
       },
     });
@@ -65,7 +75,7 @@ export class GroupsService {
         members: { create: { userId } },
       },
       include: {
-        members: { include: { user: { select: { id: true, name: true } } } },
+        members: { include: this.memberInclude },
       },
     });
 
@@ -98,7 +108,7 @@ export class GroupsService {
     const group = await this.prisma.group.findUnique({
       where: { id: groupId },
       include: {
-        members: { include: { user: { select: { id: true, name: true } } } },
+        members: { include: this.memberInclude },
       },
     });
 
@@ -160,7 +170,7 @@ export class GroupsService {
     const updated = await this.prisma.group.findUnique({
       where: { id: group.id },
       include: {
-        members: { include: { user: { select: { id: true, name: true } } } },
+        members: { include: this.memberInclude },
       },
     });
 
@@ -244,18 +254,7 @@ export class GroupsService {
     if (group.hostUserId !== userId) throw new ForbiddenException("호스트만 접근할 수 있습니다.");
   }
 
-  private formatGroup(
-    group: {
-      id: string;
-      name: string;
-      inviteCode: string;
-      hostUserId: string;
-      isPublic: boolean;
-      codeExpiresAt: Date | null;
-      members: { userId: string; user: { id: string; name: string } }[];
-    },
-    currentUserId: string,
-  ) {
+  private formatGroup(group: any, currentUserId: string) {
     return {
       id: group.id,
       name: group.name,
@@ -267,6 +266,7 @@ export class GroupsService {
         id: m.user.id,
         name: m.user.name,
         isHost: m.userId === group.hostUserId,
+        equippedCharacterId: m.user.reward?.equippedCharacterId ?? null,
       })),
     };
   }

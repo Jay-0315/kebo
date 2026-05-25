@@ -395,6 +395,72 @@ export class RewardsService {
     return { newlyUnlocked };
   }
 
+  // ── 활동 보상 트리거 ───────────────────────────────────────
+
+  private dateDiff(newer: string, older: string): number {
+    return Math.round(
+      (new Date(newer).getTime() - new Date(older).getTime()) / 86_400_000,
+    );
+  }
+
+  private calcStreak(sortedUniqueDates: string[], today: string): number {
+    if (sortedUniqueDates.length === 0) return 0;
+    const last = sortedUniqueDates[sortedUniqueDates.length - 1];
+    if (this.dateDiff(today, last) > 1) return 0;
+    let streak = 1;
+    for (let i = sortedUniqueDates.length - 1; i > 0; i--) {
+      if (this.dateDiff(sortedUniqueDates[i], sortedUniqueDates[i - 1]) === 1) streak++;
+      else break;
+    }
+    return streak;
+  }
+
+  async onExpenseCreated(userId: string, expenseDate: string, isGroupExpense: boolean) {
+    const reward = await this.getOrCreateReward(userId);
+
+    const today = new Date().toISOString().slice(0, 10);
+
+    const expenses = await this.prisma.expense.findMany({
+      where: { userId },
+      select: { expenseDate: true, groupId: true },
+      orderBy: { expenseDate: "asc" },
+    });
+
+    const uniqueDates = [
+      ...new Set(expenses.map((e) => e.expenseDate.toISOString().slice(0, 10))),
+    ].sort();
+    const attendanceDays = uniqueDates.length;
+    const streakDays = this.calcStreak(uniqueDates, today);
+
+    let pointsDelta = 0;
+    if (attendanceDays > reward.attendanceDays) pointsDelta += 5; // 새 출석일 +5P
+
+    // 그룹 지출 기록: 건당 5P, 하루 최대 3회
+    if (isGroupExpense) {
+      const todayGroupCount = expenses.filter(
+        (e) => e.groupId && e.expenseDate.toISOString().slice(0, 10) === today,
+      ).length;
+      if (todayGroupCount <= 3) pointsDelta += 5;
+    }
+
+    await this.prisma.userReward.update({
+      where: { userId },
+      data: {
+        attendanceDays,
+        streakDays,
+        ...(pointsDelta > 0 ? { missionPoints: { increment: pointsDelta } } : {}),
+      },
+    });
+  }
+
+  async onPostCreated(userId: string) {
+    await this.getOrCreateReward(userId);
+    await this.prisma.userReward.update({
+      where: { userId },
+      data: { missionPoints: { increment: 5 } },
+    });
+  }
+
   async checkAndGrantAchievements(userId: string) {
     const reward = await this.getOrCreateReward(userId);
 

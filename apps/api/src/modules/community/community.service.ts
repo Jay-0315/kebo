@@ -5,6 +5,7 @@ import {
 } from "@nestjs/common";
 import { PostCategory } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
+import { RewardsService } from "../rewards/rewards.service";
 import { CreateCommentDto } from "./dto/create-comment.dto";
 import { CreateCommunityPostDto } from "./dto/create-community-post.dto";
 import { UpdateCommentDto } from "./dto/update-comment.dto";
@@ -28,7 +29,10 @@ const postInclude = {
 
 @Injectable()
 export class CommunityService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly rewards: RewardsService,
+  ) {}
 
   //내부 포맷 헬퍼
 
@@ -148,6 +152,13 @@ export class CommunityService {
       } as any,
       include: postInclude as any,
     });
+
+    await this.rewards.onPostCreated(dto.userId);
+    await Promise.all([
+      this.rewards.checkAndGrantAchievements(dto.userId),
+      this.rewards.checkAndGrantTitles(dto.userId),
+    ]);
+
     return this.formatPost(post, false);
   }
 
