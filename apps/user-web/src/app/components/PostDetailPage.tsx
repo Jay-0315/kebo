@@ -46,6 +46,7 @@ interface CommentCardProps {
 }
 
 function CommentCard({ comment, currentUserId, onReply, onDelete, onEdit, isReply }: CommentCardProps) {
+  const { t } = useLang();
   return (
     <div className={`flex gap-3 ${isReply ? "ml-8 mt-2" : ""}`}>
       {isReply && <CornerDownRight className="w-4 h-4 text-muted-foreground shrink-0 mt-1" />}
@@ -64,7 +65,7 @@ function CommentCard({ comment, currentUserId, onReply, onDelete, onEdit, isRepl
                 onClick={() => onReply(comment.id, comment.authorName)}
                 className="text-[10px] text-primary hover:underline px-1"
               >
-                답글
+                {t("comment.reply")}
               </button>
             )}
             {comment.authorId === currentUserId && (
@@ -250,7 +251,7 @@ export default function PostDetailPage() {
   if (loading || !post) {
     return (
       <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
-        로딩 중...
+        {t("common.loading")}
       </div>
     );
   }
@@ -311,7 +312,7 @@ export default function PostDetailPage() {
 
       {/* 댓글 목록 */}
       <div className="bg-card rounded border border-border p-4">
-        <h3 className="text-sm font-semibold mb-4">댓글 {post.commentCount}개</h3>
+        <h3 className="text-sm font-semibold mb-4">{t("comment.count")} {post.commentCount}{t("comment.count_suffix")}</h3>
 
         {commentsData && commentsData.comments.length > 0 ? (
           <div className="space-y-3">
@@ -327,7 +328,7 @@ export default function PostDetailPage() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground text-center py-6">첫 댓글을 남겨보세요!</p>
+          <p className="text-sm text-muted-foreground text-center py-6">{t("comment.first")}</p>
         )}
 
         {/* 페이지네이션 */}
@@ -355,7 +356,7 @@ export default function PostDetailPage() {
         {(replyTo || editingComment) && (
           <div className="flex items-center justify-between mb-3 p-2 bg-muted/60 rounded text-xs text-muted-foreground">
             <span>
-              {editingComment ? "댓글 수정 중" : `${replyTo!.author}에게 답글`}
+              {editingComment ? t("comment.editing") : `${replyTo!.author}${t("comment.reply_to")}`}
             </span>
             <button onClick={cancelForm} className="hover:text-foreground">
               <X className="w-3.5 h-3.5" />
@@ -367,7 +368,7 @@ export default function PostDetailPage() {
           <textarea
             value={commentContent}
             onChange={(e) => setCommentContent(e.target.value)}
-            placeholder="댓글을 입력하세요..."
+            placeholder={t("comment.placeholder")}
             rows={3}
             className="w-full px-3 py-2 bg-input-background rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-ring resize-none text-sm"
             required
@@ -393,7 +394,7 @@ export default function PostDetailPage() {
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
             >
               <Image className="w-4 h-4" />
-              사진 첨부
+              {t("comment.attach_image")}
             </button>
             <input ref={commentFileRef} type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleCommentImage} />
             <button
@@ -401,7 +402,7 @@ export default function PostDetailPage() {
               disabled={submitting}
               className="px-4 py-1.5 bg-primary/80 text-primary-foreground rounded-md text-sm font-medium hover:shadow-md transition-all disabled:opacity-60"
             >
-              {submitting ? "..." : editingComment ? "수정" : "등록"}
+              {submitting ? "..." : editingComment ? t("comment.edit_btn") : t("comment.submit_btn")}
             </button>
           </div>
         </form>

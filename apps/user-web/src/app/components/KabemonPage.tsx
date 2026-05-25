@@ -47,12 +47,14 @@ const RARITY_GLOW: Record<CharacterRarity, string> = {
   mythic:    "shadow-pink-400/60",
 };
 
-const MISSIONS = [
-  { icon: <CheckCircle2 className="w-4 h-4 text-green-400" />,  label: "출석 기록", reward: "+5P",  desc: "앱 접속 시 매일" },
-  { icon: <Flame        className="w-4 h-4 text-orange-400" />, label: "지출 기록", reward: "+5P",  desc: "그룹 지출 1건당 (하루 최대 3회)" },
-  { icon: <Zap          className="w-4 h-4 text-blue-400"   />, label: "글 작성",   reward: "+5P",  desc: "커뮤니티 글 작성 시" },
-  { icon: <Sparkles     className="w-4 h-4 text-pink-400"   />, label: "연속 출석", reward: "+2P",  desc: "연속 출석 1일당" },
-];
+function getMissions(t: TFunc) {
+  return [
+    { icon: <CheckCircle2 className="w-4 h-4 text-green-400" />,  label: t("mission.attendance"), reward: "+5P",  desc: t("mission.attendance_desc") },
+    { icon: <Flame        className="w-4 h-4 text-orange-400" />, label: t("mission.record"),     reward: "+5P",  desc: t("mission.record_desc") },
+    { icon: <Zap          className="w-4 h-4 text-blue-400"   />, label: t("mission.write"),      reward: "+5P",  desc: t("mission.write_desc") },
+    { icon: <Sparkles     className="w-4 h-4 text-pink-400"   />, label: t("mission.streak"),     reward: "+2P",  desc: t("mission.streak_desc") },
+  ];
+}
 
 type Tab = "character" | "collection" | "gacha" | "achievement";
 type Filter = "all" | CharacterRarity;
@@ -365,7 +367,7 @@ export default function KabemonPage() {
               {t("kabemon.title")}
             </h2>
             <p className="text-sm text-muted-foreground mt-0.5">
-              {ownedCharacterIds.length}/{CHARACTERS.length} 수집 · {missionPoints}P
+              {ownedCharacterIds.length}/{CHARACTERS.length} {t("kabemon.collection_count")} · {missionPoints}P
             </p>
           </div>
           <div className="bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-semibold">
@@ -459,7 +461,7 @@ export default function KabemonPage() {
             <div className="lg:w-64 lg:shrink-0 bg-card rounded-xl border border-border p-5">
               <h3 className="mb-3 text-sm font-semibold">{t("kabemon.mission_guide")}</h3>
               <div className="space-y-2">
-                {MISSIONS.map(({ icon, label, reward, desc }) => (
+                {getMissions(t).map(({ icon, label, reward, desc }) => (
                   <div key={label} className="flex items-center gap-3 p-3 rounded-lg bg-muted">
                     <div className="w-8 h-8 rounded-lg bg-card flex items-center justify-center shrink-0">{icon}</div>
                     <div className="flex-1 min-w-0">
@@ -681,12 +683,12 @@ function CharacterDetail({
           <p className="font-bold">{isHidden ? "???" : getCharName(char, lang)}</p>
           <p className="text-xs text-muted-foreground">
             {isHidden
-              ? "히든 업적을 달성하면 공개됩니다"
+              ? t("kabemon.obtain_hidden")
               : char.obtainMethod === "achievement" && ach
               ? ach.label
               : char.obtainMethod === "starter"
-              ? "스타팅 케보몬"
-              : "가챠로 획득 가능"}
+              ? t("kabemon.obtain_starter")
+              : t("kabemon.obtain_gacha")}
           </p>
           {isOwned && (
             <p className="text-xs text-muted-foreground mt-0.5">{char.description}</p>

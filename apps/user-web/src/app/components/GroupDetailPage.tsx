@@ -56,7 +56,10 @@ const STORY_GRADIENTS = [
   "linear-gradient(145deg,#fa709a,#fee140)",
   "linear-gradient(145deg,#a18cd1,#fbc2eb)",
 ];
-const getMemberGradient = (id: string) => STORY_GRADIENTS[hashId(id) % STORY_GRADIENTS.length];
+const getMemberGradient = (id: string) => {
+  const hash = [...id].reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return STORY_GRADIENTS[hash % STORY_GRADIENTS.length];
+};
 const CATEGORY_EMOJI: Record<string, string> = {
   식비: "🍜", 교통: "🚌", 카페: "☕", 쇼핑: "🛍", 숙박: "🏨", 엔터테인먼트: "🎭", 기타: "💳",
 };
@@ -444,7 +447,7 @@ export default function GroupDetailPage() {
                     onClick={() => navigate(`/groups/${group.id}/expenses`, { state: { group, localExpenses } })}
                     className="w-full text-center text-xs text-muted-foreground hover:text-primary py-2 transition-colors"
                   >
-                    +{allExpenses.length - 3}{t("expense.count_suffix")} 더 보기
+                    +{allExpenses.length - 3}{t("expense.count_suffix")} {t("group.view_more")}
                   </button>
                 )}
               </div>
@@ -479,7 +482,7 @@ export default function GroupDetailPage() {
             onClick={() => setShowManage(!showManage)}
             className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/50 transition-colors"
           >
-            <h3 className="text-sm font-medium text-muted-foreground">그룹 관리</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">{t("group.management")}</h3>
             <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${showManage ? "rotate-90" : ""}`} />
           </button>
 
@@ -494,8 +497,8 @@ export default function GroupDetailPage() {
                   >
                     <RefreshCw className="w-4 h-4 text-primary shrink-0" />
                     <div>
-                      <p className="text-sm font-medium">호스트 양도</p>
-                      <p className="text-xs text-muted-foreground">다른 멤버에게 그룹 관리 권한을 넘깁니다</p>
+                      <p className="text-sm font-medium">{t("group.transfer_host")}</p>
+                      <p className="text-xs text-muted-foreground">{t("group.transfer_host_desc")}</p>
                     </div>
                   </button>
                   <button
@@ -504,8 +507,8 @@ export default function GroupDetailPage() {
                   >
                     <Trash2 className="w-4 h-4 text-destructive shrink-0" />
                     <div>
-                      <p className="text-sm font-medium text-destructive">그룹 삭제</p>
-                      <p className="text-xs text-muted-foreground">그룹과 모든 데이터가 완전히 삭제됩니다</p>
+                      <p className="text-sm font-medium text-destructive">{t("group.delete")}</p>
+                      <p className="text-xs text-muted-foreground">{t("group.delete_desc")}</p>
                     </div>
                   </button>
                 </>
@@ -516,8 +519,8 @@ export default function GroupDetailPage() {
                 >
                   <LogOut className="w-4 h-4 text-destructive shrink-0" />
                   <div>
-                    <p className="text-sm font-medium text-destructive">그룹 탈퇴</p>
-                    <p className="text-xs text-muted-foreground">그룹에서 나가면 다시 초대가 필요합니다</p>
+                    <p className="text-sm font-medium text-destructive">{t("group.leave")}</p>
+                    <p className="text-xs text-muted-foreground">{t("group.leave_desc")}</p>
                   </div>
                 </button>
               )}
@@ -530,8 +533,8 @@ export default function GroupDetailPage() {
       {showTransferModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
           <div className="bg-card rounded-xl p-6 max-w-sm w-full shadow-2xl">
-            <h3 className="mb-1">호스트 양도</h3>
-            <p className="text-sm text-muted-foreground mb-4">양도할 멤버를 선택하세요</p>
+            <h3 className="mb-1">{t("group.transfer_host")}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{t("group.transfer_select")}</p>
             <div className="space-y-2 mb-5 max-h-48 overflow-y-auto">
               {nonHostMembers.map((m) => (
                 <button
@@ -556,14 +559,14 @@ export default function GroupDetailPage() {
                 onClick={() => { setShowTransferModal(false); setSelectedNewHost(""); }}
                 className="flex-1 py-2.5 rounded-md bg-muted text-muted-foreground text-sm font-medium"
               >
-                취소
+                {t("settings.cancel")}
               </button>
               <button
                 onClick={handleTransferHost}
                 disabled={!selectedNewHost || actionLoading}
                 className="flex-1 py-2.5 rounded-md bg-primary/80 text-primary-foreground text-sm font-medium disabled:opacity-40"
               >
-                {actionLoading ? "처리 중..." : "양도하기"}
+                {actionLoading ? t("group.processing") : t("group.transfer_btn")}
               </button>
             </div>
           </div>
@@ -576,24 +579,24 @@ export default function GroupDetailPage() {
           <div className="bg-card rounded-xl p-6 max-w-sm w-full shadow-2xl">
             <div className="flex items-center gap-3 mb-3">
               <AlertTriangle className="w-5 h-5 text-destructive shrink-0" />
-              <h3 className="text-destructive">그룹 삭제</h3>
+              <h3 className="text-destructive">{t("group.delete")}</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-5">
-              <span className="font-semibold text-foreground">"{group.name}"</span> 그룹을 삭제하면 모든 멤버와 경비 연결이 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+              <span className="font-semibold text-foreground">"{group.name}"</span> {t("group.delete_confirm_suffix")}
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 className="flex-1 py-2.5 rounded-md bg-muted text-muted-foreground text-sm font-medium"
               >
-                취소
+                {t("settings.cancel")}
               </button>
               <button
                 onClick={handleDeleteGroup}
                 disabled={actionLoading}
                 className="flex-1 py-2.5 rounded-md bg-destructive text-white text-sm font-medium disabled:opacity-50"
               >
-                {actionLoading ? "삭제 중..." : "삭제"}
+                {actionLoading ? t("group.deleting") : t("group.delete_btn")}
               </button>
             </div>
           </div>
@@ -604,23 +607,23 @@ export default function GroupDetailPage() {
       {showLeaveConfirm && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
           <div className="bg-card rounded-xl p-6 max-w-sm w-full shadow-2xl">
-            <h3 className="mb-3">그룹 탈퇴</h3>
+            <h3 className="mb-3">{t("group.leave")}</h3>
             <p className="text-sm text-muted-foreground mb-5">
-              <span className="font-semibold text-foreground">"{group.name}"</span> 그룹에서 탈퇴합니다. 다시 참가하려면 초대 코드가 필요합니다.
+              <span className="font-semibold text-foreground">"{group.name}"</span> {t("group.leave_confirm_suffix")}
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowLeaveConfirm(false)}
                 className="flex-1 py-2.5 rounded-md bg-muted text-muted-foreground text-sm font-medium"
               >
-                취소
+                {t("settings.cancel")}
               </button>
               <button
                 onClick={handleLeaveGroup}
                 disabled={actionLoading}
                 className="flex-1 py-2.5 rounded-md bg-destructive text-white text-sm font-medium disabled:opacity-50"
               >
-                {actionLoading ? "처리 중..." : "탈퇴"}
+                {actionLoading ? t("group.processing") : t("group.leave_btn")}
               </button>
             </div>
           </div>
