@@ -9,6 +9,7 @@ import { compressImage } from "../lib/image-utils";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { formatRelativeTime } from "../lib/story-storage";
+import TitleBadge from "./TitleBadge";
 import type { CommunityPost, Comment, CommentsPage, PostCategory } from "../types/domain";
 
 const CAT_STYLE: Record<PostCategory, string> = {
@@ -23,6 +24,7 @@ function mapComment(c: Record<string, unknown>): Comment {
     postId: String(c.postId),
     authorId: String(c.authorId),
     authorName: String(c.authorName ?? "사용자"),
+    authorEquippedTitleId: (c.authorEquippedTitleId as number | null | undefined) ?? null,
     parentId: c.parentId != null ? String(c.parentId) : null,
     content: String(c.content),
     imageUrl: (c.imageUrl as string | null) ?? null,
@@ -57,6 +59,9 @@ function CommentCard({ comment, currentUserId, onReply, onDelete, onEdit, isRepl
               {comment.authorName[0]}
             </div>
             <span className="text-xs font-medium">{comment.authorName}</span>
+            {comment.authorEquippedTitleId && (
+              <TitleBadge titleId={comment.authorEquippedTitleId} size="xs" />
+            )}
             <span className="text-[10px] text-muted-foreground">{formatRelativeTime(comment.createdAt, lang)}</span>
           </div>
           <div className="flex gap-1 shrink-0">
@@ -135,6 +140,7 @@ export default function PostDetailPage() {
         id: String(data.id),
         authorId: String(data.authorId),
         authorName: String(data.authorName ?? "사용자"),
+        authorEquippedTitleId: (data.authorEquippedTitleId as number | null | undefined) ?? null,
         content: String(data.content),
         category: (data.category as PostCategory) ?? "chat",
         imageUrl: (data.imageUrl as string | null) ?? null,
@@ -280,6 +286,9 @@ export default function PostDetailPage() {
                   {catLabel(post.category)}
                 </span>
               </div>
+              {post.authorEquippedTitleId && (
+                <TitleBadge titleId={post.authorEquippedTitleId} size="xs" />
+              )}
               <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt, lang)}</p>
             </div>
           </div>

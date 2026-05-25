@@ -17,13 +17,13 @@ const RECENT_COMMENTS = 3;
 
 // NOTE: prisma generate 실행 후 타입 오류 해소됨
 const postInclude = {
-  user: { select: { id: true, name: true } },
+  user: { select: { id: true, name: true, reward: { select: { equippedTitleId: true } } } },
   _count: { select: { comments: true } },
   comments: {
     where: { parentId: null },
     take: RECENT_COMMENTS,
     orderBy: { createdAt: "desc" as const },
-    include: { user: { select: { id: true, name: true } } },
+    include: { user: { select: { id: true, name: true, reward: { select: { equippedTitleId: true } } } } },
   },
 };
 
@@ -42,6 +42,7 @@ export class CommunityService {
       postId: c.postId,
       authorId: c.userId,
       authorName: c.user?.name ?? "사용자",
+      authorEquippedTitleId: c.user?.reward?.equippedTitleId ?? null,
       parentId: c.parentId != null ? String(c.parentId) : null,
       content: c.content,
       imageUrl: c.imageUrl ?? null,
@@ -56,6 +57,7 @@ export class CommunityService {
       id: post.id,
       authorId: post.userId,
       authorName: post.user?.name ?? "사용자",
+      authorEquippedTitleId: post.user?.reward?.equippedTitleId ?? null,
       content: post.content,
       category: post.category,
       imageUrl: post.imageUrl ?? null,
@@ -223,7 +225,7 @@ export class CommunityService {
       prisma.comment.findMany({
         where: { postId, parentId: null },
         include: {
-          user: { select: { id: true, name: true } },
+          user: { select: { id: true, name: true, reward: { select: { equippedTitleId: true } } } },
           replies: {
             include: { user: { select: { id: true, name: true } } },
             orderBy: { createdAt: "asc" },
@@ -258,7 +260,7 @@ export class CommunityService {
         parentId: dto.parentId ? BigInt(dto.parentId) : null,
       },
       include: {
-        user: { select: { id: true, name: true } },
+        user: { select: { id: true, name: true, reward: { select: { equippedTitleId: true } } } },
         replies: { include: { user: { select: { id: true, name: true } } } },
       },
     });
@@ -279,7 +281,7 @@ export class CommunityService {
         ...(dto.imageUrl !== undefined ? { imageUrl: dto.imageUrl } : {}),
       },
       include: {
-        user: { select: { id: true, name: true } },
+        user: { select: { id: true, name: true, reward: { select: { equippedTitleId: true } } } },
         replies: { include: { user: { select: { id: true, name: true } } } },
       },
     });

@@ -53,6 +53,7 @@ export interface Comment {
   postId: string;
   authorId: string;
   authorName: string;
+  authorEquippedTitleId?: number | null;
   parentId: string | null;
   content: string;
   imageUrl: string | null;
@@ -71,6 +72,7 @@ export interface CommunityPost {
   id: string;
   authorId: string;
   authorName: string;
+  authorEquippedTitleId?: number | null;
   content: string;
   category: PostCategory;
   imageUrl: string | null;
