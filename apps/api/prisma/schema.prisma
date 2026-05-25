@@ -38,10 +38,12 @@ model User {
   settings         AppSetting?
   expenses         Expense[]
   posts            CommunityPost[]
+  comments         Comment[]
   reward           UserReward?
   characters       UserCharacter[]
   titles           UserTitle[]
   identities       UserIdentity[]
+  postLikes        PostLike[]
   hostedGroups     Group[]            @relation("GroupHost")
   groupMemberships GroupMember[]
   groupJoinRequests GroupJoinRequest[]
@@ -120,43 +122,85 @@ model AppSetting {
 }
 
 model Expense {
-  id                String              @id @default(uuid())
-  userId            String              @map("user_id")
-  expenseDate       DateTime            @map("expense_date")
+  id                String       @id @default(uuid())
+  userId            String       @map("user_id")
+  expenseDate       DateTime     @map("expense_date")
   category          String
-  spentAmount       Decimal             @map("spent_amount") @db.Decimal(12, 2)
-  spentCurrency     CurrencyCode        @map("spent_currency")
-  baseAmount        Decimal             @map("base_amount") @db.Decimal(12, 2)
-  baseCurrency      CurrencyCode        @map("base_currency")
-  exchangeRate      Decimal             @map("exchange_rate") @db.Decimal(12, 6)
-  countryCode       String              @map("country_code") @db.Char(2)
+  spentAmount       Decimal      @map("spent_amount") @db.Decimal(12, 2)
+  spentCurrency     CurrencyCode @map("spent_currency")
+  baseAmount        Decimal      @map("base_amount") @db.Decimal(12, 2)
+  baseCurrency      CurrencyCode @map("base_currency")
+  exchangeRate      Decimal      @map("exchange_rate") @db.Decimal(12, 6)
+  countryCode       String       @map("country_code") @db.Char(2)
   memo              String
-  groupName         String?             @map("group_name")
-  groupId           String?             @map("group_id")
+  groupName         String?      @map("group_name")
+  groupId           String?      @map("group_id")
   participants      Int?
-  receiptUrl        String?             @map("receipt_url") @db.Text
-  sharedToCommunity Boolean             @default(false) @map("shared_to_community")
-  createdAt         DateTime            @default(now()) @map("created_at")
-  updatedAt         DateTime            @updatedAt @map("updated_at")
-  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  group             Group?              @relation(fields: [groupId], references: [id], onDelete: SetNull)
-  sharedPosts       CommunityPostExpense[]
+  receiptUrl        String?      @map("receipt_url") @db.LongText
+  sharedToCommunity Boolean      @default(false) @map("shared_to_community")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group             Group?       @relation(fields: [groupId], references: [id], onDelete: SetNull)
 
   @@index([groupId])
   @@map("expenses")
 }
 
+enum PostCategory {
+  brag
+  tip
+  chat
+}
+
 model CommunityPost {
-  id             String                 @id @default(uuid())
-  userId         String                 @map("user_id")
-  content        String                 @db.Text
-  likesCount     Int                    @default(0) @map("likes_count")
-  createdAt      DateTime               @default(now()) @map("created_at")
-  updatedAt      DateTime               @updatedAt @map("updated_at")
-  user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sharedExpenses CommunityPostExpense[]
+  id         String       @id @default(uuid())
+  userId     String       @map("user_id")
+  content    String       @db.Text
+  category   PostCategory @default(chat)
+  imageUrl   String?      @map("image_url") @db.LongText
+  likesCount Int          @default(0) @map("likes_count")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes      PostLike[]
+  comments   Comment[]
 
   @@map("community_posts")
+}
+
+model PostLike {
+  id        BigInt        @id @default(autoincrement())
+  postId    String        @map("post_id")
+  userId    String        @map("user_id")
+  createdAt DateTime      @default(now()) @map("created_at")
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+  @@map("post_likes")
+}
+
+model Comment {
+  id        BigInt        @id @default(autoincrement())
+  postId    String        @map("post_id")
+  userId    String        @map("user_id")
+  parentId  BigInt?       @map("parent_id")
+  content   String        @db.Text
+  imageUrl  String?       @map("image_url") @db.LongText
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[]     @relation("CommentReplies")
+
+  @@index([postId])
+  @@index([userId])
+  @@index([parentId])
+  @@map("comments")
 }
 
 model Group {
@@ -203,25 +247,4 @@ model GroupJoinRequest {
   @@index([groupId])
   @@index([userId])
   @@map("group_join_requests")
-}
-
-model CommunityPostExpense {
-  id            BigInt        @id @default(autoincrement())
-  postId        String        @map("post_id")
-  expenseId     String        @map("expense_id")
-  category      String
-  memo          String
-  expenseDate   DateTime      @map("expense_date")
-  spentAmount   Decimal       @map("spent_amount") @db.Decimal(12, 2)
-  spentCurrency CurrencyCode  @map("spent_currency")
-  baseAmount    Decimal       @map("base_amount") @db.Decimal(12, 2)
-  baseCurrency  CurrencyCode  @map("base_currency")
-  exchangeRate  Decimal       @map("exchange_rate") @db.Decimal(12, 6)
-  countryCode   String        @map("country_code") @db.Char(2)
-  post          CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  expense       Expense       @relation(fields: [expenseId], references: [id], onDelete: Cascade)
-
-  @@index([postId])
-  @@index([expenseId])
-  @@map("community_post_expenses")
 }

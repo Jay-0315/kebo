@@ -4,7 +4,6 @@ import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { CHARACTERS } from "../data/characters";
 import { formatRelativeTime } from "../lib/story-storage";
-import { loadPostCategories } from "../lib/post-categories";
 import TitleBadge from "./TitleBadge";
 
 export default function HomePage() {
@@ -12,7 +11,6 @@ export default function HomePage() {
   const { posts, profile, rewardSummary, profilePhoto, togglePostLike } = useAppData();
   const { t } = useLang();
 
-  const categories = loadPostCategories();
   const recentPosts = posts.slice(0, 5);
 
   return (
@@ -106,11 +104,10 @@ export default function HomePage() {
         ) : (
           <div className="space-y-3">
             {recentPosts.map((post) => {
-              const cat = categories[post.id] ?? "잡담";
               const catColors: Record<string, string> = {
-                자랑: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
-                공략: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-                잡담: "bg-muted text-muted-foreground",
+                brag: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+                tip: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+                chat: "bg-muted text-muted-foreground",
               };
               return (
                 <div
@@ -126,8 +123,8 @@ export default function HomePage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="font-medium text-sm">{post.authorName}</p>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${catColors[cat]}`}>
-                          {cat}
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${catColors[post.category]}`}>
+                          {t(`community.${post.category}` as Parameters<typeof t>[0])}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt)}</p>
@@ -146,8 +143,8 @@ export default function HomePage() {
                       <Heart className={`w-3.5 h-3.5 ${post.isLiked ? "fill-current" : ""}`} />
                       {post.likes}
                     </button>
-                    {post.sharedExpenses.length > 0 && (
-                      <span className="text-xs">{post.sharedExpenses.length}{t("community.expense_count_suffix")} 첨부</span>
+                    {post.commentCount > 0 && (
+                      <span className="text-xs flex items-center gap-1">💬 {post.commentCount}</span>
                     )}
                   </div>
                 </div>

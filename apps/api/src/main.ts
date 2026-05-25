@@ -4,7 +4,11 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./modules/app.module";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: true,
+  });
+  app.use(require("express").json({ limit: "20mb" }));
+  app.use(require("express").urlencoded({ limit: "20mb", extended: true }));
   app.setGlobalPrefix("api");
   app.enableCors({
     origin: true,

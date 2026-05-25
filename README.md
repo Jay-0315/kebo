@@ -1,7 +1,6 @@
-
 # KEBO
 
-환율 기능이 있는 가계부 서비스 `KEBO`의 모노레포입니다. 현재 구조는 사용자 웹, 관리자 웹, API 앱으로 분리되어 있고, 이후 `Capacitor`로 모바일 앱 패키징을 염두에 두고 있습니다.
+환율 기능이 있는 가계부&커뮤니티 서비스 `KEBO`의 모노레포입니다. 현재 구조는 사용자 웹, 관리자 웹, API 앱으로 분리되어 있고, 이후 `Capacitor`로 모바일 앱 패키징을 염두에 두고 있습니다.
 
 ## Apps
 
@@ -13,7 +12,7 @@
 
 - Frontend: `React 18`, `TypeScript`, `Vite`, `Tailwind CSS v4`
 - Admin Frontend: `React 18`, `Vite`
-- Backend scaffold: `Node.js`
+- Backend: `NestJS`, `Prisma ORM`
 - Database: `MySQL`
 
 ## Local Run
@@ -62,10 +61,40 @@ docker compose up --build
 - API: `http://localhost:4000/api`
 - MySQL: `localhost:3306`
 
+## Features
+
+### 커뮤니티 탭
+
+- 게시글 카테고리 3종: 자랑(`brag`) / 팁 공유(`tip`) / 잡담(`chat`)
+- 게시글 작성 시 이미지(jpg, png) 첨부 가능 — 클라이언트에서 1280px·75% JPEG로 압축 후 base64 저장
+- 좋아요 토글
+- 댓글 + 대댓글(1단계) — 댓글에도 이미지 첨부, 수정/삭제 가능
+- 목록에서 최근 댓글 3개 미리보기
+- 게시글 상세 페이지: 전체 댓글 페이지네이션 (페이지당 10개, 번호 버튼)
+
+### 그룹 탭
+
+- 그룹 생성 / 삭제 / 탈퇴
+- 초대 코드로 즉시 입장 또는 가입 신청 → 호스트 승인/거절
+- 공개 그룹 검색
+- 호스트 권한 이전
+- 그룹별 공유 지출 내역 관리
+
+## Database Migration
+
+| 상황 | 방법 |
+|------|------|
+| **신규 설치** | `docker compose up --build` — `mysql-schema.sql`이 자동 적용됨, 마이그레이션 파일 불필요 |
+| **기존 DB 업그레이드** (커뮤니티 기능 추가 전 스키마) | 아래 명령으로 마이그레이션 수동 적용 |
+
+```bash
+docker cp docs/migrations/legendary_pity.sql kebo-mysql:/tmp/migration.sql
+docker exec kebo-mysql mysql -ukebo -pkebo1234 kebo -e "source /tmp/migration.sql;"
+```
+
+> `legendary_pity.sql`은 구버전 스키마에 **1회만** 실행. 이미 적용된 DB에 재실행하면 `Duplicate column` 에러 발생.
+
 ## Notes
 
-- 현재 `docker-compose.yml`은 `user-web + api + MySQL`을 포함합니다.
-- 프론트는 아직 일부 로컬 상태 기반 동작이 남아 있고, API 연동은 다음 단계입니다.
-- 백엔드는 `NestJS + Prisma + MySQL` 기준으로 스캐폴딩되었습니다.
-- 초기 MySQL 스키마는 [docs/mysql-schema.sql](/Users/jay/Desktop/kebo/docs/mysql-schema.sql:1)에 있습니다.
-  
+- `docker-compose.yml`은 `user-web + api + MySQL`을 포함합니다.
+- 이미지는 base64로 DB에 저장됩니다. 업로드 제한은 20MB입니다.

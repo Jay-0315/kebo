@@ -46,17 +46,25 @@ export interface ExpenseDraft {
   receipt?: string;
 }
 
-export interface SharedExpenseSnapshot {
-  expenseId: string;
-  category: string;
-  memo: string;
-  date: string;
-  spentAmount: number;
-  spentCurrency: CurrencyCode;
-  baseAmount: number;
-  baseCurrency: CurrencyCode;
-  exchangeRate: number;
-  countryCode: string;
+export type PostCategory = "brag" | "tip" | "chat";
+
+export interface Comment {
+  id: string;
+  postId: string;
+  authorId: string;
+  authorName: string;
+  parentId: string | null;
+  content: string;
+  imageUrl: string | null;
+  replies: Comment[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommentDraft {
+  content: string;
+  imageUrl?: string;
+  parentId?: string;
 }
 
 export interface CommunityPost {
@@ -64,16 +72,35 @@ export interface CommunityPost {
   authorId: string;
   authorName: string;
   content: string;
-  sharedExpenses: SharedExpenseSnapshot[];
+  category: PostCategory;
+  imageUrl: string | null;
   likes: number;
   isLiked: boolean;
+  commentCount: number;
+  recentComments: Comment[];
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CommunityPostDraft {
   content: string;
-  sharedExpenseIds: string[];
+  category: PostCategory;
+  imageUrl?: string;
+}
+
+export interface CommentsPage {
+  comments: Comment[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export interface PostsPage {
+  posts: CommunityPost[];
+  total: number;
+  page: number;
+  totalPages: number;
+  hasNext: boolean;
 }
 
 export interface RewardSummary {

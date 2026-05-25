@@ -20,7 +20,7 @@ export class UpdateExpenseDto {
 
   @IsOptional()
   @IsString()
-  spentCurrency?: "KRW" | "JPY" | "USD" | "EUR";
+  spentCurrency?: "KRW" | "JPY";
 
   @IsOptional()
   @IsNumber()
@@ -29,7 +29,7 @@ export class UpdateExpenseDto {
 
   @IsOptional()
   @IsString()
-  baseCurrency?: "KRW" | "JPY" | "USD" | "EUR";
+  baseCurrency?: "KRW" | "JPY";
 
   @IsOptional()
   @IsNumber()

@@ -15,14 +15,14 @@ export class CreateExpenseDto {
   spentAmount: number;
 
   @IsString()
-  spentCurrency: "KRW" | "JPY" | "USD" | "EUR";
+  spentCurrency: "KRW" | "JPY";
 
   @IsNumber()
   @Min(0)
   baseAmount: number;
 
   @IsString()
-  baseCurrency: "KRW" | "JPY" | "USD" | "EUR";
+  baseCurrency: "KRW" | "JPY";
 
   @IsNumber()
   @Min(0)

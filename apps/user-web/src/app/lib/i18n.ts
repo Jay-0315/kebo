@@ -35,6 +35,8 @@ const dict = {
     "community.attach_expense": "지출 내역 첨부 (선택)",
     "community.placeholder": "절약 팁, 여행 후기, 지출 자랑 등을 자유롭게 공유해보세요.",
     "community.expense_count_suffix": "개 내역",
+    "community.add_image": "사진 첨부 (jpg, png)",
+    "community.view_detail": "자세히 보기",
     // Groups
     "groups.title": "그룹 관리",
     "groups.join_requests": "가입 요청",
@@ -273,8 +275,8 @@ const dict = {
     // Community
     "community.all": "全体",
     "community.brag": "自慢",
-    "community.tip": "攻略",
-    "community.chat": "雑談",
+    "community.tip": "コツ",
+    "community.chat": "おしゃべり",
     "community.no_posts": "このタブにはまだ投稿がありません",
     "community.edit_post": "投稿編集",
     "community.new_post": "新規投稿",
@@ -283,6 +285,8 @@ const dict = {
     "community.attach_expense": "支出履歴添付（任意）",
     "community.placeholder": "節約のヒント、旅行記録、支出自慢などを自由にシェアしてください。",
     "community.expense_count_suffix": "件の内訳",
+    "community.add_image": "写真添付 (jpg, png)",
+    "community.view_detail": "詳しく見る",
     // Groups
     "groups.title": "グループ管理",
     "groups.join_requests": "参加リクエスト",

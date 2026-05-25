@@ -28,17 +28,17 @@ import type {
   ExchangeRate,
   Expense,
   ExpenseDraft,
+  PostCategory,
   RewardSummary,
-  SharedExpenseSnapshot,
   UserProfile,
 } from "../types/domain";
 
 const SETTINGS_STORAGE_KEY = "kebo-local-settings";
-const LIKES_STORAGE_KEY = "kebo-liked-posts";
 const PROFILE_PHOTO_KEY = "kebo-profile-photo";
 
 interface AppDataContextValue {
   hasInitialized: boolean;
+  rewardsFailed: boolean;
   isLoading: boolean;
   profile: UserProfile;
   settings: AppSettings;
@@ -108,44 +108,42 @@ function mapExpense(apiExpense: Record<string, unknown>): Expense {
   };
 }
 
-function mapSnapshot(snapshot: Record<string, unknown>): SharedExpenseSnapshot {
-  return {
-    expenseId: String(snapshot.expenseId),
-    category: String(snapshot.category),
-    memo: String(snapshot.memo),
-    date: String(snapshot.expenseDate).slice(0, 10),
-    spentAmount: Number(snapshot.spentAmount),
-    spentCurrency: String(snapshot.spentCurrency) as CurrencyCode,
-    baseAmount: Number(snapshot.baseAmount),
-    baseCurrency: String(snapshot.baseCurrency) as CurrencyCode,
-    exchangeRate: Number(snapshot.exchangeRate),
-    countryCode: String(snapshot.countryCode),
-  };
-}
 
-function getLikedPostIds() {
-  const raw = localStorage.getItem(LIKES_STORAGE_KEY);
-  return raw ? new Set<string>(JSON.parse(raw) as string[]) : new Set<string>();
-}
 
-function setLikedPostIds(ids: Set<string>) {
-  localStorage.setItem(LIKES_STORAGE_KEY, JSON.stringify(Array.from(ids)));
-}
-
-function mapPost(apiPost: Record<string, unknown>, likedPostIds: Set<string>): CommunityPost {
+function mapPost(apiPost: Record<string, unknown>): CommunityPost {
   const user = (apiPost.user as Record<string, unknown> | undefined) ?? {};
   return {
     id: String(apiPost.id),
-    authorId: String(apiPost.userId),
-    authorName: String(user.name ?? "사용자"),
+    authorId: String(apiPost.userId ?? apiPost.authorId),
+    authorName: String(user.name ?? apiPost.authorName ?? "사용자"),
     content: String(apiPost.content),
-    sharedExpenses: Array.isArray(apiPost.sharedExpenses)
-      ? (apiPost.sharedExpenses as Record<string, unknown>[]).map(mapSnapshot)
+    category: (apiPost.category as PostCategory) ?? "chat",
+    imageUrl: (apiPost.imageUrl as string | null) ?? null,
+    likes: Number(apiPost.likes ?? apiPost.likesCount ?? 0),
+    isLiked: Boolean(apiPost.isLiked),
+    commentCount: Number(apiPost.commentCount ?? 0),
+    recentComments: Array.isArray(apiPost.recentComments)
+      ? (apiPost.recentComments as Record<string, unknown>[]).map(mapComment)
       : [],
-    likes: Number(apiPost.likesCount ?? 0),
-    isLiked: likedPostIds.has(String(apiPost.id)),
     createdAt: String(apiPost.createdAt),
     updatedAt: String(apiPost.updatedAt),
+  };
+}
+
+function mapComment(c: Record<string, unknown>): import("../types/domain").Comment {
+  return {
+    id: String(c.id),
+    postId: String(c.postId),
+    authorId: String(c.authorId),
+    authorName: String(c.authorName ?? "사용자"),
+    parentId: c.parentId != null ? String(c.parentId) : null,
+    content: String(c.content),
+    imageUrl: (c.imageUrl as string | null) ?? null,
+    replies: Array.isArray(c.replies)
+      ? (c.replies as Record<string, unknown>[]).map(mapComment)
+      : [],
+    createdAt: String(c.createdAt),
+    updatedAt: String(c.updatedAt),
   };
 }
 
@@ -178,6 +176,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     return merged;
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [rewardsFailed, setRewardsFailed] = useState(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [rewardSummary, setRewardSummary] = useState<RewardSummary>(
@@ -215,7 +214,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     }
 
     setIsLoading(true);
-    const likedPostIds = getLikedPostIds();
     const [profileResult, expensesResult, postsResult, rewardsResult, ratesResult] =
       await Promise.allSettled([
         api.get<{
@@ -227,7 +225,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           settings?: AppSettings;
         }>(`/users/${currentUser.id}/profile`),
         api.get<Record<string, unknown>[]>(`/expenses?userId=${currentUser.id}`),
-        api.get<Record<string, unknown>[]>(`/community/posts?userId=${currentUser.id}`),
+        api.get<{ posts: Record<string, unknown>[] }>(`/community/posts?userId=${currentUser.id}`),
         api.get<RewardSummary>(`/rewards/summary?userId=${currentUser.id}`),
         api.get<ExchangeRate[]>("/exchange-rates"),
       ]);
@@ -247,10 +245,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       setExpenses(expensesResult.value.map(mapExpense));
     }
     if (postsResult.status === "fulfilled") {
-      setPosts(postsResult.value.map((post) => mapPost(post, likedPostIds)));
+      setPosts(postsResult.value.posts.map(mapPost));
     }
     if (rewardsResult.status === "fulfilled") {
       setRewardSummary(normalizeRewardSummary(rewardsResult.value));
+      setRewardsFailed(false);
+    } else {
+      setRewardsFailed(true);
     }
     if (ratesResult.status === "fulfilled") {
       setRemoteExchangeRates(ratesResult.value);
@@ -329,29 +330,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   const createPost = async (draft: CommunityPostDraft) => {
     const currentUser = getStoredUser();
-    if (!currentUser) {
-      return;
-    }
-
-    const sharedExpenses = expenses
-      .filter((expense) => draft.sharedExpenseIds.includes(expense.id))
-      .map((expense) => ({
-        expenseId: expense.id,
-        category: expense.category,
-        memo: expense.memo,
-        expenseDate: expense.date,
-        spentAmount: expense.spentAmount,
-        spentCurrency: expense.spentCurrency,
-        baseAmount: expense.baseAmount,
-        baseCurrency: expense.baseCurrency,
-        exchangeRate: expense.exchangeRate,
-        countryCode: expense.countryCode,
-      }));
+    if (!currentUser) return;
 
     await api.post("/community/posts", {
       userId: currentUser.id,
       content: draft.content,
-      sharedExpenses,
+      category: draft.category,
+      imageUrl: draft.imageUrl ?? null,
     });
 
     await refreshData();
@@ -359,25 +344,12 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   const updatePost = async (postId: string, draft: CommunityPostDraft) => {
     const currentUser = getStoredUser();
-    const sharedExpenses = expenses
-      .filter((expense) => draft.sharedExpenseIds.includes(expense.id))
-      .map((expense) => ({
-        expenseId: expense.id,
-        category: expense.category,
-        memo: expense.memo,
-        expenseDate: expense.date,
-        spentAmount: expense.spentAmount,
-        spentCurrency: expense.spentCurrency,
-        baseAmount: expense.baseAmount,
-        baseCurrency: expense.baseCurrency,
-        exchangeRate: expense.exchangeRate,
-        countryCode: expense.countryCode,
-      }));
 
     await api.patch(`/community/posts/${postId}`, {
       userId: currentUser?.id,
       content: draft.content,
-      sharedExpenses,
+      category: draft.category,
+      imageUrl: draft.imageUrl ?? null,
     });
 
     await refreshData();
@@ -389,10 +361,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   };
 
   const togglePostLike = async (postId: string) => {
-    await api.post(`/community/posts/${postId}/like`);
-    const liked = getLikedPostIds();
-    liked.add(postId);
-    setLikedPostIds(liked);
+    const currentUser = getStoredUser();
+    if (!currentUser) return;
+    await api.post(`/community/posts/${postId}/like`, { userId: currentUser.id });
     await refreshData();
   };
 
@@ -535,6 +506,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   const value: AppDataContextValue = {
     hasInitialized,
+    rewardsFailed,
     isLoading,
     profile,
     settings,

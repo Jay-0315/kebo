@@ -5,6 +5,7 @@ import LoginPage from "./components/LoginPage";
 import SignupPage from "./components/SignupPage";
 import ExpensesPage from "./components/ExpensesPage";
 import CommunityPage from "./components/CommunityPage";
+import PostDetailPage from "./components/PostDetailPage";
 import GroupsPage from "./components/GroupsPage";
 import GroupDetailPage from "./components/GroupDetailPage";
 import MyPage from "./components/MyPage";
@@ -22,13 +23,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function StarterRoute({ children }: { children: React.ReactNode }) {
-  const { hasInitialized, rewardSummary } = useAppData();
+  const { hasInitialized, rewardsFailed, rewardSummary } = useAppData();
 
   if (!hasInitialized) {
     return null;
   }
 
-  if (rewardSummary.ownedCharacterIds.length === 0) {
+  if (!rewardsFailed && rewardSummary.ownedCharacterIds.length === 0) {
     return <Navigate to="/starter" replace />;
   }
 
@@ -36,13 +37,13 @@ function StarterRoute({ children }: { children: React.ReactNode }) {
 }
 
 function StarterSelectionRoute() {
-  const { hasInitialized, rewardSummary } = useAppData();
+  const { hasInitialized, rewardsFailed, rewardSummary } = useAppData();
 
   if (!hasInitialized) {
     return null;
   }
 
-  if (rewardSummary.ownedCharacterIds.length > 0) {
+  if (rewardsFailed || rewardSummary.ownedCharacterIds.length > 0) {
     return <Navigate to="/" replace />;
   }
 
@@ -77,6 +78,7 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="expenses" element={<ExpensesPage />} />
           <Route path="community" element={<CommunityPage />} />
+          <Route path="community/:id" element={<PostDetailPage />} />
           <Route path="groups" element={<GroupsPage />} />
           <Route path="groups/:id" element={<GroupDetailPage />} />
           <Route path="groups/:id/expenses" element={<GroupExpensesPage />} />

@@ -48,7 +48,7 @@ CREATE TABLE expenses (
   memo VARCHAR(255) NOT NULL,
   group_name VARCHAR(100) NULL,
   participants INT NULL,
-  receipt_url TEXT NULL,
+  receipt_url LONGTEXT NULL,
   shared_to_community TINYINT(1) NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -59,10 +59,41 @@ CREATE TABLE community_posts (
   id VARCHAR(36) PRIMARY KEY,
   user_id VARCHAR(36) NOT NULL,
   content TEXT NOT NULL,
+  category ENUM('brag', 'tip', 'chat') NOT NULL DEFAULT 'chat',
+  image_url LONGTEXT NULL,
   likes_count INT NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_posts_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE post_likes (
+  id         BIGINT      AUTO_INCREMENT PRIMARY KEY,
+  post_id    VARCHAR(36) NOT NULL,
+  user_id    VARCHAR(36) NOT NULL,
+  created_at DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uq_post_likes UNIQUE (post_id, user_id),
+  INDEX idx_post_likes_post_id (post_id),
+  INDEX idx_post_likes_user_id (user_id),
+  CONSTRAINT fk_post_likes_post FOREIGN KEY (post_id) REFERENCES community_posts(id) ON DELETE CASCADE,
+  CONSTRAINT fk_post_likes_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE comments (
+  id         BIGINT       AUTO_INCREMENT PRIMARY KEY,
+  post_id    VARCHAR(36)  NOT NULL,
+  user_id    VARCHAR(36)  NOT NULL,
+  parent_id  BIGINT       NULL,
+  content    TEXT         NOT NULL,
+  image_url  TEXT         NULL,
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_comments_post_id   (post_id),
+  INDEX idx_comments_user_id   (user_id),
+  INDEX idx_comments_parent_id (parent_id),
+  CONSTRAINT fk_comments_post   FOREIGN KEY (post_id)   REFERENCES community_posts(id) ON DELETE CASCADE,
+  CONSTRAINT fk_comments_user   FOREIGN KEY (user_id)   REFERENCES users(id)           ON DELETE CASCADE,
+  CONSTRAINT fk_comments_parent FOREIGN KEY (parent_id) REFERENCES comments(id)         ON DELETE CASCADE
 );
 
 CREATE TABLE user_rewards (
@@ -74,6 +105,7 @@ CREATE TABLE user_rewards (
   equipped_character_id INT NULL,
   equipped_title_id INT NULL,
   gacha_pity_count INT NOT NULL DEFAULT 0,
+  legendary_pity_count INT NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_rewards_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -97,21 +129,4 @@ CREATE TABLE user_characters (
   CONSTRAINT fk_characters_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT uq_user_character UNIQUE (user_id, character_id),
   INDEX idx_user_characters_user_id (user_id)
-);
-
-CREATE TABLE community_post_expenses (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  post_id VARCHAR(36) NOT NULL,
-  expense_id VARCHAR(36) NOT NULL,
-  category VARCHAR(50) NOT NULL,
-  memo VARCHAR(255) NOT NULL,
-  expense_date DATETIME NOT NULL,
-  spent_amount DECIMAL(12, 2) NOT NULL,
-  spent_currency ENUM('KRW', 'JPY', 'USD', 'EUR') NOT NULL,
-  base_amount DECIMAL(12, 2) NOT NULL,
-  base_currency ENUM('KRW', 'JPY', 'USD', 'EUR') NOT NULL,
-  exchange_rate DECIMAL(12, 6) NOT NULL,
-  country_code CHAR(2) NOT NULL,
-  CONSTRAINT fk_post_expenses_post FOREIGN KEY (post_id) REFERENCES community_posts(id) ON DELETE CASCADE,
-  CONSTRAINT fk_post_expenses_expense FOREIGN KEY (expense_id) REFERENCES expenses(id) ON DELETE CASCADE
 );

@@ -1,15 +1,17 @@
 import { IsOptional, IsString } from "class-validator";
 
-export class UpdateUserProfileDto {
-  @IsOptional()
+export class CreateCommentDto {
   @IsString()
-  name?: string;
+  userId: string;
+
+  @IsString()
+  content: string;
 
   @IsOptional()
   @IsString()
-  baseCountryCode?: string;
+  imageUrl?: string;
 
   @IsOptional()
   @IsString()
-  baseCurrency?: "KRW" | "JPY";
+  parentId?: string;
 }

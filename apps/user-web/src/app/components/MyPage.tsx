@@ -262,7 +262,7 @@ return (
                   <div className="min-w-0">
                     <p className="font-medium truncate">{post.content}</p>
                     <p className="text-sm text-muted-foreground">
-                      {t("mypage.post_shared_prefix")}{post.sharedExpenses.length}{t("mypage.post_shared_suffix")} · {t("mypage.post_likes_prefix")}{post.likes}
+                      💬 {post.commentCount} · {t("mypage.post_likes_prefix")}{post.likes}
                     </p>
                   </div>
                   <Heart className="w-5 h-5 text-primary/80 fill-current shrink-0" />
