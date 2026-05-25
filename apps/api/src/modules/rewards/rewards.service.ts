@@ -219,9 +219,10 @@ export class RewardsService {
 
     await this.prisma.$transaction([
       this.prisma.userCharacter.create({ data: { userId, characterId } }),
-      this.prisma.userReward.update({
+      this.prisma.userReward.upsert({
         where: { userId },
-        data: { equippedCharacterId: characterId },
+        create: { userId, equippedCharacterId: characterId },
+        update: { equippedCharacterId: characterId },
       }),
     ]);
 
