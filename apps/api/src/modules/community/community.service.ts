@@ -30,7 +30,7 @@ const postInclude = {
 export class CommunityService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // ── 내부 포맷 헬퍼 ──────────────────────────────────────────
+  //내부 포맷 헬퍼
 
   private formatComment(c: any): object {
     return {
@@ -73,7 +73,7 @@ export class CommunityService {
     return new Set(likes.map((l) => l.postId));
   }
 
-  // ── 게시글 ──────────────────────────────────────────────────
+  //게시글
 
   async findAll(userId?: string, page = 1, category?: PostCategory) {
     const skip = (page - 1) * PAGE_SIZE;
@@ -202,7 +202,7 @@ export class CommunityService {
     return { id };
   }
 
-  // ── 댓글 ────────────────────────────────────────────────────
+  //댓글
 
   async getComments(postId: string, page = 1) {
     const skip = (page - 1) * COMMENT_PAGE_SIZE;
