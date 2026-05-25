@@ -750,12 +750,12 @@ function GachaTab({
         </div>
         <div>
           <p className="text-xs text-muted-foreground">{t("kabemon.gacha_pity_label")}</p>
-          <p className="text-lg font-bold">{pityLeft}{t("kabemon.days")}</p>
+          <p className="text-lg font-bold">{pityLeft}{t("kabemon.times")}</p>
         </div>
         <div>
           <p className="text-xs text-muted-foreground">{t("kabemon.gacha_ceiling_label")}</p>
           <p className={`text-lg font-bold ${ceilingLeft <= 10 ? "text-amber-500" : ""}`}>
-            {ceilingLeft}{t("kabemon.days")}
+            {ceilingLeft}{t("kabemon.times")}
           </p>
         </div>
       </div>
