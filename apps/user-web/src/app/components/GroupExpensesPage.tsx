@@ -4,7 +4,7 @@ import { ArrowLeft, Plus, X, TrendingUp } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import type { CurrencyCode } from "../types/domain";
-
+ 
 interface GroupMember {
   id: string;
   name: string;
