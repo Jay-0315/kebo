@@ -94,8 +94,5 @@ docker exec kebo-mysql mysql -ukebo -pkebo1234 kebo -e "source /tmp/migration.sq
 
 ## 글작성툴 Tiptap 설치
 
-방법 1 — 이미지 재빌드
-docker-compose up --build app
-
-방법 2 — 실행 중인 컨테이너에 설치
+방법 — 실행 중인 컨테이너에 설치
 docker-compose exec app npm install
