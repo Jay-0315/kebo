@@ -157,7 +157,7 @@ enum PostCategory {
 model CommunityPost {
   id         String       @id @default(uuid())
   userId     String       @map("user_id")
-  content    String       @db.Text
+  content    String       @db.LongText
   category   PostCategory @default(chat)
   imageUrl   String?      @map("image_url") @db.LongText
   likesCount Int          @default(0) @map("likes_count")

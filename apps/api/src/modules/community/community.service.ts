@@ -227,7 +227,7 @@ export class CommunityService {
         include: {
           user: { select: { id: true, name: true, reward: { select: { equippedTitleId: true } } } },
           replies: {
-            include: { user: { select: { id: true, name: true } } },
+            include: { user: { select: { id: true, name: true, reward: { select: { equippedTitleId: true } } } } },
             orderBy: { createdAt: "asc" },
           },
         },
@@ -261,7 +261,7 @@ export class CommunityService {
       },
       include: {
         user: { select: { id: true, name: true, reward: { select: { equippedTitleId: true } } } },
-        replies: { include: { user: { select: { id: true, name: true } } } },
+        replies: { include: { user: { select: { id: true, name: true, reward: { select: { equippedTitleId: true } } } } } },
       },
     });
 
@@ -282,7 +282,7 @@ export class CommunityService {
       },
       include: {
         user: { select: { id: true, name: true, reward: { select: { equippedTitleId: true } } } },
-        replies: { include: { user: { select: { id: true, name: true } } } },
+        replies: { include: { user: { select: { id: true, name: true, reward: { select: { equippedTitleId: true } } } } } },
       },
     });
 

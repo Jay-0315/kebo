@@ -299,10 +299,10 @@ export default function PostDetailPage() {
           )}
         </div>
 
-        <p className="text-sm leading-relaxed whitespace-pre-wrap mb-3">{post.content}</p>
-        {post.imageUrl && (
-          <img src={post.imageUrl} alt="" className="w-full max-h-80 object-cover rounded-md border border-border mb-3" />
-        )}
+        <div
+          className="tiptap-content text-sm leading-relaxed mb-3"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
 
         <div className="flex items-center gap-4 pt-3 border-t border-border text-muted-foreground">
           <button

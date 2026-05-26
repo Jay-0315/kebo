@@ -58,7 +58,7 @@ CREATE TABLE expenses (
 CREATE TABLE community_posts (
   id VARCHAR(36) PRIMARY KEY,
   user_id VARCHAR(36) NOT NULL,
-  content TEXT NOT NULL,
+  content LONGTEXT NOT NULL,
   category ENUM('brag', 'tip', 'chat') NOT NULL DEFAULT 'chat',
   image_url LONGTEXT NULL,
   likes_count INT NOT NULL DEFAULT 0,

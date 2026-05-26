@@ -127,12 +127,17 @@ export default function HomePage() {
                           {t(`community.${post.category}` as Parameters<typeof t>[0])}
                         </span>
                       </div>
+                      {post.authorEquippedTitleId && (
+                        <TitleBadge titleId={post.authorEquippedTitleId} size="xs" />
+                      )}
                       <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt, lang)}</p>
                     </div>
                   </div>
 
                   {/* Content */}
-                  <p className="text-sm leading-relaxed line-clamp-3 mb-3">{post.content}</p>
+                  <p className="text-sm leading-relaxed line-clamp-3 mb-3">
+                    {post.content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()}
+                  </p>
 
                   {/* Engagement */}
                   <div className="flex items-center gap-4 text-muted-foreground">

@@ -1,10 +1,10 @@
-import { useRef, useState } from "react";
-import { Heart, Plus, X, Pencil, Trash2, MessageCircle, Image, ChevronRight } from "lucide-react";
-import { Link, useNavigate } from "react-router";
+import { useState } from "react";
+import { Heart, Plus, X, Pencil, Trash2, MessageCircle, ChevronRight } from "lucide-react";
+import RichTextEditor from "./RichTextEditor";
+import { useNavigate } from "react-router";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { formatRelativeTime } from "../lib/story-storage";
-import { compressImage } from "../lib/image-utils";
 import TitleBadge from "./TitleBadge";
 import type { CommunityPost, PostCategory } from "../types/domain";
 
@@ -26,19 +26,24 @@ export default function CommunityPage() {
   const [editingPost, setEditingPost] = useState<CommunityPost | null>(null);
   const [content, setContent] = useState("");
   const [postCategory, setPostCategory] = useState<PostCategory>("chat");
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const catLabel = (cat: PostCategory) => t(`community.${cat}` as Parameters<typeof t>[0]);
 
   const visiblePosts = posts.filter((p) => activeTab === "all" || p.category === activeTab);
 
+  const isContentEmpty = (html: string) => {
+    const text = html.replace(/<[^>]*>/g, "").trim();
+    return text.length === 0;
+  };
+
+  const stripHtml = (html: string) =>
+    html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
   const openCreate = () => {
     setEditingPost(null);
     setContent("");
     setPostCategory("chat");
-    setImagePreview(null);
     setShowForm(true);
   };
 
@@ -46,7 +51,6 @@ export default function CommunityPage() {
     setEditingPost(post);
     setContent(post.content);
     setPostCategory(post.category);
-    setImagePreview(post.imageUrl);
     setShowForm(true);
   };
 
@@ -54,21 +58,14 @@ export default function CommunityPage() {
     setShowForm(false);
     setEditingPost(null);
     setContent("");
-    setImagePreview(null);
-  };
-
-  const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImagePreview(await compressImage(file));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() || submitting) return;
+    if (isContentEmpty(content) || submitting) return;
     setSubmitting(true);
     try {
-      const draft = { content, category: postCategory, imageUrl: imagePreview ?? undefined };
+      const draft = { content, category: postCategory, imageUrl: undefined };
       if (editingPost) {
         await updatePost(editingPost.id, draft);
       } else {
@@ -153,19 +150,14 @@ export default function CommunityPage() {
                 )}
               </div>
 
-              {/* 내용 + 이미지 */}
+              {/* 내용 미리보기 */}
               <div
                 className="px-4 pt-3 pb-2 cursor-pointer"
                 onClick={() => navigate(`/community/${post.id}`)}
               >
-                <p className="text-sm leading-relaxed whitespace-pre-wrap line-clamp-3 mb-2">{post.content}</p>
-                {post.imageUrl && (
-                  <img
-                    src={post.imageUrl}
-                    alt=""
-                    className="w-full max-h-56 object-cover rounded-md border border-border"
-                  />
-                )}
+                <p className="text-sm leading-relaxed line-clamp-3 mb-2 text-foreground/90">
+                  {stripHtml(post.content)}
+                </p>
               </div>
 
               {/* 최근 댓글 미리보기 (최대 3개) */}
@@ -239,44 +231,16 @@ export default function CommunityPage() {
                 ))}
               </div>
 
-              {/* 내용 */}
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
+              {/* 리치 텍스트 에디터 */}
+              <RichTextEditor
+                content={content}
+                onChange={setContent}
                 placeholder={t("community.placeholder")}
-                className="w-full px-4 py-3 bg-input-background rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-ring min-h-[120px] resize-none text-sm"
-                required
               />
-
-              {/* 이미지 업로드 */}
-              <div>
-                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleImage} />
-                {imagePreview ? (
-                  <div className="relative">
-                    <img src={imagePreview} alt="" className="w-full max-h-48 object-cover rounded-md border border-border" />
-                    <button
-                      type="button"
-                      onClick={() => setImagePreview(null)}
-                      className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-full py-3 border-2 border-dashed border-border rounded-md text-sm text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Image className="w-4 h-4" />
-                    {t("community.add_image")}
-                  </button>
-                )}
-              </div>
 
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || isContentEmpty(content)}
                 className="w-full bg-primary/80 text-primary-foreground rounded-md py-3 font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-60"
               >
                 {submitting ? "..." : editingPost ? t("community.update") : t("community.submit")}
