@@ -247,7 +247,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         baseCountryCode: p.baseCountryCode,
         baseCurrency: p.baseCurrency,
       });
-      if (p.settings) setSettings((prev) => ({ ...(p.settings as AppSettings), language: prev.language }));
+      if (p.settings) setSettings((prev) => ({ ...prev, ...(p.settings as AppSettings) }));
       if (p.profilePhoto !== undefined) {
         const key = profilePhotoKey(p.id);
         if (p.profilePhoto) {
