@@ -52,6 +52,7 @@ export default function GroupsPage() {
 
   const [groups, setGroups] = useState<Group[]>([]);
   const [availableGroups, setAvailableGroups] = useState<AvailableGroup[]>([]);
+  const [publicGroups, setPublicGroups] = useState<AvailableGroup[]>([]);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -67,8 +68,12 @@ export default function GroupsPage() {
   const loadGroups = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await api.get<Group[]>("/groups");
-      setGroups(data);
+      const [myGroups, allPublic] = await Promise.all([
+        api.get<Group[]>("/groups"),
+        api.get<AvailableGroup[]>("/groups/search"),
+      ]);
+      setGroups(myGroups);
+      setPublicGroups(allPublic);
     } catch (e) {
       console.error(e);
     } finally {
@@ -158,6 +163,7 @@ export default function GroupsPage() {
         `${group.name}에 가입 요청을 보냈습니다. 호스트의 승인을 기다려주세요.`,
       );
       setShowJoinForm(false);
+      setPublicGroups((prev) => prev.filter((g) => g.id !== group.id));
     } catch (e: any) {
       alert(e.message || "가입 요청에 실패했습니다.");
     }
@@ -188,6 +194,10 @@ export default function GroupsPage() {
 
   const filteredGroups = availableGroups.filter((g) =>
     g.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  const discoverableGroups = publicGroups.filter(
+    (pg) => !groups.some((g) => g.id === pg.id),
   );
 
   const MAX_VISIBLE_AVATARS = 4;
@@ -347,6 +357,41 @@ export default function GroupsPage() {
               </button>
             );
           })}
+        </div>
+      )}
+
+      {/* Discoverable Public Groups */}
+      {discoverableGroups.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <Search className="w-4 h-4" />
+            {t("groups.public_discover") || "공개 그룹 탐색"}
+          </h3>
+          <div className="space-y-2">
+            {discoverableGroups.map((group) => (
+              <div key={group.id} className="bg-card rounded-md border border-border p-4 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium text-sm truncate">{group.name}</p>
+                  <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Users className="w-3 h-3" />
+                      {group.memberCount}{t("groups.member_suffix")}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Crown className="w-3 h-3" />
+                      {group.hostName}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleRequestJoin(group)}
+                  className="shrink-0 bg-primary/80 text-primary-foreground rounded px-3 py-1.5 text-xs font-medium hover:shadow-md transition-all"
+                >
+                  {t("groups.request")}
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
