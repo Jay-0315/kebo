@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { ArrowLeft, Plus, X, TrendingUp } from "lucide-react";
+import { ArrowLeft, Plus, X, TrendingUp, AlertCircle } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import type { CurrencyCode } from "../types/domain";
@@ -54,6 +54,7 @@ export default function GroupExpensesPage() {
   const initialLocal: LocalExpense[] = location.state?.localExpenses ?? [];
 
   const [localExpenses, setLocalExpenses] = useState<LocalExpense[]>(initialLocal);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [showForm, setShowForm] = useState<boolean>(location.state?.openForm === true);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -92,6 +93,11 @@ export default function GroupExpensesPage() {
     })),
   ];
 
+  const showToast = (message: string, type: "success" | "error" = "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.spentAmount || !form.memo.trim()) return;
@@ -115,7 +121,7 @@ export default function GroupExpensesPage() {
       setShowForm(false);
       setForm({ date: new Date().toISOString().slice(0, 10), category: "식비", spentAmount: "", spentCurrency: "JPY", memo: "", participants: "" });
     } catch {
-      alert("지출 저장에 실패했습니다.");
+      showToast("지출 저장에 실패했습니다.");
     } finally {
       setSubmitting(false);
     }
@@ -123,6 +129,15 @@ export default function GroupExpensesPage() {
 
   return (
     <div className="space-y-4">
+      {toast && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl border border-destructive/40 bg-card shadow-xl text-sm font-medium animate-in fade-in slide-in-from-top-3 max-w-sm w-[90vw]">
+          <AlertCircle className="w-4 h-4 shrink-0 text-destructive" />
+          <p className="flex-1 leading-snug">{toast.message}</p>
+          <button onClick={() => setToast(null)} className="shrink-0 text-muted-foreground hover:text-foreground transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center gap-3">
         <button

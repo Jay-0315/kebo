@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router";
 import {
   ArrowLeft, Users, Crown, Calendar, TrendingUp,
   Copy, Check, UserPlus, Plus, X, Swords, Pencil, Camera, ChevronRight,
-  LogOut, Trash2, RefreshCw, AlertTriangle,
+  LogOut, Trash2, RefreshCw, AlertTriangle, CheckCircle2, AlertCircle,
 } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
@@ -70,6 +70,7 @@ export default function GroupDetailPage() {
   const { expenses, profile, profilePhoto, isLoading } = useAppData();
   const { t, lang } = useLang();
 
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [group, setGroup] = useState<Group | undefined>(location.state?.group);
 
   const [showInvite, setShowInvite] = useState(false);
@@ -99,6 +100,11 @@ export default function GroupDetailPage() {
   storyMemberIdxRef.current = storyMemberIdx;
   storyFrameIdxRef.current = storyFrameIdx;
   const pointerDownTimeRef = useRef(0);
+
+  const showToast = (message: string, type: "success" | "error" = "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   const openStory = (members: GroupMember[], startMemberIdx: number) => {
     setStoryViewMembers(members);
@@ -177,7 +183,7 @@ export default function GroupDetailPage() {
       await api.delete(`/groups/${group.id}`);
       navigate("/groups");
     } catch (e: any) {
-      alert(e.message || "그룹 삭제에 실패했습니다.");
+      showToast(e.message || "그룹 삭제에 실패했습니다.");
     } finally {
       setActionLoading(false);
       setShowDeleteConfirm(false);
@@ -194,7 +200,7 @@ export default function GroupDetailPage() {
       setShowManage(false);
       setSelectedNewHost("");
     } catch (e: any) {
-      alert(e.message || "호스트 양도에 실패했습니다.");
+      showToast(e.message || "호스트 양도에 실패했습니다.");
     } finally {
       setActionLoading(false);
     }
@@ -207,7 +213,7 @@ export default function GroupDetailPage() {
       await api.delete(`/groups/${group.id}/members/me`);
       navigate("/groups");
     } catch (e: any) {
-      alert(e.message || "그룹 탈퇴에 실패했습니다.");
+      showToast(e.message || "그룹 탈퇴에 실패했습니다.");
     } finally {
       setActionLoading(false);
       setShowLeaveConfirm(false);
@@ -250,6 +256,19 @@ export default function GroupDetailPage() {
 
   return (
     <>
+      {toast && (
+        <div className={`fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium animate-in fade-in slide-in-from-top-3 max-w-sm w-[90vw] ${
+          toast.type === "success" ? "bg-card border-primary/40" : "bg-card border-destructive/40"
+        }`}>
+          {toast.type === "success"
+            ? <CheckCircle2 className="w-4 h-4 shrink-0 text-primary" />
+            : <AlertCircle className="w-4 h-4 shrink-0 text-destructive" />}
+          <p className="flex-1 leading-snug">{toast.message}</p>
+          <button onClick={() => setToast(null)} className="shrink-0 text-muted-foreground hover:text-foreground transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-3">

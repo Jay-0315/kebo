@@ -9,6 +9,8 @@ import {
   Search,
   TrendingUp,
   ChevronRight,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { useLang } from "../context/LangContext";
 import { useAppData } from "../context/AppDataContext";
@@ -50,6 +52,7 @@ export default function GroupsPage() {
   const { t } = useLang();
   const { profile, profilePhoto } = useAppData();
 
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [availableGroups, setAvailableGroups] = useState<AvailableGroup[]>([]);
   const [publicGroups, setPublicGroups] = useState<AvailableGroup[]>([]);
@@ -64,6 +67,11 @@ export default function GroupsPage() {
   const [joinCode, setJoinCode] = useState("");
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const showToast = (message: string, type: "success" | "error" = "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   const loadGroups = useCallback(async () => {
     try {
@@ -139,7 +147,7 @@ export default function GroupsPage() {
       setNewGroupIsPublic(false);
       setShowCreateForm(false);
     } catch (e: any) {
-      alert(e.message || "그룹 생성에 실패했습니다.");
+      showToast(e.message || "그룹 생성에 실패했습니다.");
     }
   }
 
@@ -152,20 +160,18 @@ export default function GroupsPage() {
       setJoinCode("");
       setShowJoinForm(false);
     } catch (e: any) {
-      alert(e.message || "그룹 참가에 실패했습니다.");
+      showToast(e.message || "그룹 참가에 실패했습니다.");
     }
   }
 
   async function handleRequestJoin(group: AvailableGroup) {
     try {
       await api.post(`/groups/${group.id}/requests`);
-      alert(
-        `${group.name}에 가입 요청을 보냈습니다. 호스트의 승인을 기다려주세요.`,
-      );
+      showToast(`${group.name}에 가입 요청을 보냈습니다. 호스트의 승인을 기다려주세요.`, "success");
       setShowJoinForm(false);
       setPublicGroups((prev) => prev.filter((g) => g.id !== group.id));
     } catch (e: any) {
-      alert(e.message || "가입 요청에 실패했습니다.");
+      showToast(e.message || "가입 요청에 실패했습니다.");
     }
   }
 
@@ -177,7 +183,7 @@ export default function GroupsPage() {
       setJoinRequests((prev) => prev.filter((r) => r.id !== request.id));
       await loadGroups();
     } catch (e: any) {
-      alert(e.message || "승인에 실패했습니다.");
+      showToast(e.message || "승인에 실패했습니다.");
     }
   }
 
@@ -188,7 +194,7 @@ export default function GroupsPage() {
       });
       setJoinRequests((prev) => prev.filter((r) => r.id !== request.id));
     } catch (e: any) {
-      alert(e.message || "거절에 실패했습니다.");
+      showToast(e.message || "거절에 실패했습니다.");
     }
   }
 
@@ -204,6 +210,24 @@ export default function GroupsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium transition-all animate-in fade-in slide-in-from-top-3 max-w-sm w-[90vw] ${
+          toast.type === "success"
+            ? "bg-card border-primary/40 text-foreground"
+            : "bg-card border-destructive/40 text-foreground"
+        }`}>
+          {toast.type === "success"
+            ? <CheckCircle2 className="w-4 h-4 shrink-0 text-primary" />
+            : <AlertCircle className="w-4 h-4 shrink-0 text-destructive" />
+          }
+          <p className="flex-1 leading-snug">{toast.message}</p>
+          <button onClick={() => setToast(null)} className="shrink-0 text-muted-foreground hover:text-foreground transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <h2 className="shrink-0">{t("groups.title")}</h2>
@@ -365,7 +389,7 @@ export default function GroupsPage() {
         <div className="space-y-3">
           <h3 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
             <Search className="w-4 h-4" />
-            {t("groups.public_discover") || "공개 그룹 탐색"}
+            {t("groups.public_discover")}
           </h3>
           <div className="space-y-2">
             {discoverableGroups.map((group) => (

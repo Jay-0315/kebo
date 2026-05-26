@@ -62,6 +62,7 @@ const dict = {
     "groups.no_groups": "참가/생성 된 그룹이 없습니다.",
     "groups.loading": "로딩 중...",
     "groups.public": "공개 그룹으로 설정",
+    "groups.public_discover": "공개 그룹",
     "groups.request": "신청",
     "groups.member_suffix": "명",
     // Group Detail
@@ -433,6 +434,7 @@ const dict = {
     "groups.no_groups": "参加・作成したグループがありません。",
     "groups.loading": "読み込み中...",
     "groups.public": "公開グループとして設定",
+    "groups.public_discover": "公開グループ",
     "groups.request": "申請",
     "groups.member_suffix": "人",
     // Group Detail

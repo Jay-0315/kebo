@@ -15,7 +15,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || "API request failed");
+    let message = text || "API request failed";
+    try {
+      const json = JSON.parse(text);
+      if (json.message) message = json.message;
+    } catch {}
+    throw new Error(message);
   }
 
   if (response.status === 204) {
