@@ -5,6 +5,7 @@ import { useLang } from "../context/LangContext";
 import { CHARACTERS } from "../data/characters";
 import { formatRelativeTime } from "../lib/story-storage";
 import TitleBadge from "./TitleBadge";
+import UserAvatar from "./UserAvatar";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -117,9 +118,7 @@ export default function HomePage() {
                 >
                   {/* Author row */}
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/60 to-accent/70 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                      {post.authorName[0]}
-                    </div>
+                    <UserAvatar authorId={post.authorId} authorName={post.authorName} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="font-medium text-sm">{post.authorName}</p>

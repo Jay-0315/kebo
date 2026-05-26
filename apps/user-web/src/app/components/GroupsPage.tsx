@@ -11,6 +11,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useLang } from "../context/LangContext";
+import { useAppData } from "../context/AppDataContext";
 import { api } from "../lib/api";
 
 interface GroupMember {
@@ -47,6 +48,7 @@ interface AvailableGroup {
 export default function GroupsPage() {
   const navigate = useNavigate();
   const { t } = useLang();
+  const { profile, profilePhoto } = useAppData();
 
   const [groups, setGroups] = useState<Group[]>([]);
   const [availableGroups, setAvailableGroups] = useState<AvailableGroup[]>([]);
@@ -319,10 +321,16 @@ export default function GroupsPage() {
                   {visibleMembers.map((member) => (
                     <div
                       key={member.id}
-                      className="relative w-9 h-9 rounded-full bg-primary/80 flex items-center justify-center text-white text-sm font-medium ring-2 ring-card"
+                      className="relative w-9 h-9 shrink-0"
                       title={member.name}
                     >
-                      {member.name[0]}
+                      <div className="w-9 h-9 rounded-full bg-primary/80 flex items-center justify-center text-white text-sm font-medium ring-2 ring-card overflow-hidden">
+                        {member.id === profile.id && profilePhoto ? (
+                          <img src={profilePhoto} alt={member.name} className="w-full h-full object-cover" />
+                        ) : (
+                          member.name[0]
+                        )}
+                      </div>
                       {member.isHost && (
                         <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-yellow-500 rounded-full flex items-center justify-center">
                           <Crown className="w-2 h-2 text-white" />

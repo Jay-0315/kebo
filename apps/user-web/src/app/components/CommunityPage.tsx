@@ -6,6 +6,7 @@ import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { formatRelativeTime } from "../lib/story-storage";
 import TitleBadge from "./TitleBadge";
+import UserAvatar from "./UserAvatar";
 import type { CommunityPost, PostCategory } from "../types/domain";
 
 const CATEGORY_OPTIONS: PostCategory[] = ["brag", "tip", "chat"];
@@ -122,9 +123,7 @@ export default function CommunityPage() {
               {/* 헤더 */}
               <div className="flex items-center justify-between gap-3 p-4 pb-0">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/60 to-accent/70 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                    {post.authorName[0]}
-                  </div>
+                  <UserAvatar authorId={post.authorId} authorName={post.authorName} />
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="font-medium text-sm">{post.authorName}</p>

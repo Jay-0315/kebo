@@ -229,7 +229,7 @@ export default function GroupDetailPage() {
     );
   }
 
-  const isCurrentUser = (m: { name: string }) => m.name === profile.name;
+  const isCurrentUser = (m: { id: string }) => m.id === profile.id;
 
   const copyCode = () => {
     navigator.clipboard.writeText(group.code);
