@@ -92,9 +92,10 @@ docker cp docs/migrations/legendary_pity.sql kebo-mysql:/tmp/migration.sql
 docker exec kebo-mysql mysql -ukebo -pkebo1234 kebo -e "source /tmp/migration.sql;"
 ```
 
-> `legendary_pity.sql`은 구버전 스키마에 **1회만** 실행. 이미 적용된 DB에 재실행하면 `Duplicate column` 에러 발생.
+## 글작성툴 Tiptap 설치
 
-## Notes
+방법 1 — 이미지 재빌드
+docker-compose up --build app
 
-- `docker-compose.yml`은 `user-web + api + MySQL`을 포함합니다.
-- 이미지는 base64로 DB에 저장됩니다. 업로드 제한은 20MB입니다.
+방법 2 — 실행 중인 컨테이너에 설치
+docker-compose exec app npm install
