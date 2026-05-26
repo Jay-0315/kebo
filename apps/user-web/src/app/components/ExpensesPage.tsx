@@ -20,7 +20,7 @@ import {
   getCurrencySymbol,
 } from "../data/currency";
 import type { Expense, ExpenseDraft } from "../types/domain";
-
+ 
 const categories = ["식비", "교통", "쇼핑", "카페", "문화생활", "의료", "기타"];
 
 function toDraft(expense: Expense): ExpenseDraft {
