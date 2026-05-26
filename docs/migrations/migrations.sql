@@ -1,6 +1,8 @@
+//2026/05/26일자 버전기준
 
 ALTER TABLE user_rewards
   ADD COLUMN legendary_pity_count INT NOT NULL DEFAULT 0 AFTER gacha_pity_count;
+
 
 ALTER TABLE community_posts
   ADD COLUMN category ENUM('brag', 'tip', 'chat') NOT NULL DEFAULT 'chat' AFTER content;
