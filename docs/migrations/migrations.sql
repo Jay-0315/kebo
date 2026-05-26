@@ -1,5 +1,8 @@
 //2026/05/26일자 버전기준
 
+ALTER TABLE users
+  ADD COLUMN profile_photo LONGTEXT NULL;
+
 ALTER TABLE user_rewards
   ADD COLUMN legendary_pity_count INT NOT NULL DEFAULT 0 AFTER gacha_pity_count;
 

@@ -33,6 +33,7 @@ export class GroupsService {
         select: {
           id: true,
           name: true,
+          profilePhoto: true,
           reward: { select: { equippedCharacterId: true } },
         },
       },
@@ -193,17 +194,20 @@ export class GroupsService {
     });
     if (existing) throw new ConflictException("이미 가입 요청을 보냈습니다.");
 
-    return this.prisma.groupJoinRequest.create({ data: { groupId, userId } });
+    await this.prisma.groupJoinRequest.create({ data: { groupId, userId } });
+    return { success: true };
   }
 
   async getPendingRequests(groupId: string, userId: string) {
     await this.assertHost(groupId, userId);
 
-    return this.prisma.groupJoinRequest.findMany({
+    const requests = await this.prisma.groupJoinRequest.findMany({
       where: { groupId, status: "PENDING" },
       include: { user: { select: { id: true, name: true } } },
       orderBy: { createdAt: "asc" },
     });
+
+    return requests.map((r) => ({ ...r, id: Number(r.id) }));
   }
 
   async handleRequest(groupId: string, reqId: bigint, userId: string, dto: HandleJoinRequestDto) {
@@ -231,6 +235,20 @@ export class GroupsService {
     }
 
     return { success: true, action: dto.action };
+  }
+
+  async getGroupExpenses(groupId: string, userId: string) {
+    const group = await this.prisma.group.findUnique({
+      where: { id: groupId },
+      include: { members: { where: { userId } } },
+    });
+    if (!group) throw new NotFoundException("그룹을 찾을 수 없습니다.");
+    if (group.members.length === 0) throw new ForbiddenException("그룹 멤버가 아닙니다.");
+
+    return this.prisma.expense.findMany({
+      where: { groupId },
+      orderBy: { expenseDate: "desc" },
+    });
   }
 
   async leaveGroup(groupId: string, userId: string) {
@@ -267,6 +285,7 @@ export class GroupsService {
         name: m.user.name,
         isHost: m.userId === group.hostUserId,
         equippedCharacterId: m.user.reward?.equippedCharacterId ?? null,
+        profilePhoto: m.user.profilePhoto ?? null,
       })),
     };
   }

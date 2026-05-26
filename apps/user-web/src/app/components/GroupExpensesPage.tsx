@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { ArrowLeft, Plus, X, TrendingUp, AlertCircle } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
+import { api } from "../lib/api";
 import type { CurrencyCode } from "../types/domain";
  
 interface GroupMember {
@@ -47,13 +48,14 @@ function formatAmount(expense: { spentAmount: number; spentCurrency: string; bas
 export default function GroupExpensesPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { expenses, createExpense } = useAppData();
+  const { createExpense } = useAppData();
   const { t } = useLang();
 
   const group: Group | undefined = location.state?.group;
   const initialLocal: LocalExpense[] = location.state?.localExpenses ?? [];
 
   const [localExpenses, setLocalExpenses] = useState<LocalExpense[]>(initialLocal);
+  const [serverExpenses, setServerExpenses] = useState<LocalExpense[]>([]);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [showForm, setShowForm] = useState<boolean>(location.state?.openForm === true);
   const [submitting, setSubmitting] = useState(false);
@@ -66,6 +68,22 @@ export default function GroupExpensesPage() {
     participants: "",
   });
 
+  useEffect(() => {
+    if (!group) return;
+    api.get<any[]>(`/groups/${group.id}/expenses`)
+      .then((data) => setServerExpenses(data.map((e) => ({
+        id: e.id,
+        date: e.expenseDate?.slice(0, 10) ?? e.date ?? "",
+        category: e.category,
+        spentAmount: Number(e.spentAmount),
+        spentCurrency: e.spentCurrency as CurrencyCode,
+        baseAmount: Number(e.baseAmount),
+        memo: e.memo,
+        participants: e.participants ?? undefined,
+      }))))
+      .catch(console.error);
+  }, [group?.id]);
+
   if (!group) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
@@ -77,21 +95,7 @@ export default function GroupExpensesPage() {
     );
   }
 
-  const serverExpenses = expenses.filter((e) => e.group === group.name);
-
-  const allExpenses: LocalExpense[] = [
-    ...localExpenses,
-    ...serverExpenses.map((e) => ({
-      id: e.id,
-      date: e.date,
-      category: e.category,
-      spentAmount: e.spentAmount,
-      spentCurrency: e.spentCurrency,
-      baseAmount: e.baseAmount,
-      memo: e.memo,
-      participants: e.participants,
-    })),
-  ];
+  const allExpenses: LocalExpense[] = [...localExpenses, ...serverExpenses];
 
   const showToast = (message: string, type: "success" | "error" = "error") => {
     setToast({ message, type });
@@ -120,6 +124,18 @@ export default function GroupExpensesPage() {
       setLocalExpenses([]);
       setShowForm(false);
       setForm({ date: new Date().toISOString().slice(0, 10), category: "식비", spentAmount: "", spentCurrency: "JPY", memo: "", participants: "" });
+      api.get<any[]>(`/groups/${group.id}/expenses`)
+        .then((data) => setServerExpenses(data.map((e) => ({
+          id: e.id,
+          date: e.expenseDate?.slice(0, 10) ?? e.date ?? "",
+          category: e.category,
+          spentAmount: Number(e.spentAmount),
+          spentCurrency: e.spentCurrency as CurrencyCode,
+          baseAmount: Number(e.baseAmount),
+          memo: e.memo,
+          participants: e.participants ?? undefined,
+        }))))
+        .catch(console.error);
     } catch {
       showToast("지출 저장에 실패했습니다.");
     } finally {

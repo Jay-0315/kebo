@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router";
 import {
   ArrowLeft, Users, Crown, Calendar, TrendingUp,
   Copy, Check, UserPlus, Plus, X, Swords, Pencil, Camera, ChevronRight,
-  LogOut, Trash2, RefreshCw, AlertTriangle, CheckCircle2, AlertCircle,
+  LogOut, Trash2, RefreshCw, AlertTriangle, CheckCircle2, AlertCircle, UserCheck,
 } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
@@ -21,6 +21,7 @@ interface GroupMember {
   name: string;
   isHost: boolean;
   equippedCharacterId: number | null;
+  profilePhoto?: string | null;
 }
 
 interface Group {
@@ -31,6 +32,13 @@ interface Group {
   codeExpiresAt: string | null;
   members: GroupMember[];
   isHost: boolean;
+}
+
+interface JoinRequest {
+  id: number;
+  groupId: string;
+  userName: string;
+  createdAt: string;
 }
 
 interface LocalExpense {
@@ -67,11 +75,13 @@ const CATEGORY_EMOJI: Record<string, string> = {
 export default function GroupDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { expenses, profile, profilePhoto, isLoading } = useAppData();
+  const { profile, profilePhoto, isLoading } = useAppData();
   const { t, lang } = useLang();
 
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [group, setGroup] = useState<Group | undefined>(location.state?.group);
+  const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
+  const [groupExpenses, setGroupExpenses] = useState<any[]>([]);
 
   const [showInvite, setShowInvite] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
@@ -220,6 +230,48 @@ export default function GroupDetailPage() {
     }
   };
 
+  useEffect(() => {
+    if (!group?.id) return;
+    api.get<any[]>(`/groups/${group.id}/expenses`)
+      .then(setGroupExpenses)
+      .catch(console.error);
+  }, [group?.id]);
+
+  useEffect(() => {
+    if (!group?.isHost) return;
+    api.get<any[]>(`/groups/${group.id}/requests`)
+      .then((requests) =>
+        setJoinRequests(
+          requests.map((r) => ({
+            id: r.id,
+            groupId: group.id,
+            userName: r.user.name,
+            createdAt: r.createdAt,
+          })),
+        ),
+      )
+      .catch(console.error);
+  }, [group?.id, group?.isHost]);
+
+  const handleApproveRequest = async (req: JoinRequest) => {
+    if (!group) return;
+    try {
+      await api.patch(`/groups/${req.groupId}/requests/${req.id}`, { action: "APPROVED" });
+      navigate(0);
+    } catch (e: any) {
+      showToast(e.message || "승인에 실패했습니다.");
+    }
+  };
+
+  const handleRejectRequest = async (req: JoinRequest) => {
+    try {
+      await api.patch(`/groups/${req.groupId}/requests/${req.id}`, { action: "REJECTED" });
+      setJoinRequests((prev) => prev.filter((r) => r.id !== req.id));
+    } catch (e: any) {
+      showToast(e.message || "거절에 실패했습니다.");
+    }
+  };
+
   if (!group) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
@@ -243,11 +295,7 @@ export default function GroupDetailPage() {
     setTimeout(() => setCodeCopied(false), 2000);
   };
 
-  const serverExpenses = expenses.filter((e) => e.group === group.name);
-  const allExpenses = [
-    ...localExpenses.map((e) => ({ ...e, baseAmount: Math.round(e.spentAmount * (e.spentCurrency === "JPY" ? 9.1 : 1)) })),
-    ...serverExpenses,
-  ];
+  const allExpenses = groupExpenses;
 
   const goToExpenses = (openForm = false) =>
     navigate(`/groups/${group.id}/expenses`, { state: { group, localExpenses, openForm } });
@@ -285,7 +333,16 @@ export default function GroupDetailPage() {
             </div>
           </div>
           <button
-            onClick={() => setShowInvite(!showInvite)}
+            onClick={() => {
+              const opening = !showInvite;
+              setShowInvite(opening);
+              if (opening) {
+                navigator.clipboard.writeText(group.code).catch(() => {});
+                setCodeCopied(true);
+                setTimeout(() => setCodeCopied(false), 2000);
+                showToast("초대 코드가 복사됐습니다.", "success");
+              }
+            }}
             className={`flex items-center gap-2 rounded px-3 py-2 text-sm font-medium transition-all ${
               showInvite
                 ? "bg-primary/10 text-primary border border-primary/30"
@@ -312,6 +369,46 @@ export default function GroupDetailPage() {
                 {codeCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 {codeCopied ? t("group.copied") : t("group.copy")}
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* 가입 신청 목록 (호스트 전용) */}
+        {group.isHost && joinRequests.length > 0 && (
+          <div className="bg-card rounded-md border border-primary/20 p-5 space-y-3">
+            <h3 className="flex items-center gap-2 text-sm font-semibold">
+              <UserCheck className="w-4 h-4 text-primary" />
+              가입 신청
+              <span className="ml-auto bg-destructive text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 leading-none">
+                {joinRequests.length}
+              </span>
+            </h3>
+            <div className="space-y-2">
+              {joinRequests.map((req) => (
+                <div key={req.id} className="flex items-center gap-3 bg-muted rounded-md p-3">
+                  <div className="w-8 h-8 rounded-full bg-primary/70 flex items-center justify-center text-white text-sm font-bold shrink-0">
+                    {req.userName[0]}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{req.userName}</p>
+                    <p className="text-xs text-muted-foreground">{new Date(req.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    <button
+                      onClick={() => handleApproveRequest(req)}
+                      className="bg-primary/80 text-primary-foreground rounded px-3 py-1.5 text-xs font-medium hover:shadow-md transition-all"
+                    >
+                      {t("groups.approve")}
+                    </button>
+                    <button
+                      onClick={() => handleRejectRequest(req)}
+                      className="bg-destructive/10 text-destructive rounded px-3 py-1.5 text-xs font-medium hover:bg-destructive/20 transition-all"
+                    >
+                      {t("groups.reject")}
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -361,11 +458,9 @@ export default function GroupDetailPage() {
                   >
                     <div className={`rounded-full ${hasStory ? "p-[2px] bg-card" : ""}`}>
                       <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/70 to-accent/80 flex items-center justify-center overflow-hidden">
-                        {profilePhoto && isMe ? (
-                          <img src={profilePhoto} alt={member.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-white font-bold text-xl leading-none">{member.name[0]}</span>
-                        )}
+                        {(isMe ? profilePhoto : member.profilePhoto)
+                          ? <img src={(isMe ? profilePhoto : member.profilePhoto)!} alt={member.name} className="w-full h-full object-cover" />
+                          : <span className="text-white font-bold text-xl leading-none">{member.name[0]}</span>}
                       </div>
                     </div>
                   </div>

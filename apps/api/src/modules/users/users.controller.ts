@@ -21,4 +21,9 @@ export class UsersController {
   updateSettings(@Param("id") id: string, @Body() dto: UpdateUserSettingsDto) {
     return this.usersService.updateSettings(id, dto);
   }
+
+  @Patch(":id/photo")
+  updateProfilePhoto(@Param("id") id: string, @Body() body: { photo: string | null }) {
+    return this.usersService.updateProfilePhoto(id, body.photo);
+  }
 }

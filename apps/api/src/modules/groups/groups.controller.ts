@@ -67,6 +67,11 @@ export class GroupsController {
     return this.groupsService.sendJoinRequest(id, user.sub);
   }
 
+  @Get(":id/expenses")
+  getGroupExpenses(@Param("id") id: string, @CurrentUser() user: any) {
+    return this.groupsService.getGroupExpenses(id, user.sub);
+  }
+
   @Get(":id/requests")
   getPendingRequests(@Param("id") id: string, @CurrentUser() user: any) {
     return this.groupsService.getPendingRequests(id, user.sub);

@@ -54,10 +54,10 @@ const RARITY_GLOW: Record<CharacterRarity, string> = {
 
 function getMissions(t: TFunc) {
   return [
-    { icon: <CheckCircle2 className="w-4 h-4 text-green-400" />,  label: t("mission.attendance"), reward: "+5P",  desc: t("mission.attendance_desc") },
-    { icon: <Flame        className="w-4 h-4 text-orange-400" />, label: t("mission.record"),     reward: "+5P",  desc: t("mission.record_desc") },
-    { icon: <Zap          className="w-4 h-4 text-blue-400"   />, label: t("mission.write"),      reward: "+5P",  desc: t("mission.write_desc") },
-    { icon: <Sparkles     className="w-4 h-4 text-pink-400"   />, label: t("mission.streak"),     reward: "+2P",  desc: t("mission.streak_desc") },
+    { icon: <CheckCircle2 className="w-4 h-4 text-green-400" />,  label: t("mission.attendance"), reward: "+50P",  desc: t("mission.attendance_desc") },
+    { icon: <Flame        className="w-4 h-4 text-orange-400" />, label: t("mission.record"),     reward: "+50P",  desc: t("mission.record_desc") },
+    { icon: <Zap          className="w-4 h-4 text-blue-400"   />, label: t("mission.write"),      reward: "+50P",  desc: t("mission.write_desc") },
+    { icon: <Sparkles     className="w-4 h-4 text-pink-400"   />, label: t("mission.streak"),     reward: "+20P",  desc: t("mission.streak_desc") },
   ];
 }
 

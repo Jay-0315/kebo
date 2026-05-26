@@ -61,12 +61,12 @@ export const RARITY_BORDER: Record<CharacterRarity, string> = {
 };
 
 export const RARITY_DUPLICATE_POINTS: Record<CharacterRarity, number> = {
-  common: 5,
-  uncommon: 10,
-  rare: 20,
-  epic: 30,
-  legendary: 60,
-  mythic: 120,
+  common: 50,
+  uncommon: 100,
+  rare: 200,
+  epic: 300,
+  legendary: 600,
+  mythic: 1200,
 };
 
 // Gacha pull rates (sum = 100)

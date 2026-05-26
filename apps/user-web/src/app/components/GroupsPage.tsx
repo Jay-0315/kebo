@@ -5,7 +5,6 @@ import {
   X,
   Users,
   Crown,
-  Bell,
   Search,
   TrendingUp,
   ChevronRight,
@@ -20,6 +19,7 @@ interface GroupMember {
   id: string;
   name: string;
   isHost: boolean;
+  profilePhoto?: string | null;
 }
 
 interface Group {
@@ -65,7 +65,6 @@ export default function GroupsPage() {
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupIsPublic, setNewGroupIsPublic] = useState(false);
   const [joinCode, setJoinCode] = useState("");
-  const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const showToast = (message: string, type: "success" | "error" = "error") => {
@@ -73,24 +72,8 @@ export default function GroupsPage() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  const loadGroups = useCallback(async () => {
-    try {
-      setLoading(true);
-      const [myGroups, allPublic] = await Promise.all([
-        api.get<Group[]>("/groups"),
-        api.get<AvailableGroup[]>("/groups/search"),
-      ]);
-      setGroups(myGroups);
-      setPublicGroups(allPublic);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const loadJoinRequests = useCallback(async () => {
-    const hostGroups = groups.filter((g: Group) => g.isHost);
+  const fetchJoinRequestsForGroups = async (myGroups: Group[]) => {
+    const hostGroups = myGroups.filter((g) => g.isHost);
     const allRequests: JoinRequest[] = [];
     for (const group of hostGroups) {
       try {
@@ -109,17 +92,28 @@ export default function GroupsPage() {
       }
     }
     setJoinRequests(allRequests);
-  }, [groups]);
+  };
+
+  const loadGroups = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [myGroups, allPublic] = await Promise.all([
+        api.get<Group[]>("/groups"),
+        api.get<AvailableGroup[]>("/groups/search"),
+      ]);
+      setGroups(myGroups);
+      setPublicGroups(allPublic);
+      await fetchJoinRequestsForGroups(myGroups);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadGroups();
   }, [loadGroups]);
-
-  useEffect(() => {
-    if (showNotifications) {
-      loadJoinRequests();
-    }
-  }, [showNotifications, loadJoinRequests]);
 
   useEffect(() => {
     if (joinMethod !== "request") return;
@@ -175,29 +169,6 @@ export default function GroupsPage() {
     }
   }
 
-  async function handleApproveRequest(request: JoinRequest) {
-    try {
-      await api.patch(`/groups/${request.groupId}/requests/${request.id}`, {
-        action: "APPROVED",
-      });
-      setJoinRequests((prev) => prev.filter((r) => r.id !== request.id));
-      await loadGroups();
-    } catch (e: any) {
-      showToast(e.message || "승인에 실패했습니다.");
-    }
-  }
-
-  async function handleRejectRequest(request: JoinRequest) {
-    try {
-      await api.patch(`/groups/${request.groupId}/requests/${request.id}`, {
-        action: "REJECTED",
-      });
-      setJoinRequests((prev) => prev.filter((r) => r.id !== request.id));
-    } catch (e: any) {
-      showToast(e.message || "거절에 실패했습니다.");
-    }
-  }
-
   const filteredGroups = availableGroups.filter((g) =>
     g.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
@@ -233,18 +204,6 @@ export default function GroupsPage() {
         <h2 className="shrink-0">{t("groups.title")}</h2>
         <div className="flex gap-2 shrink-0">
           <button
-            onClick={() => setShowNotifications(!showNotifications)}
-            title="알림"
-            className="relative bg-accent text-accent-foreground rounded-md w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all"
-          >
-            <Bell className="w-5 h-5" />
-            {joinRequests.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-destructive text-white text-[10px] w-4.5 h-4.5 rounded-full flex items-center justify-center font-bold leading-none min-w-[18px] min-h-[18px]">
-                {joinRequests.length}
-              </span>
-            )}
-          </button>
-          <button
             onClick={() => setShowJoinForm(true)}
             title="그룹 참가"
             className="bg-secondary text-secondary-foreground rounded-md w-10 h-10 flex items-center justify-center shadow-sm hover:shadow-md active:scale-95 transition-all"
@@ -261,52 +220,6 @@ export default function GroupsPage() {
         </div>
       </div>
 
-      {/* Notifications Panel */}
-      {showNotifications && (
-        <div className="bg-card rounded-md p-5 shadow-lg border border-border">
-          <h3 className="mb-4 flex items-center gap-2">
-            <Bell className="w-5 h-5 text-primary/80" />
-            {t("groups.join_requests")}
-          </h3>
-          {joinRequests.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">
-              {t("groups.no_requests")}
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {joinRequests.map((request) => (
-                <div key={request.id} className="bg-muted rounded p-4">
-                  <div className="mb-3">
-                    <p className="font-medium">
-                      {request.userName}
-                      {t("groups.member_suffix")}이 가입을 요청했습니다
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      그룹: {request.groupName} ·{" "}
-                      {new Date(request.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleApproveRequest(request)}
-                      className="flex-1 bg-primary/80 text-primary-foreground rounded py-2 text-sm font-medium hover:shadow-md transition-all"
-                    >
-                      {t("groups.approve")}
-                    </button>
-                    <button
-                      onClick={() => handleRejectRequest(request)}
-                      className="flex-1 bg-destructive/10 text-destructive rounded py-2 text-sm font-medium hover:bg-destructive/20 transition-all"
-                    >
-                      {t("groups.reject")}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Group Cards Grid */}
       {loading ? (
         <p className="text-center text-muted-foreground py-12">
@@ -321,6 +234,7 @@ export default function GroupsPage() {
           {groups.map((group) => {
             const visibleMembers = group.members.slice(0, MAX_VISIBLE_AVATARS);
             const extraCount = group.members.length - MAX_VISIBLE_AVATARS;
+            const pendingCount = joinRequests.filter((r) => r.groupId === group.id).length;
 
             return (
               <button
@@ -328,8 +242,13 @@ export default function GroupsPage() {
                 onClick={() =>
                   navigate(`/groups/${group.id}`, { state: { group } })
                 }
-                className="bg-card rounded-md p-5 border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-left group"
+                className="relative bg-card rounded-md p-5 border border-border shadow-sm hover:shadow-md hover:border-primary/30 transition-all text-left group"
               >
+                {pendingCount > 0 && (
+                  <span className="absolute top-2.5 right-2.5 bg-destructive text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 leading-none">
+                    {pendingCount}
+                  </span>
+                )}
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -359,11 +278,12 @@ export default function GroupsPage() {
                       title={member.name}
                     >
                       <div className="w-9 h-9 rounded-full bg-primary/80 flex items-center justify-center text-white text-sm font-medium ring-2 ring-card overflow-hidden">
-                        {member.id === profile.id && profilePhoto ? (
-                          <img src={profilePhoto} alt={member.name} className="w-full h-full object-cover" />
-                        ) : (
-                          member.name[0]
-                        )}
+                        {(() => {
+                          const photo = member.id === profile.id ? profilePhoto : member.profilePhoto;
+                          return photo
+                            ? <img src={photo} alt={member.name} className="w-full h-full object-cover" />
+                            : member.name[0];
+                        })()}
                       </div>
                       {member.isHost && (
                         <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-yellow-500 rounded-full flex items-center justify-center">

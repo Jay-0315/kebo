@@ -26,12 +26,23 @@ export class UsersService {
       role: user.role,
       baseCountryCode: user.baseCountryCode,
       baseCurrency: user.baseCurrency,
+      profilePhoto: user.profilePhoto ?? null,
       settings: user.settings ?? {
         notifications: true,
         darkMode: true,
         autoBackup: false,
       },
     };
+  }
+
+  async updateProfilePhoto(userId: string, photo: string | null) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException("사용자를 찾을 수 없습니다.");
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { profilePhoto: photo },
+    });
+    return { success: true };
   }
 
   async updateProfile(userId: string, dto: UpdateUserProfileDto) {

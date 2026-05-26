@@ -261,7 +261,7 @@ return (
                   className="flex items-center justify-between p-3 rounded bg-muted hover:bg-accent/30 transition-colors"
                 >
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{post.content}</p>
+                    <p className="font-medium truncate">{post.content.replace(/<[^>]*>/g, "").trim() || "(내용 없음)"}</p>
                     <p className="text-sm text-muted-foreground">
                       💬 {post.commentCount} · {t("mypage.post_likes_prefix")}{post.likes}
                     </p>

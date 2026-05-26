@@ -34,7 +34,7 @@ import type {
 } from "../types/domain";
 
 const SETTINGS_STORAGE_KEY = "kebo-local-settings";
-const PROFILE_PHOTO_KEY = "kebo-profile-photo";
+const profilePhotoKey = (userId: string) => `kebo-profile-photo-${userId}`;
 
 interface AppDataContextValue {
   hasInitialized: boolean;
@@ -187,16 +187,20 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   );
   const [remoteExchangeRates, setRemoteExchangeRates] = useState<ExchangeRate[]>(exchangeRates);
   const [profilePhoto, setProfilePhoto] = useState<string | null>(() => {
-    return localStorage.getItem(PROFILE_PHOTO_KEY);
+    const userId = getStoredUser()?.id;
+    return userId ? localStorage.getItem(profilePhotoKey(userId)) : null;
   });
 
   const updateProfilePhoto = (photo: string | null) => {
+    const userId = getStoredUser()?.id;
+    if (!userId) return;
     if (photo === null) {
-      localStorage.removeItem(PROFILE_PHOTO_KEY);
+      localStorage.removeItem(profilePhotoKey(userId));
     } else {
-      localStorage.setItem(PROFILE_PHOTO_KEY, photo);
+      localStorage.setItem(profilePhotoKey(userId), photo);
     }
     setProfilePhoto(photo);
+    api.patch(`/users/${userId}/photo`, { photo }).catch(console.error);
   };
 
   useEffect(() => {
@@ -225,6 +229,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
           email: string;
           baseCountryCode: string;
           baseCurrency: CurrencyCode;
+          profilePhoto?: string | null;
           settings?: AppSettings;
         }>(`/users/${currentUser.id}/profile`),
         api.get<Record<string, unknown>[]>(`/expenses?userId=${currentUser.id}`),
@@ -243,6 +248,15 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         baseCurrency: p.baseCurrency,
       });
       if (p.settings) setSettings((prev) => ({ ...(p.settings as AppSettings), language: prev.language }));
+      if (p.profilePhoto !== undefined) {
+        const key = profilePhotoKey(p.id);
+        if (p.profilePhoto) {
+          localStorage.setItem(key, p.profilePhoto);
+          setProfilePhoto(p.profilePhoto);
+        } else if (!localStorage.getItem(key)) {
+          setProfilePhoto(null);
+        }
+      }
     }
     if (expensesResult.status === "fulfilled") {
       setExpenses(expensesResult.value.map(mapExpense));

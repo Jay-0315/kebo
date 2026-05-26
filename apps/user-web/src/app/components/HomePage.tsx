@@ -114,7 +114,7 @@ export default function HomePage() {
                 <div
                   key={post.id}
                   className="bg-card rounded border border-border p-4 hover:border-primary/30 transition-colors cursor-pointer"
-                  onClick={() => navigate("/community")}
+                  onClick={() => navigate(`/community/${post.id}`)}
                 >
                   {/* Author row */}
                   <div className="flex items-center gap-3 mb-3">

@@ -4,9 +4,10 @@ interface UserAvatarProps {
   authorId: string;
   authorName: string;
   size?: "xs" | "sm" | "md" | "lg";
+  photoUrl?: string | null;
 }
 
-export default function UserAvatar({ authorId, authorName, size = "md" }: UserAvatarProps) {
+export default function UserAvatar({ authorId, authorName, size = "md", photoUrl }: UserAvatarProps) {
   const { profile, profilePhoto } = useAppData();
 
   const sizeClass = {
@@ -16,10 +17,12 @@ export default function UserAvatar({ authorId, authorName, size = "md" }: UserAv
     lg: "w-14 h-14 text-xl",
   }[size];
 
-  if (authorId === profile.id && profilePhoto) {
+  const displayPhoto = authorId === profile.id ? profilePhoto : photoUrl;
+
+  if (displayPhoto) {
     return (
       <img
-        src={profilePhoto}
+        src={displayPhoto}
         alt={authorName}
         className={`${sizeClass} rounded-full object-cover shrink-0`}
       />

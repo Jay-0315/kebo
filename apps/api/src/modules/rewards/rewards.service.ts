@@ -26,12 +26,12 @@ const TITLE_ACHIEVEMENTS: { titleId: number; type: string; value: number }[] = [
 
 // Character rarity duplicate point values (mirrors frontend constants)
 const RARITY_DUPLICATE_POINTS: Record<string, number> = {
-  common: 5,
-  uncommon: 10,
-  rare: 20,
-  epic: 30,
-  legendary: 60,
-  mythic: 120,
+  common: 50,
+  uncommon: 100,
+  rare: 200,
+  epic: 300,
+  legendary: 600,
+  mythic: 1200,
 };
 
 // Gacha pool: characterId → rarity (212 gacha characters)
@@ -396,7 +396,7 @@ export class RewardsService {
       ).size;
       const shared = expenses.filter((e) => e.sharedToCommunity).length;
       const missionPoints =
-        attendanceDays * 5 + Math.min(expenses.length, 30) * 3 + shared * 8 + posts * 5;
+        attendanceDays * 50 + Math.min(expenses.length, 30) * 30 + shared * 80 + posts * 50;
       const streakDays = Math.min(attendanceDays, 7);
 
       reward = await this.prisma.userReward.create({
@@ -661,14 +661,15 @@ export class RewardsService {
     const streakDays = this.calcStreak(uniqueDates, today);
 
     let pointsDelta = 0;
-    if (attendanceDays > reward.attendanceDays) pointsDelta += 5; // 새 출석일 +5P
+    if (attendanceDays > reward.attendanceDays) pointsDelta += 50; // 새 출석일 +50P
+    if (streakDays > reward.streakDays && streakDays > 1) pointsDelta += 20; // 연속 출석 +20P
 
-    // 그룹 지출 기록: 건당 5P, 하루 최대 3회
+    // 그룹 지출 기록: 건당 50P, 하루 최대 3회
     if (isGroupExpense) {
       const todayGroupCount = expenses.filter(
         (e) => e.groupId && e.expenseDate.toISOString().slice(0, 10) === today,
       ).length;
-      if (todayGroupCount <= 3) pointsDelta += 5;
+      if (todayGroupCount <= 3) pointsDelta += 50;
     }
 
     await this.prisma.userReward.update({
@@ -685,7 +686,7 @@ export class RewardsService {
     await this.getOrCreateReward(userId);
     await this.prisma.userReward.update({
       where: { userId },
-      data: { missionPoints: { increment: 5 } },
+      data: { missionPoints: { increment: 50 } },
     });
   }
 
