@@ -1,5 +1,5 @@
 export type Lang = "ko" | "ja";
-
+ 
 const dict = {
   ko: {
     // Nav
