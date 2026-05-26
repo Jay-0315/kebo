@@ -15,7 +15,7 @@ import type { CharacterDef } from "../data/characters";
 import { getPixelEmoji } from "./PixelEmojis";
 import { loadStories, formatRelativeTime } from "../lib/story-storage";
 import type { StoryEntry } from "../lib/story-storage";
-
+ 
 interface GroupMember {
   id: string;
   name: string;
