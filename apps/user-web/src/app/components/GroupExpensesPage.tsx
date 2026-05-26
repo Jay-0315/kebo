@@ -210,9 +210,13 @@ export default function GroupExpensesPage() {
             <input
               type="number"
               value={form.participants}
-              onChange={(e) => setForm({ ...form, participants: e.target.value })}
               placeholder={t("expense.participants_placeholder")}
               min="1"
+              max={group.members.length}
+              onChange={(e) => {
+                const val = Math.min(Number(e.target.value), group.members.length);
+                setForm({ ...form, participants: val > 0 ? String(val) : "" });
+              }}
               className="w-full px-3 py-2 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
             />
           </div>
