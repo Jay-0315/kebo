@@ -4,24 +4,34 @@ import { PrismaService } from "../prisma/prisma.service";
 const TITLE_ACHIEVEMENTS: { titleId: number; type: string; value: number }[] = [
   { titleId: 1,  type: "expense_count", value: 1 },
   { titleId: 2,  type: "attendance",    value: 3 },
-  { titleId: 3,  type: "points",        value: 100 },
-  { titleId: 4,  type: "expense_count", value: 30 },
-  { titleId: 5,  type: "attendance",    value: 30 },
-  { titleId: 6,  type: "post_count",    value: 5 },
-  { titleId: 7,  type: "post_count",    value: 10 },
-  { titleId: 8,  type: "expense_count", value: 100 },
-  { titleId: 9,  type: "streak",        value: 30 },
-  { titleId: 10, type: "points",        value: 2000 },
-  { titleId: 11, type: "streak",        value: 50 },
-  { titleId: 12, type: "expense_count", value: 500 },
-  { titleId: 13, type: "attendance",    value: 180 },
-  { titleId: 14, type: "points",        value: 10000 },
-  { titleId: 15, type: "post_count",    value: 100 },
-  { titleId: 16, type: "expense_count", value: 1000 },
-  { titleId: 17, type: "attendance",    value: 365 },
-  { titleId: 18, type: "points",        value: 50000 },
-  { titleId: 19, type: "streak",        value: 100 },
-  { titleId: 20, type: "expense_count", value: 5000 },
+  { titleId: 3,  type: "points",        value: 50 },
+  { titleId: 4,  type: "expense_count", value: 15 },
+  { titleId: 5,  type: "attendance",    value: 20 },
+  { titleId: 6,  type: "share_count",   value: 5 },
+  { titleId: 7,  type: "post_count",    value: 7 },
+  { titleId: 8,  type: "expense_count", value: 50 },
+  { titleId: 9,  type: "streak",        value: 20 },
+  { titleId: 10, type: "points",        value: 1000 },
+  { titleId: 11, type: "share_count",   value: 20 },
+  { titleId: 12, type: "expense_count", value: 150 },
+  { titleId: 13, type: "attendance",    value: 90 },
+  { titleId: 14, type: "points",        value: 5000 },
+  { titleId: 15, type: "post_count",    value: 50 },
+  { titleId: 16, type: "expense_count", value: 400 },
+  { titleId: 17, type: "attendance",    value: 200 },
+  { titleId: 18, type: "points",        value: 15000 },
+  { titleId: 19, type: "streak",        value: 60 },
+  { titleId: 20, type: "expense_count", value: 1500 },
+  { titleId: 21, type: "share_count",   value: 1 },
+  { titleId: 22, type: "post_count",    value: 1 },
+  { titleId: 23, type: "streak",        value: 3 },
+  { titleId: 24, type: "points",        value: 300 },
+  { titleId: 25, type: "streak",        value: 7 },
+  { titleId: 26, type: "post_count",    value: 20 },
+  { titleId: 27, type: "attendance",    value: 60 },
+  { titleId: 28, type: "streak",        value: 45 },
+  { titleId: 29, type: "share_count",   value: 30 },
+  { titleId: 30, type: "post_count",    value: 150 },
 ];
 
 // Character rarity duplicate point values (mirrors frontend constants)
@@ -582,14 +592,16 @@ export class RewardsService {
 
   async checkAndGrantTitles(userId: string) {
     const reward = await this.getOrCreateReward(userId);
-    const [expenseCount, postCount] = await Promise.all([
+    const [expenseCount, postCount, shareCount] = await Promise.all([
       this.prisma.expense.count({ where: { userId } }),
       this.prisma.communityPost.count({ where: { userId } }),
+      this.prisma.expense.count({ where: { userId, sharedToCommunity: true } }),
     ]);
 
     const stats: Record<string, number> = {
       expense_count: expenseCount,
       post_count: postCount,
+      share_count: shareCount,
       attendance: reward.attendanceDays,
       streak: reward.streakDays,
       points: reward.totalPointsUsed,
