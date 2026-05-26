@@ -165,7 +165,7 @@ export default function GroupExpensesPage() {
                 onChange={(e) => setForm({ ...form, category: e.target.value })}
                 className="w-full px-3 py-2 bg-input-background rounded border border-border focus:outline-none focus:ring-2 focus:ring-ring text-sm"
               >
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                {CATEGORIES.map((c) => <option key={c} value={c}>{t(`cat.${c}` as Parameters<typeof t>[0])}</option>)}
               </select>
             </div>
           </div>
@@ -242,7 +242,7 @@ export default function GroupExpensesPage() {
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate">{expense.memo}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {expense.date} · {expense.category}
+                  {expense.date} · {t(`cat.${expense.category}` as Parameters<typeof t>[0])}
                   {expense.participants ? ` · ${expense.participants}명` : ""}
                 </p>
               </div>

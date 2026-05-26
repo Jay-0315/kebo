@@ -429,7 +429,7 @@ export default function GroupDetailPage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{expense.memo}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {expense.date} · {expense.category}
+                        {expense.date} · {t(`cat.${expense.category}` as Parameters<typeof t>[0])}
                         {"participants" in expense && expense.participants ? ` · ${expense.participants}명` : ""}
                       </p>
                     </div>

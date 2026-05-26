@@ -12,6 +12,7 @@ import {
   Share2,
 } from "lucide-react";
 import { useAppData } from "../context/AppDataContext";
+import { useLang } from "../context/LangContext";
 import {
   formatCurrency,
   getCountryByCode,
@@ -46,6 +47,7 @@ export default function ExpensesPage() {
     updateExpense,
     deleteExpense,
   } = useAppData();
+  const { t } = useLang();
   const [showForm, setShowForm] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [editingExpenseId, setEditingExpenseId] = useState<string | null>(null);
@@ -173,7 +175,7 @@ export default function ExpensesPage() {
                   <option value="">선택</option>
                   {categories.map((category) => (
                     <option key={category} value={category}>
-                      {category}
+                      {t(`cat.${category}` as Parameters<typeof t>[0])}
                     </option>
                   ))}
                 </select>
@@ -327,7 +329,7 @@ export default function ExpensesPage() {
               >
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded">
-                    {expense.category}
+                    {t(`cat.${expense.category}` as Parameters<typeof t>[0])}
                   </span>
                   <span className="bg-secondary/20 text-secondary-foreground text-xs px-2 py-1 rounded">
                     {getCountryByCode(expense.countryCode).flag} {expense.spentCurrency}
