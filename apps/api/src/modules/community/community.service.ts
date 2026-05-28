@@ -259,7 +259,7 @@ export class CommunityService {
       data: {
         postId,
         userId: dto.userId,
-        content: dto.content,
+        content: dto.content ?? "",
         imageUrl: dto.imageUrl ?? null,
         parentId: dto.parentId ? BigInt(dto.parentId) : null,
       },

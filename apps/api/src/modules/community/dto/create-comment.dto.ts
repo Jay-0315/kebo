@@ -4,8 +4,9 @@ export class CreateCommentDto {
   @IsString()
   userId: string;
 
+  @IsOptional()
   @IsString()
-  content: string;
+  content?: string;
 
   @IsOptional()
   @IsString()

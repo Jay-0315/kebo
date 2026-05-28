@@ -225,7 +225,8 @@ export default function PostDetailPage() {
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentContent.trim() || !currentUser || !id || submitting) return;
+    if (!commentContent.trim() && !commentImage) return;
+    if (!currentUser || !id || submitting) return;
     setSubmitting(true);
     try {
       if (editingComment) {
@@ -378,7 +379,6 @@ export default function PostDetailPage() {
             placeholder={t("comment.placeholder")}
             rows={3}
             className="w-full px-3 py-2 bg-input-background rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-ring resize-none text-sm"
-            required
           />
 
           {commentImage ? (
@@ -406,7 +406,7 @@ export default function PostDetailPage() {
             <input ref={commentFileRef} type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleCommentImage} />
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || (!commentContent.trim() && !commentImage)}
               className="px-4 py-1.5 bg-primary/80 text-primary-foreground rounded-md text-sm font-medium hover:shadow-md transition-all disabled:opacity-60"
             >
               {submitting ? "..." : editingComment ? t("comment.edit_btn") : t("comment.submit_btn")}
