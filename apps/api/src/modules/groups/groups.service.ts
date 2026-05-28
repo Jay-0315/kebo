@@ -7,6 +7,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
+import { NotificationGateway } from "../gateway/notification.gateway";
 import { CreateGroupDto } from "./dto/create-group.dto";
 import { HandleJoinRequestDto } from "./dto/handle-request.dto";
 import { JoinByCodeDto } from "./dto/join-group.dto";
@@ -25,7 +26,10 @@ function generateCode(): string {
 
 @Injectable()
 export class GroupsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gateway: NotificationGateway,
+  ) {}
 
   private get memberInclude() {
     return {
@@ -194,7 +198,20 @@ export class GroupsService {
     });
     if (existing) throw new ConflictException("이미 가입 요청을 보냈습니다.");
 
-    await this.prisma.groupJoinRequest.create({ data: { groupId, userId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+    const request = await this.prisma.groupJoinRequest.create({ data: { groupId, userId } });
+
+    this.gateway.emitToGroup(groupId, "group:joinRequest", {
+      id: Number(request.id),
+      groupId,
+      userId,
+      userName: user?.name ?? "사용자",
+      createdAt: request.createdAt,
+    });
+
     return { success: true };
   }
 
@@ -233,6 +250,11 @@ export class GroupsService {
         update: {},
       });
     }
+
+    this.gateway.emitToGroup(groupId, "group:requestHandled", {
+      requestId: Number(reqId),
+      action: dto.action,
+    });
 
     return { success: true, action: dto.action };
   }

@@ -1,10 +1,11 @@
 import { Module } from "@nestjs/common";
 import { AuthModule } from "../auth/auth.module";
+import { GatewayModule } from "../gateway/gateway.module";
 import { GroupsController } from "./groups.controller";
 import { GroupsService } from "./groups.service";
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, GatewayModule],
   controllers: [GroupsController],
   providers: [GroupsService],
   exports: [GroupsService],

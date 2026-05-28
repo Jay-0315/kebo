@@ -25,6 +25,7 @@ function mapComment(c: Record<string, unknown>): Comment {
     postId: String(c.postId),
     authorId: String(c.authorId),
     authorName: String(c.authorName ?? "사용자"),
+    authorPhotoUrl: (c.authorPhotoUrl as string | null | undefined) ?? null,
     authorEquippedTitleId: (c.authorEquippedTitleId as number | null | undefined) ?? null,
     parentId: c.parentId != null ? String(c.parentId) : null,
     content: String(c.content),
@@ -56,7 +57,7 @@ function CommentCard({ comment, currentUserId, onReply, onDelete, onEdit, isRepl
       <div className="flex-1 bg-muted/40 rounded-lg p-3">
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <div className="flex items-center gap-2">
-            <UserAvatar authorId={comment.authorId} authorName={comment.authorName} size="xs" />
+            <UserAvatar authorId={comment.authorId} authorName={comment.authorName} size="xs" photoUrl={comment.authorPhotoUrl} />
             <span className="text-xs font-medium">{comment.authorName}</span>
             {comment.authorEquippedTitleId && (
               <TitleBadge titleId={comment.authorEquippedTitleId} size="xs" />
@@ -275,7 +276,7 @@ export default function PostDetailPage() {
       <div className="bg-card rounded border border-border p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-3">
-            <UserAvatar authorId={post.authorId} authorName={post.authorName} />
+            <UserAvatar authorId={post.authorId} authorName={post.authorName} photoUrl={post.authorPhotoUrl} />
             <div>
               <div className="flex items-center gap-2">
                 <p className="font-medium text-sm">{post.authorName}</p>

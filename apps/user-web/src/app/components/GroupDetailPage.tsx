@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router";
 import {
   ArrowLeft, Users, Crown, Calendar, TrendingUp,
@@ -8,6 +8,7 @@ import {
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { api } from "../lib/api";
+import { getSocket } from "../lib/socket";
 import type { CurrencyCode } from "../types/domain";
 import { PixelSprite } from "./PixelCharacter";
 import { CHARACTERS } from "../data/characters";
@@ -71,6 +72,7 @@ export default function GroupDetailPage() {
   const [showInvite, setShowInvite] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [localExpenses] = useState<LocalExpense[]>([]);
+  const groupIdRef = useRef<string | undefined>(undefined);
 
   /* ── Group management ── */
   const [showManage, setShowManage] = useState(false);
@@ -84,6 +86,16 @@ export default function GroupDetailPage() {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
   };
+
+  const refreshGroup = async (groupId: string) => {
+    try {
+      const updated = await api.get<Group>(`/groups/${groupId}`);
+      setGroup(updated);
+    } catch {
+      // group no longer accessible (deleted/kicked)
+    }
+  };
+
 
   /* ── Group management handlers ── */
   const handleDeleteGroup = async () => {
@@ -132,6 +144,33 @@ export default function GroupDetailPage() {
 
   useEffect(() => {
     if (!group?.id) return;
+    groupIdRef.current = group.id;
+    const socket = getSocket();
+    socket.emit("joinRoom", { groupId: group.id });
+
+    socket.on("group:joinRequest", (req: JoinRequest) => {
+      setJoinRequests((prev) => {
+        if (prev.some((r) => r.id === req.id)) return prev;
+        return [...prev, req];
+      });
+    });
+
+    socket.on("group:requestHandled", ({ requestId, action }: { requestId: number; action: string }) => {
+      setJoinRequests((prev) => prev.filter((r) => r.id !== requestId));
+      if (action === "APPROVED" && groupIdRef.current) {
+        refreshGroup(groupIdRef.current);
+      }
+    });
+
+    return () => {
+      socket.emit("leaveRoom", { groupId: group.id });
+      socket.off("group:joinRequest");
+      socket.off("group:requestHandled");
+    };
+  }, [group?.id]);
+
+  useEffect(() => {
+    if (!group?.id) return;
     api.get<any[]>(`/groups/${group.id}/expenses`)
       .then(setGroupExpenses)
       .catch(console.error);
@@ -157,7 +196,8 @@ export default function GroupDetailPage() {
     if (!group) return;
     try {
       await api.patch(`/groups/${req.groupId}/requests/${req.id}`, { action: "APPROVED" });
-      navigate(0);
+      setJoinRequests((prev) => prev.filter((r) => r.id !== req.id));
+      await refreshGroup(group.id);
     } catch (e: any) {
       showToast(e.message || "승인에 실패했습니다.");
     }
