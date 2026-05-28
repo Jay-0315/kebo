@@ -11,7 +11,6 @@ const dict = {
     "nav.kabemon": "캐보몬",
     "nav.mypage": "마이페이지",
     "nav.settings": "설정",
-    "nav.explorer": "환율 탐험가",
     "nav.logout": "로그아웃",
     // Home
     "home.write": "글쓰기",
@@ -120,8 +119,6 @@ const dict = {
     "kabemon.days": "일",
     "kabemon.times": "회",
     "kabemon.next_unlock": "다음 해금:",
-    "kabemon.unlock_at_suffix": " 도달 시 해금",
-    "kabemon.points_to_next_prefix": "다음 레벨까지 ",
     "kabemon.all_unlocked": "모든 캐릭터 수집 완료!",
     "kabemon.mission_guide": "미션 가이드",
     "kabemon.mission_footer":
@@ -130,8 +127,6 @@ const dict = {
     "kabemon.equipped": "장착 중",
     "kabemon.equipping": "장착 중...",
     "kabemon.all_rarity": "전체",
-    "kabemon.unlock_suffix": "에서 해금",
-    "kabemon.unlock_progress_suffix": " 해금",
     // Kabemon - 수집
     "kabemon.collection_count": "수집",
     "kabemon.gacha_tab": "뽑기",
@@ -145,7 +140,6 @@ const dict = {
     "kabemon.gacha_rates_title": "뽑기 확률",
     "kabemon.gacha_dupe_note": "중복 획득 시 포인트로 변환",
     "kabemon.gacha_dupe_rate": "변환량:",
-    "kabemon.gacha_pulling": "뽑는 중...",
     "kabemon.gacha_ceiling_label": "천장까지",
     "kabemon.gacha_ceiling_desc": "레전더리+ 확정",
     "kabemon.gacha_skip": "스킵",
@@ -211,7 +205,6 @@ const dict = {
     "mypage.no_posts": "아직 작성한 게시글이 없습니다.",
     "mypage.post_shared_suffix": "건",
     "mypage.post_likes_prefix": "좋아요 ",
-    "mypage.post_shared_prefix": "공유 내역 ",
     "mypage.currency_basis": " 기준",
     // Settings
     "settings.title": "설정",
@@ -293,7 +286,7 @@ const dict = {
     "comment.submit_btn": "등록",
     // Common
     "common.loading": "로딩 중...",
-    "common.user": "사용자",
+    "common.photo": "사진",
     // Signup
     "signup.title": "회원가입",
     "signup.subtitle": "가계부와 함께 시작해보세요",
@@ -421,7 +414,7 @@ const dict = {
     "comment.submit_btn": "登録",
     // Common
     "common.loading": "読み込み中...",
-    "common.user": "ユーザー",
+    "common.photo": "写真",
     // Nav
     "nav.menu": "メニュー",
     "nav.settings_section": "設定",
@@ -431,7 +424,6 @@ const dict = {
     "nav.kabemon": "ケボモン",
     "nav.mypage": "マイページ",
     "nav.settings": "設定",
-    "nav.explorer": "為替レート探検家",
     "nav.logout": "ログアウト",
     // Home
     "home.write": "投稿",
@@ -541,8 +533,6 @@ const dict = {
     "kabemon.days": "日",
     "kabemon.times": "回",
     "kabemon.next_unlock": "次の解禁:",
-    "kabemon.unlock_at_suffix": "到達で解禁",
-    "kabemon.points_to_next_prefix": "次のレベルまで",
     "kabemon.all_unlocked": "全キャラクターコレクション完了！",
     "kabemon.mission_guide": "ミッションガイド",
     "kabemon.mission_footer":
@@ -551,8 +541,6 @@ const dict = {
     "kabemon.equipped": "装備中",
     "kabemon.equipping": "装備中...",
     "kabemon.all_rarity": "全て",
-    "kabemon.unlock_suffix": "で解禁",
-    "kabemon.unlock_progress_suffix": "解禁",
     // Kabemon - コレクション
     "kabemon.collection_count": "コレクション",
     "kabemon.gacha_tab": "ガチャ",
@@ -566,7 +554,6 @@ const dict = {
     "kabemon.gacha_rates_title": "ガチャ確率",
     "kabemon.gacha_dupe_note": "重複取得時はポイントに変換",
     "kabemon.gacha_dupe_rate": "変換量:",
-    "kabemon.gacha_pulling": "ガチャ中...",
     "kabemon.gacha_ceiling_label": "天井まで",
     "kabemon.gacha_ceiling_desc": "レジェンダリー+確定",
     "kabemon.gacha_skip": "スキップ",
@@ -632,7 +619,6 @@ const dict = {
     "mypage.no_posts": "まだ投稿した記事はありません。",
     "mypage.post_shared_suffix": "件",
     "mypage.post_likes_prefix": "いいね ",
-    "mypage.post_shared_prefix": "シェア履歴",
     "mypage.currency_basis": "基準",
     // Settings
     "settings.title": "設定",
