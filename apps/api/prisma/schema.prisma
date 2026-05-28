@@ -36,6 +36,7 @@ model User {
   profilePhoto    String?         @map("profile_photo") @db.LongText
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
+  lastLoginAt     DateTime?       @map("last_login_at")
   settings         AppSetting?
   expenses         Expense[]
   posts            CommunityPost[]
@@ -48,7 +49,6 @@ model User {
   hostedGroups     Group[]            @relation("GroupHost")
   groupMemberships GroupMember[]
   groupJoinRequests GroupJoinRequest[]
-
   @@map("users")
 }
 
@@ -116,6 +116,8 @@ model AppSetting {
   notifications Boolean  @default(true)
   darkMode      Boolean  @default(true) @map("dark_mode")
   autoBackup    Boolean  @default(false) @map("auto_backup")
+  themeColor    String   @default("emerald") @map("theme_color") @db.VarChar(20)
+  language      String   @default("ko") @db.VarChar(5)
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -250,3 +252,4 @@ model GroupJoinRequest {
   @@index([userId])
   @@map("group_join_requests")
 }
+

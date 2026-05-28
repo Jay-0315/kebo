@@ -514,8 +514,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const { language: _lang, ...serverSettings } = nextSettings as AppSettings;
-    await api.patch(`/users/${currentUser.id}/settings`, serverSettings);
+    await api.patch(`/users/${currentUser.id}/settings`, nextSettings);
     await refreshData();
   };
 

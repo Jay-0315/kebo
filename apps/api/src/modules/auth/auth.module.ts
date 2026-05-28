@@ -1,10 +1,12 @@
 import { Module } from "@nestjs/common";
+import { RewardsModule } from "../rewards/rewards.module";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./jwt.guard";
 import { JwtStrategy } from "./jwt.strategy";
 
 @Module({
+  imports: [RewardsModule],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard],
   exports: [JwtStrategy, JwtAuthGuard],

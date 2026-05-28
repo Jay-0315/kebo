@@ -3,7 +3,7 @@ import { Heart, Pencil, Users, ChevronRight, TrendingUp, MessageSquare } from "l
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { CHARACTERS } from "../data/characters";
-import { formatRelativeTime } from "../lib/story-storage";
+import { formatRelativeTime } from "../lib/date-utils";
 import TitleBadge from "./TitleBadge";
 import UserAvatar from "./UserAvatar";
 

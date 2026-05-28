@@ -1,4 +1,4 @@
-//2026/05/26일자 버전기준
+-- 2026-05-26일자 버전기준
 
 ALTER TABLE users
   ADD COLUMN profile_photo LONGTEXT NULL;
@@ -43,3 +43,11 @@ CREATE TABLE comments (
   CONSTRAINT fk_comments_user   FOREIGN KEY (user_id)   REFERENCES users(id)           ON DELETE CASCADE,
   CONSTRAINT fk_comments_parent FOREIGN KEY (parent_id) REFERENCES comments(id)         ON DELETE CASCADE
 );
+
+-- 2026-05-28: 설정 themeColor/language 추가
+ALTER TABLE app_settings
+  ADD COLUMN theme_color VARCHAR(20) NOT NULL DEFAULT 'emerald' AFTER auto_backup,
+  ADD COLUMN language    VARCHAR(5)  NOT NULL DEFAULT 'ko'      AFTER theme_color;
+
+-- 2026-05-28: 출석 로그인 기준 처리용 last_login_at 추가
+ALTER TABLE users ADD COLUMN last_login_at DATETIME NULL;

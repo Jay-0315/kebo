@@ -9,13 +9,17 @@ import { AuthProvider } from "@prisma/client";
 import { compare, hash } from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { PrismaService } from "../prisma/prisma.service";
+import { RewardsService } from "../rewards/rewards.service";
 import { LoginDto } from "./dto/login.dto";
 import { SocialLoginDto, SocialProvider } from "./dto/social-login.dto";
 import { SignupDto } from "./dto/signup.dto";
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly rewardsService: RewardsService,
+  ) {}
 
   async signup(dto: SignupDto) {
     const existing = await this.prisma.user.findUnique({
@@ -293,6 +297,8 @@ export class AuthService {
   ) {
     const needsStarter =
       needsStarterOverride ?? (await this.resolveNeedsStarter(user.id));
+
+    void this.rewardsService.recordAttendance(user.id);
 
     const token = jwt.sign(
       {

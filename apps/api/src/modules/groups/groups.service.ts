@@ -266,6 +266,8 @@ export class GroupsService {
     return { success: true };
   }
 
+  // ── 헬퍼 ────────────────────────────────────────────────────
+
   private async assertHost(groupId: string, userId: string) {
     const group = await this.prisma.group.findUnique({ where: { id: groupId } });
     if (!group) throw new NotFoundException("그룹을 찾을 수 없습니다.");

@@ -10,7 +10,6 @@ import GroupsPage from "./components/GroupsPage";
 import GroupDetailPage from "./components/GroupDetailPage";
 import MyPage from "./components/MyPage";
 import KabemonPage from "./components/KabemonPage";
-import StoryCreatePage from "./components/StoryCreatePage";
 import GroupExpensesPage from "./components/GroupExpensesPage";
 import SettingsPage from "./components/SettingsPage";
 import StarterSelectionPage from "./components/StarterSelectionPage";
@@ -84,7 +83,6 @@ export default function App() {
           <Route path="groups/:id/expenses" element={<GroupExpensesPage />} />
           <Route path="mypage" element={<MyPage />} />
           <Route path="kabemon" element={<KabemonPage />} />
-          <Route path="story/create" element={<StoryCreatePage />} />
           <Route path="settings" element={<SettingsPage />} />
           {/* Legacy redirect */}
           <Route path="mypage/character" element={<Navigate to="/kabemon" replace />} />

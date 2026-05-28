@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional } from "class-validator";
+import { IsBoolean, IsIn, IsOptional, IsString, MaxLength } from "class-validator";
 
 export class UpdateUserSettingsDto {
   @IsOptional()
@@ -12,4 +12,13 @@ export class UpdateUserSettingsDto {
   @IsOptional()
   @IsBoolean()
   autoBackup?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  themeColor?: string;
+
+  @IsOptional()
+  @IsIn(["ko", "ja"])
+  language?: string;
 }

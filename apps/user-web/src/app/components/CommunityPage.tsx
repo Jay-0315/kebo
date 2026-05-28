@@ -4,7 +4,7 @@ import RichTextEditor from "./RichTextEditor";
 import { useNavigate } from "react-router";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
-import { formatRelativeTime } from "../lib/story-storage";
+import { formatRelativeTime } from "../lib/date-utils";
 import TitleBadge from "./TitleBadge";
 import UserAvatar from "./UserAvatar";
 import type { CommunityPost, PostCategory } from "../types/domain";

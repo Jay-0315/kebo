@@ -8,7 +8,7 @@ import { getStoredUser } from "../lib/auth";
 import { compressImage } from "../lib/image-utils";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
-import { formatRelativeTime } from "../lib/story-storage";
+import { formatRelativeTime } from "../lib/date-utils";
 import TitleBadge from "./TitleBadge";
 import UserAvatar from "./UserAvatar";
 import type { CommunityPost, Comment, CommentsPage, PostCategory } from "../types/domain";

@@ -79,17 +79,37 @@ docker compose up --build
 - 공개 그룹 검색
 - 호스트 권한 이전
 - 그룹별 공유 지출 내역 관리
+- 멤버 목록에 장착 케보몬 표시 (프로필 아바타 우측 겹침)
+- 그룹 관리 메뉴: 호스트 → "그룹 관리" / 일반 멤버 → "그룹 설정" 분리
+
+### 케보몬 탭
+
+- 칭호 30종 (달성 조건: 지출 횟수 / 출석 / 연속 출석 / 포인트 / 게시글 / 공유)
+- 출석 기준 변경: 지출 등록 날짜 → **로그인 시각 기준 KTC 00시**
+- 연속 출석(streak) 실제 연속 날짜 계산으로 개선
+
+### 설정
+
+- 테마 색상 / 언어 설정 DB 영속화 — 언어팩 변경 시 테마 초기화 버그 수정
 
 ## Database Migration
 
 | 상황 | 방법 |
 |------|------|
 | **신규 설치** | `docker compose up --build` — `mysql-schema.sql`이 자동 적용됨, 마이그레이션 파일 불필요 |
-| **기존 DB 업그레이드** (커뮤니티 기능 추가 전 스키마) | 아래 명령으로 마이그레이션 수동 적용 |
+| **기존 DB 업그레이드** | `docs/migrations/migrations.sql` 참고하여 수동 적용 |
 
 ```bash
-docker cp docs/migrations/legendary_pity.sql kebo-mysql:/tmp/migration.sql
+# 마이그레이션 파일을 컨테이너로 복사 후 실행
+docker cp docs/migrations/migrations.sql kebo-mysql:/tmp/migration.sql
 docker exec kebo-mysql mysql -ukebo -pkebo1234 kebo -e "source /tmp/migration.sql;"
+```
+
+스키마 변경 후 Prisma 클라이언트 재생성 (도커 환경):
+
+```bash
+docker exec kebo-api sh -c "cd /app/apps/api && node_modules/.bin/prisma generate"
+docker restart kebo-api
 ```
 
 ## 글작성툴 Tiptap 설치
