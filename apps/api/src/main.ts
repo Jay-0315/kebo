@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import { IoAdapter } from "@nestjs/platform-socket.io";
 import { AppModule } from "./modules/app.module";
 
 async function bootstrap() {
@@ -9,6 +10,7 @@ async function bootstrap() {
   });
   app.use(require("express").json({ limit: "20mb" }));
   app.use(require("express").urlencoded({ limit: "20mb", extended: true }));
+  app.useWebSocketAdapter(new IoAdapter(app));
   app.setGlobalPrefix("api");
   app.enableCors({
     origin: true,
