@@ -165,7 +165,7 @@ export default function CommunityPage() {
                   {post.recentComments.map((c) => (
                     <p key={c.id} className="text-xs text-muted-foreground line-clamp-1">
                       <span className="font-medium text-foreground/70">{c.authorName}</span>{" "}
-                      {c.content}
+                      {c.content || <span className="italic">(사진)</span>}
                     </p>
                   ))}
                 </div>
