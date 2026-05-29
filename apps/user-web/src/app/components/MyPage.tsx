@@ -8,10 +8,11 @@ import { useLang } from "../context/LangContext";
 import { formatCurrency, getCountryByCode } from "../data/currency";
 import { CHARACTERS, RARITY_COLOR, getCharName, getRarityLabel } from "../data/characters";
 import TitleBadge, { TitleSelector } from "./TitleBadge";
+import { THEME_PRESETS } from "../lib/theme-presets";
 
 export default function MyPage() {
   const navigate = useNavigate();
-  const { profile, rewardSummary, monthlyTotals, expenses, posts, profilePhoto, updateProfilePhoto, updateProfileName, equipTitle, unequipTitle } = useAppData();
+  const { profile, settings, rewardSummary, monthlyTotals, expenses, posts, profilePhoto, updateProfilePhoto, updateProfileName, equipTitle, unequipTitle } = useAppData();
   const [titleLoading, setTitleLoading] = useState(false);
   const [showTitleSelector, setShowTitleSelector] = useState(false);
 
@@ -51,6 +52,9 @@ export default function MyPage() {
   const averageSpend = expenses.length ? Math.round(totalSpent / expenses.length) : 0;
   const myPosts = posts.filter((post) => post.authorId === profile.id);
   const country = getCountryByCode(profile.baseCountryCode);
+
+  const preset = THEME_PRESETS.find((p) => p.id === settings.themeColor) ?? THEME_PRESETS[0];
+  const chartColor = settings.darkMode ? preset.dark.primary : preset.light.primary;
 
   const ownedSet = new Set(rewardSummary.ownedCharacterIds);
   const displayChar = rewardSummary.equippedCharacterId
@@ -191,7 +195,7 @@ return (
           <Calendar className="w-5 h-5 text-primary/80" />
           {t("mypage.monthly_chart")}
         </h3>
-        <ResponsiveContainer width="100%" height={220}>
+        <ResponsiveContainer width="99%" height={220}>
           <BarChart data={monthlyTotals}>
             <CartesianGrid strokeDasharray="3 3" stroke="#2A2A2A" />
             <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#A3A3A3" }} />
@@ -205,7 +209,7 @@ return (
                 borderRadius: "8px",
               }}
             />
-            <Bar dataKey="amount" fill="#b7607e" fillOpacity={0.85} radius={[8, 8, 0, 0]} />
+            <Bar dataKey="amount" fill={chartColor} fillOpacity={0.85} radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -258,15 +262,12 @@ return (
               myPosts.map((post) => (
                 <div
                   key={post.id}
-                  className="flex items-center justify-between p-3 rounded bg-muted hover:bg-accent/30 transition-colors"
+                  className="p-3 rounded bg-muted hover:bg-accent/30 transition-colors"
                 >
-                  <div className="min-w-0">
-                    <p className="font-medium truncate">{post.content.replace(/<[^>]*>/g, "").trim() || "(내용 없음)"}</p>
-                    <p className="text-sm text-muted-foreground">
-                      💬 {post.commentCount} · {t("mypage.post_likes_prefix")}{post.likes}
-                    </p>
-                  </div>
-                  <Heart className="w-5 h-5 text-primary/80 fill-current shrink-0" />
+                  <p className="font-medium truncate">{post.content.replace(/<[^>]*>/g, "").trim() || "(내용 없음)"}</p>
+                  <p className="text-sm text-muted-foreground">
+                    💬 {post.commentCount} · {t("mypage.post_likes_prefix")}{post.likes}
+                  </p>
                 </div>
               ))
             )}

@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { TITLES, TITLE_BY_ID, TITLE_GLOW, TITLE_GRADE_BG, TITLE_GRADE_COLOR } from "../data/titles";
 import type { TitleGrade } from "../data/titles";
 import { useLang } from "../context/LangContext";
@@ -110,11 +112,15 @@ export function TitleSelector({
   const gradeOrder: TitleGrade[] = ["common", "rare", "epic", "legendary", "mythic"];
   const byGrade = gradeOrder.map((grade) => ({
     grade,
-    titles: TITLES.filter((t) => t.grade === grade),
+    titles: TITLES.filter((tt) => tt.grade === grade),
   }));
 
+  const [openGrades, setOpenGrades] = useState<Set<TitleGrade>>(new Set(gradeOrder));
+  const toggleGrade = (grade: TitleGrade) =>
+    setOpenGrades((prev) => { const s = new Set(prev); s.has(grade) ? s.delete(grade) : s.add(grade); return s; });
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {equippedTitleId && (
         <div className="flex items-center justify-between p-3 bg-primary/5 rounded-xl border border-primary/20">
           <div>
@@ -131,54 +137,69 @@ export function TitleSelector({
         </div>
       )}
 
-      {byGrade.map(({ grade, titles }) => (
-        <div key={grade}>
-          <p className="text-xs font-semibold mb-1.5" style={{ color: TITLE_GRADE_COLOR[grade] }}>
-            {t(`title.grade.${grade}` as TranslationKey)} {t("mypage.title_section")}
-          </p>
-          <div className="space-y-1">
-            {titles.map((title) => {
-              const isOwned = ownedSet.has(title.id);
-              const isEquipped = title.id === equippedTitleId;
-              return (
-                <div
-                  key={title.id}
-                  className={`flex items-center justify-between p-2.5 rounded-lg border transition-all ${
-                    isEquipped
-                      ? "border-primary/40 bg-primary/5"
-                      : isOwned
-                      ? "border-border bg-card hover:bg-muted/50"
-                      : "border-border/30 bg-muted/30 opacity-50"
-                  }`}
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    {isOwned ? (
-                      <TitleBadge titleId={title.id} size="sm" />
-                    ) : (
-                      <span className="text-xs text-muted-foreground font-medium px-1.5 py-0.5 bg-muted rounded">
-                        ???
-                      </span>
-                    )}
-                    <p className="text-[10px] text-muted-foreground truncate">{t(`title.${title.id}.desc` as TranslationKey)}</p>
-                  </div>
-                  {isOwned && !isEquipped && (
-                    <button
-                      onClick={() => onEquip(title.id)}
-                      disabled={loading}
-                      className="shrink-0 text-[10px] font-semibold text-primary bg-primary/10 px-2 py-1 rounded hover:bg-primary/20 transition-colors disabled:opacity-50"
+      {byGrade.map(({ grade, titles }) => {
+        const isOpen = openGrades.has(grade);
+        const ownedCount = titles.filter((tt) => ownedSet.has(tt.id)).length;
+        return (
+          <div key={grade} className="rounded-xl border border-border overflow-hidden">
+            <button
+              onClick={() => toggleGrade(grade)}
+              className="w-full flex items-center justify-between px-3 py-2 bg-muted/40 hover:bg-muted/60 transition-colors"
+            >
+              <p className="text-xs font-semibold" style={{ color: TITLE_GRADE_COLOR[grade] }}>
+                {t(`title.grade.${grade}` as TranslationKey)} {t("mypage.title_section")}
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-muted-foreground">{ownedCount}/{titles.length}</span>
+                <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${isOpen ? "" : "-rotate-90"}`} />
+              </div>
+            </button>
+            {isOpen && (
+              <div className="divide-y divide-border/50">
+                {titles.map((title) => {
+                  const isOwned = ownedSet.has(title.id);
+                  const isEquipped = title.id === equippedTitleId;
+                  return (
+                    <div
+                      key={title.id}
+                      className={`flex items-center justify-between p-2.5 transition-all ${
+                        isEquipped
+                          ? "bg-primary/5"
+                          : isOwned
+                          ? "bg-card hover:bg-muted/50"
+                          : "bg-muted/20 opacity-50"
+                      }`}
                     >
-                      {t("mypage.title_equip")}
-                    </button>
-                  )}
-                  {isEquipped && (
-                    <span className="shrink-0 text-[10px] font-semibold text-primary">✓ {t("kabemon.equipped")}</span>
-                  )}
-                </div>
-              );
-            })}
+                      <div className="flex items-center gap-2 min-w-0">
+                        {isOwned ? (
+                          <TitleBadge titleId={title.id} size="sm" />
+                        ) : (
+                          <span className="text-xs text-muted-foreground font-medium px-1.5 py-0.5 bg-muted rounded">
+                            ???
+                          </span>
+                        )}
+                        <p className="text-[10px] text-muted-foreground truncate">{t(`title.${title.id}.desc` as TranslationKey)}</p>
+                      </div>
+                      {isOwned && !isEquipped && (
+                        <button
+                          onClick={() => onEquip(title.id)}
+                          disabled={loading}
+                          className="shrink-0 text-[10px] font-semibold text-primary bg-primary/10 px-2 py-1 rounded hover:bg-primary/20 transition-colors disabled:opacity-50"
+                        >
+                          {t("mypage.title_equip")}
+                        </button>
+                      )}
+                      {isEquipped && (
+                        <span className="shrink-0 text-[10px] font-semibold text-primary">✓ {t("kabemon.equipped")}</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

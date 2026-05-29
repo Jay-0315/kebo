@@ -198,7 +198,7 @@ export default function Layout() {
       )}
 
       {/* ── Main Content ── */}
-      <main className="flex-1 lg:ml-56 mt-14 lg:mt-0 min-h-screen">
+      <main className="flex-1 lg:ml-56 mt-14 lg:mt-0 min-h-screen overflow-x-hidden">
         <div key={location.key} className="p-4 sm:p-6">
           <Outlet />
         </div>

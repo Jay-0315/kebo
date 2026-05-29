@@ -310,7 +310,7 @@ const dict = {
     "theme.flame": "플레임",
     "theme.slate": "슬레이트",
     "theme.coral": "코랄",
-    "theme.sage": "세이지",
+    "theme.sage": "핑크",
     "theme.mango": "망고",
     // Title grades
     "title.grade.common": "일반",
@@ -690,7 +690,7 @@ const dict = {
     "theme.flame": "フレイム",
     "theme.slate": "スレート",
     "theme.coral": "コーラル",
-    "theme.sage": "セージ",
+    "theme.sage": "ピンク",
     "theme.mango": "マンゴー",
     // Title grades
     "title.grade.common": "一般",

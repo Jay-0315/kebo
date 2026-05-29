@@ -52,7 +52,10 @@ export default function GroupsPage() {
   const { t } = useLang();
   const { profile, profilePhoto } = useAppData();
 
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [availableGroups, setAvailableGroups] = useState<AvailableGroup[]>([]);
   const [publicGroups, setPublicGroups] = useState<AvailableGroup[]>([]);
@@ -161,7 +164,10 @@ export default function GroupsPage() {
   async function handleRequestJoin(group: AvailableGroup) {
     try {
       await api.post(`/groups/${group.id}/requests`);
-      showToast(`${group.name}에 가입 요청을 보냈습니다. 호스트의 승인을 기다려주세요.`, "success");
+      showToast(
+        `${group.name}에 가입 요청을 보냈습니다. 호스트의 승인을 기다려주세요.`,
+        "success",
+      );
       setShowJoinForm(false);
       setPublicGroups((prev) => prev.filter((g) => g.id !== group.id));
     } catch (e: any) {
@@ -183,17 +189,23 @@ export default function GroupsPage() {
     <div className="space-y-6">
       {/* Toast */}
       {toast && (
-        <div className={`fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium transition-all animate-in fade-in slide-in-from-top-3 max-w-sm w-[90vw] ${
-          toast.type === "success"
-            ? "bg-card border-primary/40 text-foreground"
-            : "bg-card border-destructive/40 text-foreground"
-        }`}>
-          {toast.type === "success"
-            ? <CheckCircle2 className="w-4 h-4 shrink-0 text-primary" />
-            : <AlertCircle className="w-4 h-4 shrink-0 text-destructive" />
-          }
+        <div
+          className={`fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-sm font-medium transition-all animate-in fade-in slide-in-from-top-3 max-w-sm w-[90vw] ${
+            toast.type === "success"
+              ? "bg-card border-primary/40 text-foreground"
+              : "bg-card border-destructive/40 text-foreground"
+          }`}
+        >
+          {toast.type === "success" ? (
+            <CheckCircle2 className="w-4 h-4 shrink-0 text-primary" />
+          ) : (
+            <AlertCircle className="w-4 h-4 shrink-0 text-destructive" />
+          )}
           <p className="flex-1 leading-snug">{toast.message}</p>
-          <button onClick={() => setToast(null)} className="shrink-0 text-muted-foreground hover:text-foreground transition-colors">
+          <button
+            onClick={() => setToast(null)}
+            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -234,7 +246,9 @@ export default function GroupsPage() {
           {groups.map((group) => {
             const visibleMembers = group.members.slice(0, MAX_VISIBLE_AVATARS);
             const extraCount = group.members.length - MAX_VISIBLE_AVATARS;
-            const pendingCount = joinRequests.filter((r) => r.groupId === group.id).length;
+            const pendingCount = joinRequests.filter(
+              (r) => r.groupId === group.id,
+            ).length;
 
             return (
               <button
@@ -279,10 +293,19 @@ export default function GroupsPage() {
                     >
                       <div className="w-9 h-9 rounded-full bg-primary/80 flex items-center justify-center text-white text-sm font-medium ring-2 ring-card overflow-hidden">
                         {(() => {
-                          const photo = member.id === profile.id ? profilePhoto : member.profilePhoto;
-                          return photo
-                            ? <img src={photo} alt={member.name} className="w-full h-full object-cover" />
-                            : member.name[0];
+                          const photo =
+                            member.id === profile.id
+                              ? profilePhoto
+                              : member.profilePhoto;
+                          return photo ? (
+                            <img
+                              src={photo}
+                              alt={member.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            member.name[0]
+                          );
                         })()}
                       </div>
                       {member.isHost && (
@@ -313,13 +336,17 @@ export default function GroupsPage() {
           </h3>
           <div className="space-y-2">
             {discoverableGroups.map((group) => (
-              <div key={group.id} className="bg-card rounded-md border border-border p-4 flex items-center justify-between gap-3">
+              <div
+                key={group.id}
+                className="bg-card rounded-md border border-border p-4 flex items-center justify-between gap-3"
+              >
                 <div className="min-w-0">
                   <p className="font-medium text-sm truncate">{group.name}</p>
                   <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Users className="w-3 h-3" />
-                      {group.memberCount}{t("groups.member_suffix")}
+                      {group.memberCount}
+                      {t("groups.member_suffix")}
                     </span>
                     <span className="flex items-center gap-1">
                       <Crown className="w-3 h-3" />

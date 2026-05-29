@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   Trophy, Lock, BookOpen, User, Sparkles, Shield, Gamepad2,
-  CheckCircle2, Flame, Star, Zap, Gift, RotateCcw,
+  CheckCircle2, Flame, Star, Zap, Gift, RotateCcw, ChevronDown,
 } from "lucide-react";
 import { useAppData, type GachaResult } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
@@ -875,6 +875,14 @@ function AchievementTab({
   const hiddenAchs  = ACHIEVEMENTS.filter((a) => a.hidden);
   const totalDone   = ACHIEVEMENTS.filter((a) => ownedSet.has(a.characterId)).length;
 
+  const categories = (Object.keys(CATEGORY_ICON) as AchievementType[]).filter(
+    (cat) => visibleAchs.some((a) => a.type === cat)
+  );
+
+  const [openCats, setOpenCats] = useState<Set<string>>(new Set([...categories, "hidden"]));
+  const toggleCat = (key: string) =>
+    setOpenCats((prev) => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s; });
+
   const progressOf = (type: AchievementType, value: number) => {
     switch (type) {
       case "attendance": return Math.min(attendanceDays, value);
@@ -883,10 +891,6 @@ function AchievementTab({
       default:           return null;
     }
   };
-
-  const categories = (Object.keys(CATEGORY_ICON) as AchievementType[]).filter(
-    (cat) => visibleAchs.some((a) => a.type === cat)
-  );
 
   return (
     <div className="space-y-3">
@@ -913,116 +917,129 @@ function AchievementTab({
       {categories.map((cat) => {
         const achs = visibleAchs.filter((a) => a.type === cat);
         const meta = CATEGORY_ICON[cat];
+        const isOpen = openCats.has(cat);
         return (
           <div key={cat} className="bg-card rounded-xl border border-border overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/40">
+            <button
+              onClick={() => toggleCat(cat)}
+              className="w-full flex items-center gap-2 px-4 py-2.5 bg-muted/40 hover:bg-muted/60 transition-colors"
+            >
               <span className={meta.color}>{meta.icon}</span>
               <span className="text-xs font-bold">{t(meta.labelKey)}</span>
-              <span className="ml-auto text-[10px] text-muted-foreground">
+              <span className="ml-auto text-[10px] text-muted-foreground mr-1.5">
                 {achs.filter((a) => ownedSet.has(a.characterId)).length}/{achs.length}
               </span>
-            </div>
-            <div className="divide-y divide-border">
-              {achs.map((ach) => {
-                const char = CHARACTERS.find((c) => c.id === ach.characterId);
-                if (!char) return null;
-                const isOwned = ownedSet.has(ach.characterId);
-                const progress = progressOf(ach.type as AchievementType, ach.value);
-                const pct = progress !== null ? Math.min(100, Math.round((progress / ach.value) * 100)) : null;
+              <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform duration-200 ${isOpen ? "" : "-rotate-90"}`} />
+            </button>
+            {isOpen && (
+              <div className="divide-y divide-border">
+                {achs.map((ach) => {
+                  const char = CHARACTERS.find((c) => c.id === ach.characterId);
+                  if (!char) return null;
+                  const isOwned = ownedSet.has(ach.characterId);
+                  const progress = progressOf(ach.type as AchievementType, ach.value);
+                  const pct = progress !== null ? Math.min(100, Math.round((progress / ach.value) * 100)) : null;
 
-                return (
-                  <div
-                    key={ach.characterId}
-                    className={`flex items-center gap-3 px-4 py-3 ${isOwned ? "bg-primary/5" : "hover:bg-muted/20"}`}
-                  >
-                    <div className={`shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
-                      isOwned ? RARITY_BG[char.rarity] : "bg-muted"
-                    } ${!isOwned ? "grayscale opacity-50" : ""}`}>
-                      <PixelSprite type={char.type} colors={char.colors} size={32} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold leading-tight ${
-                        isOwned ? RARITY_COLOR[char.rarity] : "text-foreground"
-                      }`}>
-                        {getCharName(char, lang)}
-                      </p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{getAchLabel(ach, lang)}</p>
-                      {pct !== null && !isOwned && (
-                        <div className="flex items-center gap-1.5 mt-1.5">
-                          <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
-                            <div className="h-full rounded-full bg-primary/60" style={{ width: `${pct}%` }} />
+                  return (
+                    <div
+                      key={ach.characterId}
+                      className={`flex items-center gap-3 px-4 py-3 ${isOwned ? "bg-primary/5" : "hover:bg-muted/20"}`}
+                    >
+                      <div className={`shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
+                        isOwned ? RARITY_BG[char.rarity] : "bg-muted"
+                      } ${!isOwned ? "grayscale opacity-50" : ""}`}>
+                        <PixelSprite type={char.type} colors={char.colors} size={32} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-semibold leading-tight ${
+                          isOwned ? RARITY_COLOR[char.rarity] : "text-foreground"
+                        }`}>
+                          {getCharName(char, lang)}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">{getAchLabel(ach, lang)}</p>
+                        {pct !== null && !isOwned && (
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
+                              <div className="h-full rounded-full bg-primary/60" style={{ width: `${pct}%` }} />
+                            </div>
+                            <span className="text-[10px] text-muted-foreground shrink-0">{progress}/{ach.value}</span>
                           </div>
-                          <span className="text-[10px] text-muted-foreground shrink-0">{progress}/{ach.value}</span>
-                        </div>
-                      )}
+                        )}
+                      </div>
+                      <div className="shrink-0">
+                        {isOwned ? (
+                          <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
+                            <CheckCircle2 className="w-4 h-4 text-primary" />
+                          </div>
+                        ) : (
+                          <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                            <Lock className="w-3.5 h-3.5 text-muted-foreground/50" />
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="shrink-0">
-                      {isOwned ? (
-                        <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
-                          <CheckCircle2 className="w-4 h-4 text-primary" />
-                        </div>
-                      ) : (
-                        <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
-                          <Lock className="w-3.5 h-3.5 text-muted-foreground/50" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
       })}
 
       {/* Hidden achievements */}
       <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/40">
+        <button
+          onClick={() => toggleCat("hidden")}
+          className="w-full flex items-center gap-2 px-4 py-2.5 bg-muted/40 hover:bg-muted/60 transition-colors"
+        >
           <span className="text-muted-foreground/60"><Lock className="w-4 h-4" /></span>
           <span className="text-xs font-bold text-muted-foreground">{t("kabemon.achievement_hidden")}</span>
-          <span className="ml-auto text-[10px] text-muted-foreground">
+          <span className="ml-auto text-[10px] text-muted-foreground mr-1.5">
             {hiddenAchs.filter((a) => ownedSet.has(a.characterId)).length}/{hiddenAchs.length}
           </span>
-        </div>
-        <div className="divide-y divide-border">
-          {hiddenAchs.map((ach) => {
-            const isOwned = ownedSet.has(ach.characterId);
-            const char = CHARACTERS.find((c) => c.id === ach.characterId);
-            return (
-              <div key={ach.characterId} className={`flex items-center gap-3 px-4 py-3 ${isOwned ? "bg-primary/5" : ""}`}>
-                <div className={`shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
-                  isOwned && char ? RARITY_BG[char.rarity] : "bg-muted"
-                } ${!isOwned ? "grayscale opacity-40" : ""}`}>
-                  {isOwned && char
-                    ? <PixelSprite type={char.type} colors={char.colors} size={32} />
-                    : <span className="text-base font-bold text-muted-foreground/30">?</span>
-                  }
+          <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform duration-200 ${openCats.has("hidden") ? "" : "-rotate-90"}`} />
+        </button>
+        {openCats.has("hidden") && (
+          <div className="divide-y divide-border">
+            {hiddenAchs.map((ach) => {
+              const isOwned = ownedSet.has(ach.characterId);
+              const char = CHARACTERS.find((c) => c.id === ach.characterId);
+              return (
+                <div key={ach.characterId} className={`flex items-center gap-3 px-4 py-3 ${isOwned ? "bg-primary/5" : ""}`}>
+                  <div className={`shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
+                    isOwned && char ? RARITY_BG[char.rarity] : "bg-muted"
+                  } ${!isOwned ? "grayscale opacity-40" : ""}`}>
+                    {isOwned && char
+                      ? <PixelSprite type={char.type} colors={char.colors} size={32} />
+                      : <span className="text-base font-bold text-muted-foreground/30">?</span>
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-semibold ${
+                      isOwned && char ? RARITY_COLOR[char.rarity] : "text-muted-foreground/40"
+                    }`}>
+                      {isOwned && char ? getCharName(char, lang) : "???"}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground/50">
+                      {isOwned ? getAchLabel(ach, lang) : t("kabemon.achievement_condition_hidden")}
+                    </p>
+                  </div>
+                  <div className="shrink-0">
+                    {isOwned ? (
+                      <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
+                        <CheckCircle2 className="w-4 h-4 text-primary" />
+                      </div>
+                    ) : (
+                      <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+                        <Lock className="w-3.5 h-3.5 text-muted-foreground/30" />
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-semibold ${
-                    isOwned && char ? RARITY_COLOR[char.rarity] : "text-muted-foreground/40"
-                  }`}>
-                    {isOwned && char ? getCharName(char, lang) : "???"}
-                  </p>
-                  <p className="text-[11px] text-muted-foreground/50">
-                    {isOwned ? getAchLabel(ach, lang) : t("kabemon.achievement_condition_hidden")}
-                  </p>
-                </div>
-                <div className="shrink-0">
-                  {isOwned ? (
-                    <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
-                      <CheckCircle2 className="w-4 h-4 text-primary" />
-                    </div>
-                  ) : (
-                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center">
-                      <Lock className="w-3.5 h-3.5 text-muted-foreground/30" />
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

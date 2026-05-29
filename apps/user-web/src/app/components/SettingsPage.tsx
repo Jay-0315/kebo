@@ -186,12 +186,10 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => updateSettings({ darkMode: !settings.darkMode })}
-              className={`relative w-12 h-6 rounded-full transition-colors ${
-                settings.darkMode ? "bg-primary" : "bg-muted"
-              }`}
+              className="relative w-12 h-6 rounded-full transition-colors bg-gray-300 dark:bg-zinc-600"
             >
               <div
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                className={`absolute top-1 left-1 w-4 h-4 bg-primary rounded-full transition-transform ${
                   settings.darkMode ? "translate-x-6" : ""
                 }`}
               />
@@ -230,7 +228,7 @@ export default function SettingsPage() {
                     >
                       {isActive && (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Check className="w-4 h-4 text-white drop-shadow" />
+                          <Check className="w-4 h-4 drop-shadow text-white" />
                         </div>
                       )}
                     </div>
@@ -267,12 +265,10 @@ export default function SettingsPage() {
               onClick={() =>
                 updateSettings({ notifications: !settings.notifications })
               }
-              className={`relative w-12 h-6 rounded-full transition-colors ${
-                settings.notifications ? "bg-primary" : "bg-muted"
-              }`}
+              className="relative w-12 h-6 rounded-full transition-colors bg-gray-300 dark:bg-zinc-600"
             >
               <div
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                className={`absolute top-1 left-1 w-4 h-4 bg-primary rounded-full transition-transform ${
                   settings.notifications ? "translate-x-6" : ""
                 }`}
               />
@@ -299,12 +295,10 @@ export default function SettingsPage() {
               onClick={() =>
                 updateSettings({ autoBackup: !settings.autoBackup })
               }
-              className={`relative w-12 h-6 rounded-full transition-colors ${
-                settings.autoBackup ? "bg-primary" : "bg-muted"
-              }`}
+              className="relative w-12 h-6 rounded-full transition-colors bg-gray-300 dark:bg-zinc-600"
             >
               <div
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                className={`absolute top-1 left-1 w-4 h-4 bg-primary rounded-full transition-transform ${
                   settings.autoBackup ? "translate-x-6" : ""
                 }`}
               />
@@ -396,7 +390,7 @@ export default function SettingsPage() {
                       key={provider}
                       className="rounded border border-border bg-background/50 p-4"
                     >
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                         <div>
                           <p className="font-medium">{meta.label}</p>
                           <p className="mt-1 text-sm text-muted-foreground">
@@ -423,7 +417,7 @@ export default function SettingsPage() {
                             연동중
                           </button>
                         ) : provider === "GOOGLE" ? (
-                          <div className="min-h-10 min-w-[280px]">
+                          <div className="min-h-10 w-full max-w-[280px]">
                             <div
                               ref={googleLinkButtonRef}
                               className={

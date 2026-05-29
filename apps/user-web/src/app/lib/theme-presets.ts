@@ -65,10 +65,10 @@ export const THEME_PRESETS: ThemePreset[] = [
   },
   {
     id: "sage",
-    name: "세이지",
-    swatch: "#558b2f",
-    light: { primary: "#558b2f", accent: "#33691e" },
-    dark: { primary: "#aed581", accent: "#9ccc65" },
+    name: "핑크",
+    swatch: "#e91e8c",
+    light: { primary: "#e91e8c", accent: "#c2167a" },
+    dark: { primary: "#f48fb1", accent: "#f06292" },
   },
   {
     id: "mango",
