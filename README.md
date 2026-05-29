@@ -5,20 +5,20 @@
 
 ## Apps
 
-| 앱 | 설명 |
-|----|------|
-| `apps/user-web` | 사용자용 가계부/커뮤니티 웹앱 (React + Vite) |
-| `apps/admin-web` | 관리자용 운영 웹앱 스캐폴드 |
-| `apps/api` | 백엔드 REST API (NestJS + Prisma) |
+| 앱               | 설명                                         |
+| ---------------- | -------------------------------------------- |
+| `apps/user-web`  | 사용자용 가계부/커뮤니티 웹앱 (React + Vite) |
+| `apps/admin-web` | 관리자용 운영 웹앱 스캐폴드                  |
+| `apps/api`       | 백엔드 REST API (NestJS + Prisma)            |
 
 ## Stack
 
-| 구분 | 기술 |
-|------|------|
-| Frontend | React 18, TypeScript, Vite, Tailwind CSS v4, React Router |
-| Backend | NestJS, Prisma ORM, JWT 인증, Socket.io (WebSocket) |
-| Database | MySQL 8 |
-| 기타 | Docker Compose, pnpm workspaces |
+| 구분     | 기술                                                                             |
+| -------- | -------------------------------------------------------------------------------- |
+| Frontend | React 18, TypeScript 6, Vite 6, Tailwind CSS v4, React Router v7, Motion, Tiptap v3, MUI v7, Recharts |
+| Backend  | NestJS v11, Prisma ORM v6, JWT 인증, Socket.io v4 (WebSocket)                   |
+| Database | MySQL 8.4                                                                        |
+| 기타     | Docker Compose, npm workspaces                                                   |
 
 ---
 
@@ -31,14 +31,11 @@ npm install
 # 사용자 웹 개발 서버
 npm run dev:user
 
-# 관리자 웹 개발 서버
-npm run dev:admin
-
 # API 개발 서버
 npm run dev:api
 
 # Prisma 클라이언트 재생성
-npm run prisma:generate --workspace @kebo/api
+npm run prisma:generate
 ```
 
 ## Docker Run
@@ -51,32 +48,45 @@ cp .env.example .env
 docker compose up --build
 ```
 
-| 서비스 | 주소 |
-|--------|------|
-| 사용자 웹 | http://localhost:5173 |
-| API | http://localhost:4000/api |
-| MySQL | localhost:3306 |
+| 서비스    | 주소                      |
+| --------- | ------------------------- |
+| 사용자 웹 | http://localhost:5173     |
+| API       | http://localhost:4000/api |
+| MySQL     | localhost:3306            |
 
 ### 환경 변수 (.env)
 
 ```
-DATABASE_URL=mysql://kebo:kebo1234@localhost:3306/kebo
+# DB
+MYSQL_DATABASE=kebo
+MYSQL_USER=kebo
+MYSQL_PASSWORD=kebo1234
+MYSQL_ROOT_PASSWORD=root1234
+
+# API
 JWT_SECRET=kebo-dev-secret
+GOOGLE_CLIENT_ID=               # Google OAuth 클라이언트 ID (선택)
+GOOGLE_CLIENT_IDS=              # 복수 클라이언트 ID (선택, 쉼표 구분)
+GOOGLE_CLIENT_SECRET=           # Google OAuth 시크릿 (선택)
+
+# Frontend
 VITE_API_BASE_URL=http://localhost:4000
 VITE_GOOGLE_CLIENT_ID=          # Google OAuth 클라이언트 ID (선택)
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_IDS=
-GOOGLE_CLIENT_SECRET=
+
+# 포트 커스터마이징 (기본값)
+FRONTEND_PORT=5173
+API_PORT=4000
+MYSQL_PORT=3306
 ```
 
 ---
 
 ## Database Migration
 
-| 상황 | 방법 |
-|------|------|
-| 신규 설치 | `docker compose up --build` — `mysql-schema.sql` 자동 적용 |
-| 기존 DB 업그레이드 | `docs/migrations/migrations.sql` 참고하여 수동 적용 |
+| 상황               | 방법                                                       |
+| ------------------ | ---------------------------------------------------------- |
+| 신규 설치          | `docker compose up --build` — `mysql-schema.sql` 자동 적용 |
+| 기존 DB 업그레이드 | `docs/migrations/migrations.sql` 참고하여 수동 적용        |
 
 ```bash
 # 마이그레이션 파일을 컨테이너에서 실행
@@ -102,13 +112,17 @@ docker restart kebo-api
 
 - 지출 기록 CRUD — 날짜, 카테고리, 금액, 국가, 메모, 영수증 이미지
 - 국가별 통화 지원 + 환율 자동 계산 (KRW ↔ JPY)
+- 환율 실시간 연동 (open.er-api.com, 1시간 캐시 / API 오류 시 fallback 값 사용)
 - 기준 통화 변경 시 기존 지출 전체 자동 재환산
 - 카테고리 필터 / 월별 조회
 
 ### 커뮤니티 탭
 
 - 게시글 카테고리 3종 — 자랑(`brag`) / 팁 공유(`tip`) / 잡담(`chat`)
-- 게시글 작성·수정·삭제, 이미지(jpg, png) 첨부 — 클라이언트에서 1280px·75% JPEG 압축 후 base64 저장
+- 게시글 작성·수정·삭제, Tiptap 리치 텍스트 에디터 (서식·이미지 삽입)
+- 이미지 첨부 — 클라이언트에서 1280px·75% JPEG 압축 후 base64 저장
+- 게시글 목록 페이지네이션 (서버 사이드, 페이지당 n개)
+- 목록에서 게시글 첫 번째 이미지 썸네일 미리보기
 - 좋아요 토글
 - 댓글 + 대댓글(1단계) — 이미지 첨부, 텍스트 없이 이미지만 제출 가능, 수정/삭제
 - 목록에서 최근 댓글 3개 미리보기 (이미지 댓글은 `(사진)`/`(写真)` 표시)
@@ -124,35 +138,38 @@ docker restart kebo-api
 - 그룹별 공유 지출 내역 관리
 - 멤버 목록에 장착 케보몬 표시 (아바타 우측 겹침)
 - 호스트 → "그룹 관리" / 일반 멤버 → "그룹 설정" UI 분리
-- **WebSocket 실시간 연동** — 가입 신청 즉시 호스트 알림, 승인/거절 시 새로고침 없이 즉시 반영
+- WebSocket 실시간 연동 — 가입 신청 즉시 호스트 알림, 승인/거절 시 새로고침 없이 즉시 반영
 
 ### 케보몬 탭
 
 캐릭터 수집 & 리워드 시스템
 
-| 항목 | 내용 |
-|------|------|
-| 캐릭터 종류 | 400종 (30가지 타입 × 6등급) |
-| 등급 | 커먼 / 언커먼 / 레어 / 에픽 / 레전더리 / 신화 |
-| 획득 방법 | 스타터 선택 / 업적 달성 / 가챠 |
-| 가챠 비용 | 단챠 120P / 10연챠 1200P |
-| 확률 | 커먼 35% / 언커먼 26% / 레어 20% / 에픽 10% / 레전더리 6% / 신화 3% |
-| 천장 | 80연 내 레전더리 이상 1종 보장 |
-| 10연 보장 | 언커먼 이상 1종 보장 |
-| 중복 보상 | 등급별 포인트 환산 (커먼 10P ~ 신화 100P) |
+| 항목        | 내용                                                                |
+| ----------- | ------------------------------------------------------------------- |
+| 캐릭터 종류 | 400종 (30가지 타입 × 6등급)                                         |
+| 등급        | 커먼 / 언커먼 / 레어 / 에픽 / 레전더리 / 신화                       |
+| 획득 방법   | 스타터 선택 / 업적 달성 / 가챠                                      |
+| 가챠 비용   | 단챠 120P / 10연챠 1200P                                            |
+| 확률        | 커먼 35% / 언커먼 26% / 레어 20% / 에픽 10% / 레전더리 6% / 신화 3% |
+| 천장        | 80연 내 레전더리 이상 1종 보장                                      |
+| 10연 보장   | 언커먼 이상 1종 보장                                                |
+| 중복 보상   | 등급별 포인트 환산 (커먼 10P ~ 신화 100P)                           |
 
 **업적** (188종)
+
 - 카테고리 — 출석 / 연속 출석 / 지출 횟수 / 공유 횟수 / 게시글 / 포인트
 - 카테고리별 접기/펼치기 토글, 진행도 프로그레스 바 표시
 - 히든 업적 별도 섹션
 
 **칭호** (30종)
+
 - 등급 — 일반 / 희귀 / 영웅 / 전설 / 신화
 - 신화 칭호: 무지개 shimmer 애니메이션
 - 등급별 접기/펼치기 토글
 - 마이페이지·게시글·댓글에 장착 칭호 뱃지 표시
 
 **미션 포인트 획득 방법**
+
 - 출석 체크 (로그인 시 KST 00시 기준) +50P
 - 지출 기록 +50P
 - 커뮤니티 게시글 작성 +50P
@@ -170,37 +187,10 @@ docker restart kebo-api
 
 ### 설정
 
-- **테마 색상** 10종 — 에메랄드, 로즈, 오션, 포레스트, 베리, 플레임, 슬레이트, 코랄, 핑크, 망고
+- **테마 색상** 10종 — 에메랄드, 로즈, 오션, 포레스트, 베리, 플레임, 슬레이트, 코랄, 핑크(sage), 망고
 - **다크/라이트 모드** 토글
 - **언어** — 한국어 / 日本語 (게임 UI, 카테고리명, 상대시간 등 전체 대응)
 - 알림 설정 / 자동 백업 설정 (DB 영속화)
 - 기준 국가·통화 변경
 - Google 소셜 계정 연동
 - 회원 탈퇴 (DB 완전 삭제)
-
----
-
-## API 엔드포인트 요약
-
-| 모듈 | 주요 엔드포인트 |
-|------|----------------|
-| Auth | `POST /auth/signup` `POST /auth/login` `POST /auth/social` `POST /auth/social/link` `GET /auth/providers` |
-| Users | `GET /users/:id/profile` `PATCH /users/:id/profile` `PATCH /users/:id/settings` `PATCH /users/:id/photo` `DELETE /users/:id` |
-| Expenses | `GET /expenses` `POST /expenses` `PATCH /expenses/:id` `DELETE /expenses/:id` |
-| Community | `GET /community/posts` `POST /community/posts` `GET /community/posts/:id` `PATCH /community/posts/:id` `DELETE /community/posts/:id` `POST /community/posts/:id/like` `GET/POST /community/posts/:id/comments` `PATCH/DELETE /community/posts/:id/comments/:cid` |
-| Groups | `GET/POST /groups` `GET/PATCH/DELETE /groups/:id` `POST /groups/:id/join` `POST /groups/:id/requests/:rid/handle` `GET/POST /groups/:id/expenses` |
-| Rewards | `GET /rewards` `POST /rewards/attendance` `POST /rewards/gacha` `POST /rewards/achievements/check` `PATCH /rewards/equip-character` `PATCH /rewards/equip-title` `DELETE /rewards/unequip-title` |
-| Exchange Rates | `GET /exchange-rates` |
-
----
-
-## 미구현 / 예정 기능
-
-| 기능 | 상태 |
-|------|------|
-| Kakao / LINE / Apple 소셜 로그인 | Coming Soon |
-| 커뮤니티 게시글 본문 이미지 첨부 UI | 미구현 (백엔드 DTO 준비됨) |
-| 지출 커뮤니티 공유 토글 UI | 미구현 (백엔드 필드 준비됨) |
-| 환율 실시간 갱신 | 하드코딩 (KRW/JPY 2종) |
-| 푸시 알림 실제 발송 | 설정 저장만 구현 |
-| 커뮤니티 게시글 무한 스크롤 | 현재 최신 20건만 표시 |
