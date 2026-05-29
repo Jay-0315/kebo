@@ -140,6 +140,7 @@ export default function PostDetailPage() {
         id: String(data.id),
         authorId: String(data.authorId),
         authorName: String(data.authorName ?? "사용자"),
+        authorPhotoUrl: (data.authorPhotoUrl as string | null | undefined) ?? null,
         authorEquippedTitleId: (data.authorEquippedTitleId as number | null | undefined) ?? null,
         content: String(data.content),
         category: (data.category as PostCategory) ?? "chat",

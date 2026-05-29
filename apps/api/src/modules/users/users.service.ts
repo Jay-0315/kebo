@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { CurrencyCode } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { convertCurrency, getExchangeRate } from "../shared/exchange-rate.util";
@@ -106,6 +106,16 @@ export class UsersService {
       baseCountryCode: user.baseCountryCode,
       baseCurrency: user.baseCurrency,
     };
+  }
+
+  async deleteUser(requesterId: string, targetId: string) {
+    if (requesterId !== targetId) {
+      throw new ForbiddenException("본인 계정만 삭제할 수 있습니다.");
+    }
+    const user = await this.prisma.user.findUnique({ where: { id: targetId } });
+    if (!user) throw new NotFoundException("사용자를 찾을 수 없습니다.");
+    await this.prisma.user.delete({ where: { id: targetId } });
+    return { success: true };
   }
 
   async updateSettings(userId: string, dto: UpdateUserSettingsDto) {

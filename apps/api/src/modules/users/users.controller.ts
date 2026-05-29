@@ -1,4 +1,6 @@
-import { Body, Controller, Get, Param, Patch } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, UseGuards } from "@nestjs/common";
+import { CurrentUser } from "../auth/current-user.decorator";
+import { JwtAuthGuard } from "../auth/jwt.guard";
 import { UpdateUserProfileDto } from "./dto/update-user-profile.dto";
 import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
 import { UsersService } from "./users.service";
@@ -25,5 +27,11 @@ export class UsersController {
   @Patch(":id/photo")
   updateProfilePhoto(@Param("id") id: string, @Body() body: { photo: string | null }) {
     return this.usersService.updateProfilePhoto(id, body.photo);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(":id")
+  deleteUser(@CurrentUser() user: any, @Param("id") id: string) {
+    return this.usersService.deleteUser(user.sub, id);
   }
 }

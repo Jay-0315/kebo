@@ -19,7 +19,7 @@ import {
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import type { TranslationKey } from "../lib/i18n";
-import { clearAuthSession } from "../lib/auth";
+import { clearAuthSession, getStoredUser } from "../lib/auth";
 import { THEME_PRESETS } from "../lib/theme-presets";
 import { api } from "../lib/api";
 
@@ -150,7 +150,15 @@ export default function SettingsPage() {
     });
   }, [googleClientId, linkedGoogle?.linked, loadLinkedProviders]);
 
-  const handleAccountDelete = () => {
+  const handleAccountDelete = async () => {
+    const currentUser = getStoredUser();
+    if (currentUser) {
+      try {
+        await api.delete(`/users/${currentUser.id}`);
+      } catch {
+        // 서버 삭제 실패해도 로컬 세션은 정리
+      }
+    }
     clearAuthSession();
     localStorage.removeItem("kebo-local-settings");
     localStorage.removeItem("kebo-liked-posts");
@@ -542,7 +550,7 @@ export default function SettingsPage() {
                 {t("settings.cancel")}
               </button>
               <button
-                onClick={handleAccountDelete}
+                onClick={() => void handleAccountDelete()}
                 className="flex-1 py-2.5 rounded bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 transition-colors"
               >
                 {t("settings.delete_confirm")}
