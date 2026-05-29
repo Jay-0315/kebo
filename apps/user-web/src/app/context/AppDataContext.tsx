@@ -52,7 +52,6 @@ interface AppDataContextValue {
   updateExpense: (expenseId: string, draft: ExpenseDraft) => Promise<void>;
   deleteExpense: (expenseId: string) => Promise<void>;
   createPost: (draft: CommunityPostDraft) => Promise<void>;
-  updatePost: (postId: string, draft: CommunityPostDraft) => Promise<void>;
   deletePost: (postId: string) => Promise<void>;
   togglePostLike: (postId: string) => Promise<void>;
   updateProfileCurrency: (countryCode: string) => Promise<void>;
@@ -361,19 +360,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     await refreshData();
   };
 
-  const updatePost = async (postId: string, draft: CommunityPostDraft) => {
-    const currentUser = getStoredUser();
-
-    await api.patch(`/community/posts/${postId}`, {
-      userId: currentUser?.id,
-      content: draft.content,
-      category: draft.category,
-      imageUrl: draft.imageUrl ?? null,
-    });
-
-    await refreshData();
-  };
-
   const deletePost = async (postId: string) => {
     await api.delete(`/community/posts/${postId}`);
     await refreshData();
@@ -538,7 +524,6 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     updateExpense,
     deleteExpense,
     createPost,
-    updatePost,
     deletePost,
     togglePostLike,
     updateProfileCurrency,

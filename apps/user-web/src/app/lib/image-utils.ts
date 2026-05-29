@@ -1,3 +1,8 @@
+export function extractFirstImage(html: string): string | null {
+  const match = html.match(/<img[^>]+src="([^"]+)"/);
+  return match ? match[1] : null;
+}
+
 const MAX_WIDTH = 1280;
 const QUALITY = 0.75;
 

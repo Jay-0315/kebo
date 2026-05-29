@@ -4,6 +4,7 @@ import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { CHARACTERS } from "../data/characters";
 import { formatRelativeTime } from "../lib/date-utils";
+import { extractFirstImage } from "../lib/image-utils";
 import TitleBadge from "./TitleBadge";
 import UserAvatar from "./UserAvatar";
 
@@ -134,9 +135,18 @@ export default function HomePage() {
                   </div>
 
                   {/* Content */}
-                  <p className="text-sm leading-relaxed line-clamp-3 mb-3">
-                    {post.content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()}
-                  </p>
+                  <div className="flex gap-3 items-start mb-3">
+                    <p className="text-sm leading-relaxed line-clamp-3 flex-1 min-w-0">
+                      {post.content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()}
+                    </p>
+                    {extractFirstImage(post.content) && (
+                      <img
+                        src={extractFirstImage(post.content)!}
+                        alt=""
+                        className="w-16 h-16 object-cover rounded-md border border-border shrink-0"
+                      />
+                    )}
+                  </div>
 
                   {/* Engagement */}
                   <div className="flex items-center gap-4 text-muted-foreground">

@@ -9,9 +9,12 @@ import { compressImage } from "../lib/image-utils";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { formatRelativeTime } from "../lib/date-utils";
+import RichTextEditor from "./RichTextEditor";
 import TitleBadge from "./TitleBadge";
 import UserAvatar from "./UserAvatar";
 import type { CommunityPost, Comment, CommentsPage, PostCategory } from "../types/domain";
+
+const CATEGORY_OPTIONS: PostCategory[] = ["brag", "tip", "chat"];
 
 const CAT_STYLE: Record<PostCategory, string> = {
   brag: "bg-amber-500/15 text-amber-600 dark:text-amber-400",
@@ -119,6 +122,12 @@ export default function PostDetailPage() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
+  // 게시글 수정 폼
+  const [showPostEdit, setShowPostEdit] = useState(false);
+  const [editContent, setEditContent] = useState("");
+  const [editCategory, setEditCategory] = useState<PostCategory>("chat");
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
   // 댓글 작성/수정 폼
   const [commentContent, setCommentContent] = useState("");
   const [commentImage, setCommentImage] = useState<string | null>(null);
@@ -129,6 +138,7 @@ export default function PostDetailPage() {
   const formRef = useRef<HTMLDivElement>(null);
 
   const catLabel = (cat: PostCategory) => t(`community.${cat}` as Parameters<typeof t>[0]);
+  const isContentEmpty = (html: string) => html.replace(/<[^>]*>/g, "").trim().length === 0;
 
   const fetchPost = async () => {
     if (!id) return;
@@ -193,6 +203,30 @@ export default function PostDetailPage() {
     if (!post) return;
     await deletePost(post.id);
     navigate("/community");
+  };
+
+  const openPostEdit = () => {
+    if (!post) return;
+    setEditContent(post.content);
+    setEditCategory(post.category);
+    setShowPostEdit(true);
+  };
+
+  const handlePostUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!post || !currentUser || editSubmitting) return;
+    setEditSubmitting(true);
+    try {
+      await api.patch(`/community/posts/${post.id}`, {
+        userId: currentUser.id,
+        content: editContent,
+        category: editCategory,
+      });
+      setShowPostEdit(false);
+      await fetchPost();
+    } finally {
+      setEditSubmitting(false);
+    }
   };
 
   const handleCommentImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -293,9 +327,14 @@ export default function PostDetailPage() {
             </div>
           </div>
           {post.authorId === currentUser?.id && (
-            <button onClick={handleDeletePost} className="p-1.5 rounded bg-muted text-destructive hover:bg-destructive/10 transition-colors">
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+            <div className="flex gap-1.5 shrink-0">
+              <button onClick={openPostEdit} className="p-1.5 rounded bg-muted hover:bg-accent/20 transition-colors">
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+              <button onClick={handleDeletePost} className="p-1.5 rounded bg-muted text-destructive hover:bg-destructive/10 transition-colors">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
           )}
         </div>
 
@@ -415,6 +454,53 @@ export default function PostDetailPage() {
           </div>
         </form>
       </div>
+
+      {/* 게시글 수정 모달 */}
+      {showPostEdit && (
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50" onClick={() => setShowPostEdit(false)}>
+          <div className="bg-card rounded-t-xl sm:rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h3>{t("community.edit_post")}</h3>
+              <button onClick={() => setShowPostEdit(false)} className="text-muted-foreground hover:text-foreground">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handlePostUpdate} className="space-y-4">
+              <div className="flex gap-2">
+                {CATEGORY_OPTIONS.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setEditCategory(cat)}
+                    className={`flex-1 py-2 rounded-md text-sm font-medium border transition-all ${
+                      editCategory === cat
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-muted text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    {catLabel(cat)}
+                  </button>
+                ))}
+              </div>
+
+              <RichTextEditor
+                content={editContent}
+                onChange={setEditContent}
+                placeholder={t("community.placeholder")}
+              />
+
+              <button
+                type="submit"
+                disabled={editSubmitting || isContentEmpty(editContent)}
+                className="w-full bg-primary/80 text-primary-foreground rounded-md py-3 font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-60"
+              >
+                {editSubmitting ? "..." : t("community.update")}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

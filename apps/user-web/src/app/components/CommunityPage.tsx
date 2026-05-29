@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { Heart, Plus, X, Pencil, Trash2, MessageCircle, ChevronRight } from "lucide-react";
+import { Heart, Plus, X, MessageCircle, ChevronRight } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 import { useNavigate } from "react-router";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
 import { formatRelativeTime } from "../lib/date-utils";
+import { extractFirstImage } from "../lib/image-utils";
 import TitleBadge from "./TitleBadge";
 import UserAvatar from "./UserAvatar";
-import type { CommunityPost, PostCategory } from "../types/domain";
+import type { PostCategory } from "../types/domain";
 
 const CATEGORY_OPTIONS: PostCategory[] = ["brag", "tip", "chat"];
 
@@ -19,12 +20,11 @@ const CAT_STYLE: Record<PostCategory, string> = {
 
 export default function CommunityPage() {
   const navigate = useNavigate();
-  const { posts, profile, createPost, updatePost, deletePost, togglePostLike } = useAppData();
+  const { posts, createPost, togglePostLike } = useAppData();
   const { t, lang } = useLang();
 
   const [activeTab, setActiveTab] = useState<PostCategory | "all">("all");
   const [showForm, setShowForm] = useState(false);
-  const [editingPost, setEditingPost] = useState<CommunityPost | null>(null);
   const [content, setContent] = useState("");
   const [postCategory, setPostCategory] = useState<PostCategory>("chat");
   const [submitting, setSubmitting] = useState(false);
@@ -33,31 +33,19 @@ export default function CommunityPage() {
 
   const visiblePosts = posts.filter((p) => activeTab === "all" || p.category === activeTab);
 
-  const isContentEmpty = (html: string) => {
-    const text = html.replace(/<[^>]*>/g, "").trim();
-    return text.length === 0;
-  };
+  const isContentEmpty = (html: string) => html.replace(/<[^>]*>/g, "").trim().length === 0;
 
   const stripHtml = (html: string) =>
     html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 
   const openCreate = () => {
-    setEditingPost(null);
     setContent("");
     setPostCategory("chat");
     setShowForm(true);
   };
 
-  const openEdit = (post: CommunityPost) => {
-    setEditingPost(post);
-    setContent(post.content);
-    setPostCategory(post.category);
-    setShowForm(true);
-  };
-
   const closeForm = () => {
     setShowForm(false);
-    setEditingPost(null);
     setContent("");
   };
 
@@ -66,12 +54,7 @@ export default function CommunityPage() {
     if (isContentEmpty(content) || submitting) return;
     setSubmitting(true);
     try {
-      const draft = { content, category: postCategory, imageUrl: undefined };
-      if (editingPost) {
-        await updatePost(editingPost.id, draft);
-      } else {
-        await createPost(draft);
-      }
+      await createPost({ content, category: postCategory, imageUrl: undefined });
       closeForm();
     } finally {
       setSubmitting(false);
@@ -115,48 +98,45 @@ export default function CommunityPage() {
             {t("community.no_posts")}
           </div>
         ) : (
-          visiblePosts.map((post) => (
+          visiblePosts.map((post) => {
+            const thumb = extractFirstImage(post.content);
+            return (
             <div
               key={post.id}
               className="bg-card rounded border border-border hover:border-primary/20 transition-colors"
             >
-              {/* 헤더 */}
-              <div className="flex items-center justify-between gap-3 p-4 pb-0">
-                <div className="flex items-center gap-3">
-                  <UserAvatar authorId={post.authorId} authorName={post.authorName} photoUrl={post.authorPhotoUrl} />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-sm">{post.authorName}</p>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${CAT_STYLE[post.category]}`}>
-                        {catLabel(post.category)}
-                      </span>
-                    </div>
-                    {post.authorEquippedTitleId && (
-                      <TitleBadge titleId={post.authorEquippedTitleId} size="xs" />
-                    )}
-                    <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt, lang)}</p>
-                  </div>
-                </div>
-                {post.authorId === profile.id && (
-                  <div className="flex gap-1.5 shrink-0">
-                    <button onClick={() => openEdit(post)} className="p-1.5 rounded bg-muted hover:bg-accent/20 transition-colors">
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                    <button onClick={() => deletePost(post.id)} className="p-1.5 rounded bg-muted text-destructive hover:bg-destructive/10 transition-colors">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* 내용 미리보기 */}
+              {/* 헤더 + 미리보기 통합 */}
               <div
-                className="px-4 pt-3 pb-2 cursor-pointer"
+                className="flex gap-3 p-4 pb-3 cursor-pointer"
                 onClick={() => navigate(`/community/${post.id}`)}
               >
-                <p className="text-sm leading-relaxed line-clamp-3 mb-2 text-foreground/90">
-                  {stripHtml(post.content)}
-                </p>
+                <div className="flex-1 min-w-0 space-y-1.5">
+                  <div className="flex items-center gap-2.5">
+                    <UserAvatar authorId={post.authorId} authorName={post.authorName} photoUrl={post.authorPhotoUrl} />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm">{post.authorName}</p>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${CAT_STYLE[post.category]}`}>
+                          {catLabel(post.category)}
+                        </span>
+                      </div>
+                      {post.authorEquippedTitleId && (
+                        <TitleBadge titleId={post.authorEquippedTitleId} size="xs" />
+                      )}
+                      <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt, lang)}</p>
+                    </div>
+                  </div>
+                  <p className="text-sm leading-relaxed line-clamp-3 text-foreground/90">
+                    {stripHtml(post.content)}
+                  </p>
+                </div>
+                {thumb && (
+                  <img
+                    src={thumb}
+                    alt=""
+                    className="w-20 h-20 object-cover rounded-md border border-border shrink-0 self-center"
+                  />
+                )}
               </div>
 
               {/* 최근 댓글 미리보기 (최대 3개) */}
@@ -196,23 +176,23 @@ export default function CommunityPage() {
                 </button>
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
 
-      {/* 작성/수정 모달 */}
+      {/* 글 작성 모달 */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50" onClick={closeForm}>
           <div className="bg-card rounded-t-xl sm:rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
-              <h3>{editingPost ? t("community.edit_post") : t("community.new_post")}</h3>
+              <h3>{t("community.new_post")}</h3>
               <button onClick={closeForm} className="text-muted-foreground hover:text-foreground">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* 카테고리 */}
               <div className="flex gap-2">
                 {CATEGORY_OPTIONS.map((cat) => (
                   <button
@@ -230,7 +210,6 @@ export default function CommunityPage() {
                 ))}
               </div>
 
-              {/* 리치 텍스트 에디터 */}
               <RichTextEditor
                 content={content}
                 onChange={setContent}
@@ -242,7 +221,7 @@ export default function CommunityPage() {
                 disabled={submitting || isContentEmpty(content)}
                 className="w-full bg-primary/80 text-primary-foreground rounded-md py-3 font-medium shadow-md hover:shadow-lg transition-all disabled:opacity-60"
               >
-                {submitting ? "..." : editingPost ? t("community.update") : t("community.submit")}
+                {submitting ? "..." : t("community.submit")}
               </button>
             </form>
           </div>
