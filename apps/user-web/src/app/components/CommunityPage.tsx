@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Heart, Plus, X, MessageCircle, ChevronRight } from "lucide-react";
 import RichTextEditor from "./RichTextEditor";
 import { useNavigate } from "react-router";
 import { useAppData } from "../context/AppDataContext";
 import { useLang } from "../context/LangContext";
+import { api } from "../lib/api";
+import { getStoredUser } from "../lib/auth";
 import { formatRelativeTime } from "../lib/date-utils";
 import { extractFirstImage } from "../lib/image-utils";
 import TitleBadge from "./TitleBadge";
 import UserAvatar from "./UserAvatar";
-import type { PostCategory } from "../types/domain";
+import type { CommunityPost, PostCategory, Comment } from "../types/domain";
 
 const CATEGORY_OPTIONS: PostCategory[] = ["brag", "tip", "chat"];
 
@@ -18,12 +20,58 @@ const CAT_STYLE: Record<PostCategory, string> = {
   chat: "bg-muted text-muted-foreground",
 };
 
+function mapComment(c: Record<string, unknown>): Comment {
+  const u = (c.user as Record<string, unknown> | undefined) ?? {};
+  return {
+    id: String(c.id),
+    postId: String(c.postId ?? ""),
+    authorId: String(c.userId ?? c.authorId),
+    authorName: String(u.name ?? c.authorName ?? "사용자"),
+    authorPhotoUrl: (c.authorPhotoUrl as string | null | undefined) ?? (u.profilePhoto as string | null | undefined) ?? null,
+    authorEquippedTitleId: (c.authorEquippedTitleId as number | null | undefined) ?? null,
+    parentId: null,
+    content: String(c.content ?? ""),
+    imageUrl: (c.imageUrl as string | null) ?? null,
+    replies: [],
+    createdAt: String(c.createdAt),
+    updatedAt: String(c.updatedAt),
+  };
+}
+
+function mapPost(raw: Record<string, unknown>): CommunityPost {
+  const u = (raw.user as Record<string, unknown> | undefined) ?? {};
+  return {
+    id: String(raw.id),
+    authorId: String(raw.userId ?? raw.authorId),
+    authorName: String(u.name ?? raw.authorName ?? "사용자"),
+    authorPhotoUrl: (raw.authorPhotoUrl as string | null | undefined) ?? (u.profilePhoto as string | null | undefined) ?? null,
+    authorEquippedTitleId: (raw.authorEquippedTitleId as number | null | undefined) ?? null,
+    content: String(raw.content),
+    category: (raw.category as PostCategory) ?? "chat",
+    imageUrl: (raw.imageUrl as string | null) ?? null,
+    likes: Number(raw.likes ?? raw.likesCount ?? 0),
+    isLiked: Boolean(raw.isLiked),
+    commentCount: Number(raw.commentCount ?? 0),
+    recentComments: Array.isArray(raw.recentComments)
+      ? (raw.recentComments as Record<string, unknown>[]).map(mapComment)
+      : [],
+    createdAt: String(raw.createdAt),
+    updatedAt: String(raw.updatedAt),
+  };
+}
+
 export default function CommunityPage() {
   const navigate = useNavigate();
-  const { posts, createPost, togglePostLike } = useAppData();
+  const { createPost } = useAppData();
   const { t, lang } = useLang();
+  const currentUser = getStoredUser();
 
   const [activeTab, setActiveTab] = useState<PostCategory | "all">("all");
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+
   const [showForm, setShowForm] = useState(false);
   const [content, setContent] = useState("");
   const [postCategory, setPostCategory] = useState<PostCategory>("chat");
@@ -31,12 +79,37 @@ export default function CommunityPage() {
 
   const catLabel = (cat: PostCategory) => t(`community.${cat}` as Parameters<typeof t>[0]);
 
-  const visiblePosts = posts.filter((p) => activeTab === "all" || p.category === activeTab);
-
   const isContentEmpty = (html: string) => html.replace(/<[^>]*>/g, "").trim().length === 0;
 
   const stripHtml = (html: string) =>
     html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
+  const fetchPosts = useCallback(async (p: number, cat: PostCategory | "all") => {
+    setLoading(true);
+    try {
+      const qs = new URLSearchParams({ page: String(p) });
+      if (currentUser) qs.set("userId", currentUser.id);
+      if (cat !== "all") qs.set("category", cat);
+      const data = await api.get<{ posts: Record<string, unknown>[]; totalPages: number }>(
+        `/community/posts?${qs.toString()}`,
+      );
+      setPosts(data.posts.map(mapPost));
+      setTotalPages(data.totalPages);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    setPage(1);
+    void fetchPosts(1, activeTab);
+  }, [activeTab]);
+
+  const handlePageChange = (p: number) => {
+    setPage(p);
+    void fetchPosts(p, activeTab);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const openCreate = () => {
     setContent("");
@@ -56,9 +129,23 @@ export default function CommunityPage() {
     try {
       await createPost({ content, category: postCategory, imageUrl: undefined });
       closeForm();
+      setPage(1);
+      await fetchPosts(1, activeTab);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleToggleLike = async (postId: string) => {
+    if (!currentUser) return;
+    setPosts((prev) =>
+      prev.map((p) =>
+        p.id === postId
+          ? { ...p, isLiked: !p.isLiked, likes: p.isLiked ? p.likes - 1 : p.likes + 1 }
+          : p,
+      ),
+    );
+    await api.post(`/community/posts/${postId}/like`, { userId: currentUser.id });
   };
 
   const tabs: (PostCategory | "all")[] = ["all", ...CATEGORY_OPTIONS];
@@ -93,93 +180,116 @@ export default function CommunityPage() {
 
       {/* 게시글 목록 */}
       <div className="space-y-3">
-        {visiblePosts.length === 0 ? (
+        {loading ? (
+          <div className="bg-card rounded border border-border p-10 text-center text-muted-foreground text-sm">
+            {t("common.loading")}
+          </div>
+        ) : posts.length === 0 ? (
           <div className="bg-card rounded border border-border p-10 text-center text-muted-foreground text-sm">
             {t("community.no_posts")}
           </div>
         ) : (
-          visiblePosts.map((post) => {
+          posts.map((post) => {
             const thumb = extractFirstImage(post.content);
             return (
-            <div
-              key={post.id}
-              className="bg-card rounded border border-border hover:border-primary/20 transition-colors"
-            >
-              {/* 헤더 + 미리보기 통합 */}
               <div
-                className="flex gap-3 p-4 pb-3 cursor-pointer"
-                onClick={() => navigate(`/community/${post.id}`)}
+                key={post.id}
+                className="bg-card rounded border border-border hover:border-primary/20 transition-colors"
               >
-                <div className="flex-1 min-w-0 space-y-1.5">
-                  <div className="flex items-center gap-2.5">
-                    <UserAvatar authorId={post.authorId} authorName={post.authorName} photoUrl={post.authorPhotoUrl} />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-sm">{post.authorName}</p>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${CAT_STYLE[post.category]}`}>
-                          {catLabel(post.category)}
-                        </span>
+                {/* 헤더 + 미리보기 통합 */}
+                <div
+                  className="flex gap-3 p-4 pb-3 cursor-pointer"
+                  onClick={() => navigate(`/community/${post.id}`)}
+                >
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <div className="flex items-center gap-2.5">
+                      <UserAvatar authorId={post.authorId} authorName={post.authorName} photoUrl={post.authorPhotoUrl} />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">{post.authorName}</p>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${CAT_STYLE[post.category]}`}>
+                            {catLabel(post.category)}
+                          </span>
+                        </div>
+                        {post.authorEquippedTitleId && (
+                          <TitleBadge titleId={post.authorEquippedTitleId} size="xs" />
+                        )}
+                        <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt, lang)}</p>
                       </div>
-                      {post.authorEquippedTitleId && (
-                        <TitleBadge titleId={post.authorEquippedTitleId} size="xs" />
-                      )}
-                      <p className="text-xs text-muted-foreground">{formatRelativeTime(post.createdAt, lang)}</p>
                     </div>
-                  </div>
-                  <p className="text-sm leading-relaxed line-clamp-3 text-foreground/90">
-                    {stripHtml(post.content)}
-                  </p>
-                </div>
-                {thumb && (
-                  <img
-                    src={thumb}
-                    alt=""
-                    className="w-20 h-20 object-cover rounded-md border border-border shrink-0 self-center"
-                  />
-                )}
-              </div>
-
-              {/* 최근 댓글 미리보기 (최대 3개) */}
-              {post.recentComments.length > 0 && (
-                <div className="mx-4 mb-2 bg-muted/50 rounded-md p-2 space-y-1">
-                  {post.recentComments.map((c) => (
-                    <p key={c.id} className="text-xs text-muted-foreground line-clamp-1">
-                      <span className="font-medium text-foreground/70">{c.authorName}</span>{" "}
-                      {c.content || <span className="italic">({t("common.photo")})</span>}
+                    <p className="text-sm leading-relaxed line-clamp-3 text-foreground/90">
+                      {stripHtml(post.content)}
                     </p>
-                  ))}
+                  </div>
+                  {thumb && (
+                    <img
+                      src={thumb}
+                      alt=""
+                      className="w-20 h-20 object-cover rounded-md border border-border shrink-0 self-center"
+                    />
+                  )}
                 </div>
-              )}
 
-              {/* 하단 액션 바 */}
-              <div className="flex items-center gap-4 px-4 py-3 border-t border-border text-muted-foreground">
-                <button
-                  onClick={(e) => { e.stopPropagation(); togglePostLike(post.id); }}
-                  className={`flex items-center gap-1.5 text-sm transition-colors ${post.isLiked ? "text-primary" : "hover:text-primary"}`}
-                >
-                  <Heart className={`w-4 h-4 ${post.isLiked ? "fill-current" : ""}`} />
-                  {post.likes}
-                </button>
-                <button
-                  onClick={() => navigate(`/community/${post.id}`)}
-                  className="flex items-center gap-1.5 text-sm hover:text-primary transition-colors"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  {post.commentCount}
-                </button>
-                <button
-                  onClick={() => navigate(`/community/${post.id}`)}
-                  className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
-                >
-                  {t("community.view_detail")}
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
+                {/* 최근 댓글 미리보기 */}
+                {post.recentComments.length > 0 && (
+                  <div className="mx-4 mb-2 bg-muted/50 rounded-md p-2 space-y-1">
+                    {post.recentComments.map((c) => (
+                      <p key={c.id} className="text-xs text-muted-foreground line-clamp-1">
+                        <span className="font-medium text-foreground/70">{c.authorName}</span>{" "}
+                        {c.content || <span className="italic">({t("common.photo")})</span>}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {/* 하단 액션 바 */}
+                <div className="flex items-center gap-4 px-4 py-3 border-t border-border text-muted-foreground">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); void handleToggleLike(post.id); }}
+                    className={`flex items-center gap-1.5 text-sm transition-colors ${post.isLiked ? "text-primary" : "hover:text-primary"}`}
+                  >
+                    <Heart className={`w-4 h-4 ${post.isLiked ? "fill-current" : ""}`} />
+                    {post.likes}
+                  </button>
+                  <button
+                    onClick={() => navigate(`/community/${post.id}`)}
+                    className="flex items-center gap-1.5 text-sm hover:text-primary transition-colors"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    {post.commentCount}
+                  </button>
+                  <button
+                    onClick={() => navigate(`/community/${post.id}`)}
+                    className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {t("community.view_detail")}
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
-            </div>
             );
           })
         )}
       </div>
+
+      {/* 페이지네이션 */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-1">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            <button
+              key={p}
+              onClick={() => handlePageChange(p)}
+              className={`w-8 h-8 rounded text-sm font-medium transition-colors ${
+                p === page
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-accent/30"
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* 글 작성 모달 */}
       {showForm && (
