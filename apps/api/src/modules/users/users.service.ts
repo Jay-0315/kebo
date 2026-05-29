@@ -1,13 +1,16 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { CurrencyCode } from "@prisma/client";
+import { ExchangeRatesService } from "../exchange-rates/exchange-rates.service";
 import { PrismaService } from "../prisma/prisma.service";
-import { convertCurrency, getExchangeRate } from "../shared/exchange-rate.util";
 import { UpdateUserProfileDto } from "./dto/update-user-profile.dto";
 import { UpdateUserSettingsDto } from "./dto/update-user-settings.dto";
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly exchangeRates: ExchangeRatesService,
+  ) {}
 
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
@@ -81,20 +84,21 @@ export class UsersService {
       });
 
       await Promise.all(
-        expenses.map((expense) =>
-          this.prisma.expense.update({
+        expenses.map(async (expense) => {
+          const spentCcy = String(expense.spentCurrency);
+          const [exchangeRate, baseAmount] = await Promise.all([
+            this.exchangeRates.getRate(spentCcy, nextBaseCurrency),
+            this.exchangeRates.convert(Number(expense.spentAmount), spentCcy, nextBaseCurrency),
+          ]);
+          return this.prisma.expense.update({
             where: { id: expense.id },
             data: {
               baseCurrency: nextBaseCurrency as CurrencyCode,
-              exchangeRate: getExchangeRate(String(expense.spentCurrency), String(nextBaseCurrency)),
-              baseAmount: convertCurrency(
-                Number(expense.spentAmount),
-                String(expense.spentCurrency),
-                nextBaseCurrency,
-              ),
+              exchangeRate,
+              baseAmount,
             },
-          }),
-        ),
+          });
+        }),
       );
     }
 
