@@ -15,11 +15,11 @@ export default function Layout() {
   const { t } = useLang();
 
   const navItems = [
-    { path: "/",          icon: Home,      label: t("nav.home") },
+    { path: "/", icon: Home, label: t("nav.home") },
     { path: "/community", icon: Newspaper, label: t("nav.community") },
-    { path: "/groups",    icon: Users,     label: t("nav.groups") },
-    { path: "/kabemon",   icon: Gamepad2,  label: t("nav.kabemon") },
-    { path: "/mypage",    icon: User,      label: t("nav.mypage") },
+    { path: "/groups", icon: Users, label: t("nav.groups") },
+    { path: "/kabemon", icon: Gamepad2, label: t("nav.kabemon") },
+    { path: "/mypage", icon: User, label: t("nav.mypage") },
   ];
 
   const settingsItems = [
@@ -27,7 +27,9 @@ export default function Layout() {
   ];
 
   const isActive = (path: string) =>
-    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
+    path === "/"
+      ? location.pathname === "/"
+      : location.pathname.startsWith(path);
 
   const handleLogout = () => {
     clearAuthSession();
@@ -38,7 +40,9 @@ export default function Layout() {
   const NavLinks = ({ onNav }: { onNav?: () => void }) => (
     <>
       <div className="space-y-1">
-        <p className="text-xs text-muted-foreground px-3 mb-2">{t("nav.menu")}</p>
+        <p className="text-xs text-muted-foreground px-3 mb-2">
+          {t("nav.menu")}
+        </p>
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -61,7 +65,9 @@ export default function Layout() {
       </div>
 
       <div className="mt-8 space-y-1">
-        <p className="text-xs text-muted-foreground px-3 mb-2">{t("nav.settings_section")}</p>
+        <p className="text-xs text-muted-foreground px-3 mb-2">
+          {t("nav.settings_section")}
+        </p>
         {settingsItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -86,7 +92,10 @@ export default function Layout() {
       <aside className="hidden lg:flex lg:flex-col w-56 bg-sidebar border-r border-sidebar-border fixed h-screen">
         {/* Logo */}
         <div className="p-6 border-b border-sidebar-border">
-          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Link
+            to="/"
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+          >
             <div className="w-10 h-10 bg-primary rounded flex items-center justify-center">
               <Globe className="w-6 h-6 text-primary-foreground" />
             </div>
@@ -106,7 +115,11 @@ export default function Layout() {
             className="flex items-center gap-3 p-2 rounded bg-sidebar-accent hover:bg-primary/10 transition-colors"
           >
             {profilePhoto ? (
-              <img src={profilePhoto} alt={profile.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+              <img
+                src={profilePhoto}
+                alt={profile.name}
+                className="w-10 h-10 rounded-full object-cover shrink-0"
+              />
             ) : (
               <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium shrink-0">
                 {profile.name[0]}
@@ -117,7 +130,10 @@ export default function Layout() {
               {rewardSummary.equippedTitleId ? (
                 <TitleBadge titleId={rewardSummary.equippedTitleId} size="xs" />
               ) : (
-                <p className="text-xs text-muted-foreground">{rewardSummary.ownedCharacterIds.length}/{CHARACTERS.length} 수집</p>
+                <p className="text-xs text-muted-foreground">
+                  {rewardSummary.ownedCharacterIds.length}/{CHARACTERS.length}{" "}
+                  수집
+                </p>
               )}
             </div>
           </Link>
@@ -134,7 +150,10 @@ export default function Layout() {
       {/* ── Mobile Header ── */}
       <div className="lg:hidden fixed top-0 left-0 right-0 bg-sidebar border-b border-sidebar-border z-40 px-4 py-3">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+          >
             <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
               <Globe className="w-5 h-5 text-primary-foreground" />
             </div>
@@ -144,7 +163,11 @@ export default function Layout() {
             onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
             className="text-foreground"
           >
-            {isMobileSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {isMobileSidebarOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
       </div>
@@ -170,7 +193,11 @@ export default function Layout() {
                 className="flex items-center gap-3 p-2 rounded bg-sidebar-accent hover:bg-primary/10 transition-colors"
               >
                 {profilePhoto ? (
-                  <img src={profilePhoto} alt={profile.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  <img
+                    src={profilePhoto}
+                    alt={profile.name}
+                    className="w-10 h-10 rounded-full object-cover shrink-0"
+                  />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium shrink-0">
                     {profile.name[0]}
@@ -179,14 +206,23 @@ export default function Layout() {
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{profile.name}</p>
                   {rewardSummary.equippedTitleId ? (
-                    <TitleBadge titleId={rewardSummary.equippedTitleId} size="xs" />
+                    <TitleBadge
+                      titleId={rewardSummary.equippedTitleId}
+                      size="xs"
+                    />
                   ) : (
-                    <p className="text-xs text-muted-foreground">{rewardSummary.ownedCharacterIds.length}/{CHARACTERS.length} 수집</p>
+                    <p className="text-xs text-muted-foreground">
+                      {rewardSummary.ownedCharacterIds.length}/
+                      {CHARACTERS.length} 수집
+                    </p>
                   )}
                 </div>
               </Link>
               <button
-                onClick={() => { setIsMobileSidebarOpen(false); handleLogout(); }}
+                onClick={() => {
+                  setIsMobileSidebarOpen(false);
+                  handleLogout();
+                }}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors text-sm"
               >
                 <LogOut className="w-4 h-4" />
